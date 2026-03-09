@@ -4,162 +4,206 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1" name="viewport"/>
     <title>Netflix Profiles & Rohan's Resume</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet"/>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Netflix+Sans&display=swap');
+
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             font-family: 'Netflix Sans', 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont,
             "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji",
             "Segoe UI Emoji", "Segoe UI Symbol";
         }
+
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
         }
+
         .scrollbar-hide {
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        .card-hover {
+            transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+            border: 1px solid transparent;
+        }
+
+        .card-hover:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 35px rgba(229, 9, 20, 0.22);
+            border-color: rgba(229, 9, 20, 0.35);
+        }
+
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .glow-btn {
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+        }
+
+        .glow-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 18px rgba(229, 9, 20, 0.35);
+        }
+
+        .profile-card {
+            transition: transform 0.25s ease;
+        }
+
+        .profile-card:hover {
+            transform: scale(1.06);
+        }
+
+        .resume-hidden {
+            display: none;
+            opacity: 0;
+        }
+
+        .floating-backdrop {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,0.65));
+        }
+
+        .section-title-badge {
+            min-width: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'netflix-red': '#E50914',
+                        'netflix-black': '#141414',
+                        'card-start': '#2C3E50',
+                        'card-end': '#34495E',
+                    }
+                }
+            }
+        }
+    </script>
 </head>
 
-<script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            'netflix-red': '#E50914',
-            'netflix-black': '#141414',
-            'card-start': '#2C3E50',
-            'card-end': '#34495E',
-          }
-        }
-      }
-    }
-  </script>
 <body class="bg-[#141414] min-h-screen flex flex-col items-center justify-center px-4">
-    <div id="transition-overlay" class="fixed inset-0 z-50 flex items-center justify-center">
+    <!-- Intro Overlay -->
+    <div id="transition-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black">
         <img src="./intro1.gif" alt="Transition" class="w-full h-full object-cover">
         <audio id="intro-audio" src="./nouveau-jingle-netflix.mp3" autoplay hidden></audio>
     </div>
-    
-    <script>
-        window.addEventListener('load', function () {
-            const overlay = document.getElementById('transition-overlay');
-            const profiles = document.getElementById('netflix-profiles');
-            const audio = document.getElementById('intro-audio');
-    
-            // Attempt autoplay without interaction
-            audio.play();
-    
-            setTimeout(() => {
-                overlay.style.transition = 'opacity 0.5s';
-                overlay.style.opacity = '0';
-    
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    profiles.classList.remove('hidden');
-                }, 500);
-            }, 1000);
-        });
-    </script>
+
     <!-- Netflix Profile Selection -->
-    <div id="netflix-profiles" class="w-full -mt-[200px]">
+    <div id="netflix-profiles" class="w-full -mt-[200px] hidden">
         <header class="w-full max-w-7xl flex justify-start pt-8 pl-8 sm:pl-16">
             <h1 class="text-[#E50914] font-bold text-3xl sm:text-4xl leading-none select-none" style="font-family: 'Netflix Sans', system-ui, sans-serif;">
-                <img src="./netflix.png" width="200" height="150">
+                <img src="./netflix.png" width="200" height="150" alt="Netflix">
             </h1>
         </header>
+
         <main class="flex flex-col items-center mt-20 sm:mt-28">
             <h2 class="text-white text-3xl sm:text-4xl font-normal mb-12 select-none">
                 Who's watching?
             </h2>
+
             <ul class="flex space-x-8 sm:space-x-12">
-                
                 <li>
-                    <a href="#" id="rohan-profile" class="flex flex-col items-center cursor-pointer group">
-                        <img alt="Profile picture of a boy with curly hair and green background" class="w-24 h-24 sm:w-28 sm:h-28 object-cover group-hover:ring-4 group-hover:ring-[#E50914] transition" height="96" src="./profilephoto.png" width="96"/>
+                    <a href="#" id="rohan-profile" class="profile-card flex flex-col items-center cursor-pointer group">
+                        <img
+                            alt="Profile picture of Rohan"
+                            class="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded group-hover:ring-4 group-hover:ring-[#E50914] transition"
+                            height="96"
+                            src="./profilephoto.png"
+                            width="96"
+                        />
                         <span class="text-gray-500 text-sm mt-2 select-none group-hover:text-white transition">
                             Rohan
                         </span>
                     </a>
                 </li>
-                
-                
             </ul>
+
             <button class="mt-16 border border-gray-700 text-gray-500 text-xs tracking-widest px-6 py-2 hover:border-gray-500 hover:text-gray-300 transition select-none" style="letter-spacing: 0.15em;">
                 MANAGE PROFILES
             </button>
         </main>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const rohanProfile = document.getElementById('rohan-profile');
-            const audio = new Audio('./mixkit-mouse-click-close-1113.mp3');
-    
-            rohanProfile.addEventListener('click', function(e) {
-                e.preventDefault(); // Prevent the default link behavior
-                audio.play(); // Play the sound
-    
-                // Add any other actions you want to perform when the profile is clicked
-                // For example, navigating to a different page or showing a different view
-                setTimeout(() => {
-                    // Your existing code for what happens after clicking the profile
-                    // For example: window.location.href = 'resume.html';
-                }, 0); // Adjust this delay as needed
-            });
-        });
-    </script>
 
-    <!-- Rohan's Resume Section (initially hidden) -->
-    <div id="rohan-resume" class="hidden bg-black text-white w-full">
+    <!-- Resume Section -->
+    <div id="rohan-resume" class="resume-hidden bg-black text-white w-full">
         <!-- Header -->
-        <header class="flex items-center justify-between px-4 sm:px-6 md:px-10 py-4 bg-gradient-to-b from-[#1a2a3a] to-black">
-            <div class="flex items-center space-x-6 text-xs sm:text-sm md:text-base font-normal text-white">
-                <div class="font-extrabold text-red-600 tracking-widest select-none"><img src="logo.png" width="125" height="100" alt="Logo"></div>
+        <header class="sticky top-0 z-40 flex items-center justify-between px-4 sm:px-6 md:px-10 py-4 bg-gradient-to-b from-[#1a2a3a] to-black backdrop-blur">
+            <div class="flex items-center space-x-3 sm:space-x-6 text-xs sm:text-sm md:text-base font-normal text-white flex-wrap">
+                <button onclick="backToProfiles()" class="glow-btn bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-semibold">
+                    ← Back
+                </button>
+
+                <div class="font-extrabold text-red-600 tracking-widest select-none">
+                    <img src="logo.png" width="125" height="100" alt="Logo">
+                </div>
+
                 <div>B.Tech IT Student</div>
                 <div class="text-gray-300">MPSTME, NMIMS University</div>
                 <div class="text-gray-300">AI, ML & NLP Enthusiast</div>
             </div>
+
             <div class="relative">
-                <img alt="Profile picture of Rohan Iyer" class="rounded-full w-10 h-10 object-cover" height="40" src="./profilephoto.png" width="40"/>
+                <img alt="Profile picture of Rohan Iyer" class="rounded-full w-10 h-10 object-cover ring-2 ring-red-600/60" height="40" src="./profilephoto.png" width="40"/>
             </div>
         </header>
-        
 
-        <!-- Hero Section with Video Background -->
-        <section class="relative w-full h-[500px] overflow-hidden">
-            <!-- Background Video -->
+        <!-- Hero Section -->
+        <section class="relative w-full h-[560px] overflow-hidden">
             <video autoplay muted loop playsinline class="absolute top-0 left-0 w-full h-full object-cover z-0">
                 <source src="./resume.mp4" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
 
-            <!-- Overlay and Content -->
-            <div class="absolute inset-0 bg-black bg-opacity-60 flex flex-col justify-center px-4 sm:px-6 md:px-10">
+            <div class="absolute inset-0 floating-backdrop flex flex-col justify-center px-4 sm:px-6 md:px-10">
                 <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight max-w-xl text-white">
                     Rohan Iyer
                     <br>
                     Portfolio & Resume
                 </h1>
+
                 <div class="flex items-center space-x-2 mt-4 max-w-xl">
                     <div class="bg-red-600 text-white text-[10px] font-bold uppercase px-1.5 py-[1px] rounded select-none">📌</div>
                     <p class="text-white font-semibold text-sm sm:text-base">Personal Info & Professional Highlights</p>
                 </div>
+
                 <p class="max-w-xl text-xs sm:text-sm text-white mt-2 leading-relaxed">
                     B.Tech IT student at NMIMS University with strong skills in AI, ML, NLP, and software development. Passionate about sustainability and circular economy.
                 </p>
-                <div class="flex space-x-3 mt-5 max-w-xl">
-                    <a href="#contact" class="flex items-center space-x-2 bg-white text-black font-semibold rounded px-4 py-2 text-sm sm:text-base cursor-pointer">
+
+                <div class="flex flex-wrap gap-3 mt-5 max-w-xl">
+                    <a href="#contact" class="glow-btn flex items-center space-x-2 bg-white text-black font-semibold rounded px-4 py-2 text-sm sm:text-base cursor-pointer">
                         <i class="fas fa-envelope"></i>
                         <span>Contact Me</span>
                     </a>
-                    <a href="#projects" class="flex items-center space-x-2 bg-gray-600 bg-opacity-50 text-white font-semibold rounded px-4 py-2 text-sm sm:text-base cursor-pointer">
+
+                    <a href="#projects" class="glow-btn flex items-center space-x-2 bg-gray-600 bg-opacity-50 text-white font-semibold rounded px-4 py-2 text-sm sm:text-base cursor-pointer hover:bg-opacity-70">
                         <i class="fas fa-folder-open"></i>
                         <span>View Projects</span>
                     </a>
-                    <a href="https://drive.google.com/file/d/1PWbHZNDVtJUMyn4qVDJni3VnzaItRSyj/view?usp=sharing" target="_blank" class="flex items-center space-x-2 bg-green-600 text-white font-semibold rounded px-4 py-2 text-sm sm:text-base cursor-pointer">
+
+                    <a href="https://drive.google.com/file/d/1PWbHZNDVtJUMyn4qVDJni3VnzaItRSyj/view?usp=sharing" target="_blank" class="glow-btn flex items-center space-x-2 bg-green-600 text-white font-semibold rounded px-4 py-2 text-sm sm:text-base cursor-pointer hover:bg-green-700">
                         <i class="fas fa-download"></i>
                         <span>Download CV</span>
                     </a>
@@ -168,12 +212,12 @@
         </section>
 
         <!-- Personal Info -->
-        <section class="px-4 sm:px-6 md:px-10 mt-6 max-w-5xl mx-auto">
+        <section class="fade-in-section px-4 sm:px-6 md:px-10 mt-6 max-w-5xl mx-auto">
             <h2 class="text-xs sm:text-sm font-semibold mb-2 flex items-center space-x-2">
-                <span>📌</span>
+                <span class="section-title-badge">📌</span>
                 <span>Personal Info</span>
             </h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-300 text-sm sm:text-base">
+            <div class="card-hover grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-300 text-sm sm:text-base bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
                 <div>
                     <p><span class="font-semibold">Name:</span> Rohan Iyer</p>
                     <p><span class="font-semibold">DOB:</span> 5th June 2003</p>
@@ -190,24 +234,26 @@
         </section>
 
         <!-- Objective -->
-        <section class="px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
+        <section class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
             <h2 class="text-xs sm:text-sm font-semibold mb-2 flex items-center space-x-2">
-                <span>🎯</span>
+                <span class="section-title-badge">🎯</span>
                 <span>Objective</span>
             </h2>
-            <p class="text-gray-300 text-sm sm:text-base max-w-3xl">
-                A highly motivated B.Tech student specializing in Information Technology with a strong analytical and solution-oriented approach. Seeks dynamic opportunities to apply AI, ML, and NLP skills in solving real-world problems and contributing to innovative outcomes.
-            </p>
+            <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
+                <p class="text-gray-300 text-sm sm:text-base max-w-3xl">
+                    A highly motivated B.Tech student specializing in Information Technology with a strong analytical and solution-oriented approach. Seeks dynamic opportunities to apply AI, ML, and NLP skills in solving real-world problems and contributing to innovative outcomes.
+                </p>
+            </div>
         </section>
 
-        <!-- Education Cards -->
-        <section class="px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
+        <!-- Education -->
+        <section class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
             <h2 class="text-xs sm:text-sm font-semibold mb-4 flex items-center space-x-2">
-                <span>📚</span>
+                <span class="section-title-badge">📚</span>
                 <span>Education</span>
             </h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
+                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
                     <img alt="NMIMS University logo" class="w-20 h-20 object-contain rounded" height="80" src="./college.png" width="80"/>
                     <div>
                         <h3 class="text-white font-bold text-lg mb-1">B.Tech in Information Technology</h3>
@@ -215,7 +261,8 @@
                         <p class="text-gray-400">GPA: 3.83 / 4.0 (9.575 / 10)</p>
                     </div>
                 </div>
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
+
+                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
                     <img alt="Smt. Sulochanadevi Singhania School logo" class="w-20 h-20 object-contain rounded" height="80" src="./image-removebg-preview (2).png" width="80"/>
                     <div>
                         <h3 class="text-white font-bold text-lg mb-1">Class XII (ISC)</h3>
@@ -227,36 +274,39 @@
             </div>
         </section>
 
-        <!-- Technical Skills Cards -->
-        <section class="px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
+        <!-- Technical Skills -->
+        <section class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
             <h2 class="text-xs sm:text-sm font-semibold mb-4 flex items-center space-x-2">
-                <span>🧠</span>
+                <span class="section-title-badge">🧠</span>
                 <span>Technical Skills</span>
             </h2>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
+                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
                     <h3 class="text-white font-bold text-lg mb-2">Languages</h3>
                     <p class="text-gray-400">Python, Java, JavaScript, C, C++, HTML, CSS, SQL, C#</p>
                 </div>
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
+
+                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
                     <h3 class="text-white font-bold text-lg mb-2">Frameworks/Libraries</h3>
                     <p class="text-gray-400">Flask, NumPy, Pandas, Matplotlib, Seaborn, Sklearn, OpenCV, Roboflow, Flutter, Django</p>
                 </div>
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
+
+                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
                     <h3 class="text-white font-bold text-lg mb-2">Concepts & Tools</h3>
                     <p class="text-gray-400">OOP, DSA, OS, DBMS, ML, NLP, Software Engineering, Algorithms, GCP, AWS, Tableau, MS Excel, Power BI, Git, Android Studio, Shopify</p>
                 </div>
             </div>
         </section>
 
-        <!-- Experience Cards -->
-        <section id="experience" class="px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
+        <!-- Experience -->
+        <section id="experience" class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
             <h2 class="text-xs sm:text-sm font-semibold mb-4 flex items-center space-x-2">
-                <span>💼</span>
+                <span class="section-title-badge">💼</span>
                 <span>Experience</span>
             </h2>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
+                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
                     <img alt="Quantiphi logo" class="w-20 h-20 object-contain rounded" height="80" src="./quantiphi.png" width="80"/>
                     <div>
                         <h3 class="text-white font-bold text-lg mb-1">Quantiphi Analytics Solutions Pvt Ltd.</h3>
@@ -264,110 +314,119 @@
                         <p class="text-gray-400">Built financial forecasting and budgeting models using Python on GCP and AWS. Delivered insights for financial sector clients through cloud-deployed ML models.</p>
                     </div>
                 </div>
-                <a href="https://uppercelestials.com/">
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
-                    
-                    <img alt="Upper Celestials logo" class="w-20 h-20 object-contain rounded" height="80" src="./uppercelestials.png" width="80"/>
-                    <div>  
-                        <h3 class="text-white font-bold text-lg mb-1">Upper Celestials</h3>
-                        <p class="text-gray-400 mb-1 font-semibold">Co-Founder | Feb 2024 – Present</p>
-                        <p class="text-gray-400">Created and managed Gen-Z focused luxury fashion brand. Developed Shopify site, executed ad funnels, and handled brand marketing.</p>
+
+                <a href="https://uppercelestials.com/" target="_blank" rel="noreferrer" class="block">
+                    <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4 h-full">
+                        <img alt="Upper Celestials logo" class="w-20 h-20 object-contain rounded" height="80" src="./uppercelestials.png" width="80"/>
+                        <div>
+                            <h3 class="text-white font-bold text-lg mb-1">Upper Celestials</h3>
+                            <p class="text-gray-400 mb-1 font-semibold">Co-Founder | Feb 2024 – Present</p>
+                            <p class="text-gray-400">Created and managed Gen-Z focused luxury fashion brand. Developed Shopify site, executed ad funnels, and handled brand marketing.</p>
+                        </div>
                     </div>
-                
-                </div>
                 </a>
             </div>
         </section>
 
-        <!-- Projects Cards -->
-        <section id="projects" class="px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
+        <!-- Projects -->
+        <section id="projects" class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
             <h2 class="text-xs sm:text-sm font-semibold mb-4 flex items-center space-x-2">
-                <span>💡</span>
+                <span class="section-title-badge">💡</span>
                 <span>Projects</span>
             </h2>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
+                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
                     <img alt="Kubera AI Finance Manager logo" class="w-20 h-20 object-contain rounded" src="./kubera.png" height="80" width="80"/>
                     <div>
                         <h3 class="text-white font-bold text-lg mb-1">Kubera – AI Finance Manager (2024)</h3>
                         <p class="text-gray-400">Voice-to-text transaction logging, NLP-based spend classification, sentiment-linked portfolio news dashboard, and GCP-based deployment.</p>
                     </div>
                 </div>
-                
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
+
+                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
                     <img alt="Paytm logo" class="w-20 h-20 object-contain rounded" height="80" src="./Paytm-Logo.png" width="80"/>
                     <div>
                         <h3 class="text-white font-bold text-lg mb-1">Paytm Logo Detection in Cricket Footage (2025)</h3>
                         <p class="text-gray-400">YOLOv8 model trained on ICC highlights to detect Paytm logo visibility with 92.3% mAP@0.5; delivered heatmaps and ad ROI insights.</p>
                     </div>
                 </div>
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
+
+                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
                     <img alt="Stock market graph" class="w-20 h-20 object-contain rounded" height="80" src="./stocks.png" width="80"/>
                     <div>
                         <h3 class="text-white font-bold text-lg mb-1">Stock Price Analyzer and Forecasting (2025)</h3>
                         <p class="text-gray-400">Dashboard and predictive model using Python and AWS to correlate real-world news with market data.</p>
                     </div>
                 </div>
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
+
+                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
                     <img alt="IMDB logo" class="w-20 h-20 object-contain rounded" height="80" src="https://upload.wikimedia.org/wikipedia/commons/6/69/IMDB_Logo_2016.svg" width="80"/>
                     <div>
                         <h3 class="text-white font-bold text-lg mb-1">IMDB Movie Analyzer (2024)</h3>
                         <p class="text-gray-400">Sentiment analysis of movie reviews to provide feedback and suggestions using a custom-built Python dashboard.</p>
                     </div>
                 </div>
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
+
+                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
                     <img alt="Android Studio logo" class="w-20 h-20 object-contain rounded" height="80" src="./as.png" width="80"/>
                     <div>
-                     <h3 class="text-white font-bold text-lg mb-1">Hisaab Khitaab – Expense Manager (2024)</h3>
-                     <p class="text-gray-400">Android Studio app for tracking group and project-based settlements with timely alerts and credit scoring.</p>
+                        <h3 class="text-white font-bold text-lg mb-1">Hisaab Khitaab – Expense Manager (2024)</h3>
+                        <p class="text-gray-400">Android Studio app for tracking group and project-based settlements with timely alerts and credit scoring.</p>
                     </div>
                 </div>
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
+
+                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
                     <img alt="Train icon" class="w-20 h-20 object-contain rounded" height="80" src="./train.png" width="80"/>
                     <div>
-                     <h3 class="text-white font-bold text-lg mb-1">Railway Navigation System (2023)</h3>
-                     <p class="text-gray-400">Java-based Dijkstra pathfinding for optimal train routes considering time and cost preferences.</p>
+                        <h3 class="text-white font-bold text-lg mb-1">Railway Navigation System (2023)</h3>
+                        <p class="text-gray-400">Java-based Dijkstra pathfinding for optimal train routes considering time and cost preferences.</p>
                     </div>
                 </div>
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
+
+                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
                     <img alt="Sneaker icon" class="w-20 h-20 object-contain rounded" height="80" src="./image-removebg-preview (3).png" width="80"/>
                     <div>
-                     <h3 class="text-white font-bold text-lg mb-1">HypeSociety Sneaker Resale Site (2023)</h3>
-                     <p class="text-gray-400">HTML/CSS web prototype with Razorpay integration and product display.</p>
+                        <h3 class="text-white font-bold text-lg mb-1">HypeSociety Sneaker Resale Site (2023)</h3>
+                        <p class="text-gray-400">HTML/CSS web prototype with Razorpay integration and product display.</p>
                     </div>
                 </div>
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
+
+                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
                     <img alt="Arduino logo" class="w-20 h-20 object-contain rounded" height="80" src="./Arduino_Logo.png" width="80"/>
                     <div>
-                     <h3 class="text-white font-bold text-lg mb-1">Automated Mailbox with Passcode Lock (2023)</h3>
-                     <p class="text-gray-400">Arduino-powered IoT mailbox with motion detection, security code, and live streaming.</p>
+                        <h3 class="text-white font-bold text-lg mb-1">Automated Mailbox with Passcode Lock (2023)</h3>
+                        <p class="text-gray-400">Arduino-powered IoT mailbox with motion detection, security code, and live streaming.</p>
                     </div>
                 </div>
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
+
+                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
                     <img alt="Electric vehicle icon" class="w-20 h-20 object-contain rounded" height="80" src="./image-removebg-preview.png" width="80"/>
                     <div>
-                     <h3 class="text-white font-bold text-lg mb-1">Infinity Motors UI/UX Design (2021)</h3>
-                     <p class="text-gray-400">Designed modern user interface mockups for an electric vehicle company’s digital presence.</p>
+                        <h3 class="text-white font-bold text-lg mb-1">Infinity Motors UI/UX Design (2021)</h3>
+                        <p class="text-gray-400">Designed modern user interface mockups for an electric vehicle company’s digital presence.</p>
                     </div>
                 </div>
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
+
+                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
                     <img alt="Java icon" class="w-20 h-20 object-contain rounded" height="80" src="https://upload.wikimedia.org/wikipedia/en/3/30/Java_programming_language_logo.svg" width="80"/>
                     <div>
-                     <h3 class="text-white font-bold text-lg mb-1">Bag Store Billing System (2019)</h3>
-                     <p class="text-gray-400">Java software for a customizable bag store with 2000+ lines of code and feature-rich options.</p>
+                        <h3 class="text-white font-bold text-lg mb-1">Bag Store Billing System (2019)</h3>
+                        <p class="text-gray-400">Java software for a customizable bag store with 2000+ lines of code and feature-rich options.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Awards & Leadership Cards -->
-        <section class="px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
+        <!-- Awards & Leadership -->
+        <section class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
             <h2 class="text-xs sm:text-sm font-semibold mb-4 flex items-center space-x-2">
-                <span>🏆</span>
+                <span class="section-title-badge">🏆</span>
                 <span>Awards & Leadership</span>
             </h2>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
+                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
                     <ul class="list-disc list-inside text-gray-300 text-sm sm:text-base space-y-2">
                         <li>IMT PitchUp 10.0 (2024): Winner among 500+ entries; won ₹30,000 for Kubera AI pitch.</li>
                         <li>Hintweis AIDE 2024 (Third Int'l Conf. on AI & DS): Published paper on NLP in financial management.</li>
@@ -376,7 +435,8 @@
                         <li>Athletics: Lawn Tennis – State-level tournaments (Top 3 placements)</li>
                     </ul>
                 </div>
-                <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
+
+                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
                     <p class="font-semibold text-white mb-2">Co-curricular Leadership (Clever Harvey):</p>
                     <ul class="list-disc list-inside text-gray-300 text-sm sm:text-base space-y-1">
                         <li>Junior CEO: ShoeBox sustainability business model</li>
@@ -387,13 +447,14 @@
             </div>
         </section>
 
-        <!-- Publications Cards -->
-        <section class="px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
+        <!-- Publications -->
+        <section class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
             <h2 class="text-xs sm:text-sm font-semibold mb-4 flex items-center space-x-2">
-                <span>📜</span>
+                <span class="section-title-badge">📜</span>
                 <span>Publications</span>
             </h2>
-            <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg max-w-4xl mx-auto">
+
+            <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg max-w-4xl mx-auto">
                 <ul class="list-disc list-inside text-gray-300 text-sm sm:text-base space-y-2">
                     <li>IEEE ICCC 2025: LSTM Encoder-Decoder for Text Summarization</li>
                     <li>AIDE 2024: Kubera: NLP-Based Financial Analysis Tool</li>
@@ -401,13 +462,14 @@
             </div>
         </section>
 
-        <!-- Certifications Cards -->
-        <section class="px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
+        <!-- Certifications -->
+        <section class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
             <h2 class="text-xs sm:text-sm font-semibold mb-4 flex items-center space-x-2">
-                <span>📚</span>
+                <span class="section-title-badge">📚</span>
                 <span>Certifications</span>
             </h2>
-            <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg max-w-4xl mx-auto">
+
+            <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg max-w-4xl mx-auto">
                 <ul class="list-disc list-inside text-gray-300 text-sm sm:text-base space-y-2">
                     <li>GCP Associate Cloud Engineer – Issued March 2025</li>
                     <li>Udemy Courses:
@@ -419,11 +481,17 @@
                     </li>
                     <li>Clever Harvey: Junior CEO, CFO, CMO, UI/UX</li>
                 </ul>
-                
+
                 <div class="mt-6">
                     <h3 class="text-white font-semibold mb-2">Google Cloud Architect Certificate:</h3>
-                    <iframe src="https://drive.google.com/file/d/164Hflfywh5Y3Miq3rfIG6T-hbGL6Wr9J/preview" width="100%" height="500" class="border-0 rounded-lg shadow-lg"></iframe>
+                    <iframe
+                        src="https://drive.google.com/file/d/164Hflfywh5Y3Miq3rfIG6T-hbGL6Wr9J/preview"
+                        width="100%"
+                        height="500"
+                        class="border-0 rounded-lg shadow-lg">
+                    </iframe>
                 </div>
+
                 <div class="mt-7">
                     <h3 class="text-white font-semibold mb-2">Claude Code in Action:</h3>
                     <iframe
@@ -432,17 +500,18 @@
                         height="500"
                         class="border-0 rounded-lg shadow-lg">
                     </iframe>
+                </div>
             </div>
-            
         </section>
 
-        <!-- Participation Cards -->
-        <section class="px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
+        <!-- Participation -->
+        <section class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
             <h2 class="text-xs sm:text-sm font-semibold mb-4 flex items-center space-x-2">
-                <span>🎤</span>
+                <span class="section-title-badge">🎤</span>
                 <span>Participation</span>
             </h2>
-            <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg max-w-4xl mx-auto">
+
+            <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg max-w-4xl mx-auto">
                 <ul class="list-disc list-inside text-gray-300 text-sm sm:text-base space-y-2">
                     <li>Jio Creative Lab Hackathon</li>
                     <li>Smart India Hackathon</li>
@@ -452,16 +521,18 @@
             </div>
         </section>
 
-        <!-- Volunteering & Community Work Cards -->
-        <section id="contact" class="px-4 sm:px-6 md:px-10 mt-8 mb-12 max-w-5xl mx-auto">
+        <!-- Volunteering & Community Work -->
+        <section id="contact" class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 mb-12 max-w-5xl mx-auto">
             <h2 class="text-xs sm:text-sm font-semibold mb-4 flex items-center space-x-2">
-                <span>🤝</span>
+                <span class="section-title-badge">🤝</span>
                 <span>Volunteering & Community Work</span>
             </h2>
-            <div class="bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg max-w-4xl mx-auto">
+
+            <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg max-w-4xl mx-auto">
                 <p class="text-gray-300 text-sm sm:text-base max-w-3xl">
                     Prayaas Charitable Trust: 60 hours of community service
                 </p>
+
                 <div class="mt-6 space-y-2 text-gray-400 text-xs sm:text-sm max-w-4xl">
                     <p><span class="font-semibold">Email:</span> <a class="text-red-600 hover:underline" href="mailto:rohan.iyer78@nmims.in">rohan.iyer78@nmims.in</a> | <a class="text-red-600 hover:underline" href="mailto:rohan.iyer5603@gmail.com">rohan.iyer5603@gmail.com</a></p>
                     <p><span class="font-semibold">Phone:</span> +91-9820623425</p>
@@ -472,7 +543,7 @@
             </div>
         </section>
 
-        <!-- Footer (continued) -->
+        <!-- Footer -->
         <footer class="bg-black px-4 sm:px-6 md:px-10 py-8 text-gray-400 text-xs sm:text-sm max-w-5xl mx-auto">
             <div class="flex flex-col sm:flex-row sm:justify-between sm:space-x-10 mb-6">
                 <div class="flex space-x-4 mb-4 sm:mb-0">
@@ -486,6 +557,7 @@
                         <i class="fab fa-github text-gray-400 hover:text-white"></i>
                     </a>
                 </div>
+
                 <div class="grid grid-cols-1 sm:grid-cols-4 gap-6 text-gray-400">
                     <div class="space-y-2">
                         <div>rohaniyer.com</div>
@@ -509,6 +581,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="text-[9px] text-gray-600 max-w-4xl mx-auto">
                 All information and logos showcased belong to their respective owners. Used for illustrative purposes only.
             </div>
@@ -516,21 +589,83 @@
     </div>
 
     <script>
-        // JavaScript to show/hide resume section
-        document.getElementById('rohan-profile').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('netflix-profiles').style.display = 'none';
-            document.getElementById('rohan-resume').style.display = 'block';
+        window.addEventListener('load', function () {
+            const overlay = document.getElementById('transition-overlay');
+            const profiles = document.getElementById('netflix-profiles');
+            const audio = document.getElementById('intro-audio');
+
+            audio.play().catch(() => {});
+
+            setTimeout(() => {
+                overlay.style.transition = 'opacity 0.6s ease';
+                overlay.style.opacity = '0';
+
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    profiles.classList.remove('hidden');
+                }, 600);
+            }, 1000);
         });
 
-        // Add a function to go back to profile selection
-        function backToProfiles() {
-            document.getElementById('netflix-profiles').style.display = 'block';
-            document.getElementById('rohan-resume').style.display = 'none';
-        }
+        document.addEventListener('DOMContentLoaded', function () {
+            const rohanProfile = document.getElementById('rohan-profile');
+            const netflixProfiles = document.getElementById('netflix-profiles');
+            const rohanResume = document.getElementById('rohan-resume');
+            const clickAudio = new Audio('./mixkit-mouse-click-close-1113.mp3');
 
-        // You might want to add a back button in the resume view
-        // <button onclick="backToProfiles()">Back to Profiles</button>
+            rohanProfile.addEventListener('click', function (e) {
+                e.preventDefault();
+                clickAudio.play().catch(() => {});
+
+                netflixProfiles.style.transition = 'opacity 0.45s ease';
+                netflixProfiles.style.opacity = '0';
+
+                setTimeout(() => {
+                    netflixProfiles.style.display = 'none';
+                    rohanResume.style.display = 'block';
+
+                    setTimeout(() => {
+                        rohanResume.style.transition = 'opacity 0.6s ease';
+                        rohanResume.style.opacity = '1';
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 50);
+                }, 450);
+            });
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, {
+                threshold: 0.12
+            });
+
+            document.querySelectorAll('.fade-in-section').forEach((section) => {
+                observer.observe(section);
+            });
+        });
+
+        function backToProfiles() {
+            const netflixProfiles = document.getElementById('netflix-profiles');
+            const rohanResume = document.getElementById('rohan-resume');
+
+            rohanResume.style.transition = 'opacity 0.45s ease';
+            rohanResume.style.opacity = '0';
+
+            setTimeout(() => {
+                rohanResume.style.display = 'none';
+                netflixProfiles.style.display = 'block';
+                netflixProfiles.style.opacity = '0';
+
+                setTimeout(() => {
+                    netflixProfiles.style.transition = 'opacity 0.5s ease';
+                    netflixProfiles.style.opacity = '1';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 50);
+            }, 450);
+        }
     </script>
 </body>
 </html>
