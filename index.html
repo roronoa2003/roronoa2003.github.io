@@ -196,6 +196,7 @@
       #0d1a2e 65%,
       #0a0a0a 100%
     );
+    z-index: 0;
   }
 
   .hero-bg::after {
@@ -208,8 +209,8 @@
     position: absolute; inset: 0;
     background: linear-gradient(
       to right,
-      rgba(0,0,0,.95) 0%,
-      rgba(0,0,0,.6) 50%,
+      rgba(0,0,0,.85) 0%,
+      rgba(0,0,0,.5) 55%,
       rgba(0,0,0,.05) 100%
     ),
     linear-gradient(
@@ -218,6 +219,7 @@
       rgba(20,20,20,.1) 30%,
       transparent 100%
     );
+    z-index: 1;
   }
 
   /* Animated abstract shapes */
@@ -227,6 +229,7 @@
     filter: blur(80px);
     opacity: .12;
     animation: float 12s ease-in-out infinite;
+    z-index: 1;
   }
   .hero-shape-1 {
     width: 700px; height: 700px;
@@ -745,17 +748,16 @@
 
 <!-- INTRO OVERLAY -->
 <div id="intro-overlay">
-  <svg class="nf-logo" viewBox="0 0 111 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M105.062 14.28L111 30c-1.75-.25-3.5-.563-5.28-.845l-3.345-9.547-3.437 8.375c-1.687-.282-3.344-.376-5.031-.595l6.031-13.61L94.468 0h5.063l3.062 8.903L105.937 0h5.032l-5.907 14.28zM90.47 0h-4.782v27.594c1.563.094 3.157.219 4.782.344V0zM81.188 0H61.25v4.5h7.032v23.719c1.593.063 3.218.156 4.812.25V4.5h8.094V0zM56.657 0H42.22v30h4.75V17.063h7.656v-4.5H46.97V4.5h9.688V0zM34.375 0h-4.75v23.063L20.562 0H15.97v30h4.719V6.625L30.094 30h4.281V0zM0 0v30c1.594-.032 3.25-.094 4.875-.125V0H0z" fill="#E50914"/>
-  </svg>
+  <div class="nf-logo" style="text-align:center;">
+    <div style="font-size:clamp(2.2rem,6vw,4rem);font-weight:900;letter-spacing:-.02em;color:#E50914;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;line-height:1;">ROHAN IYER</div>
+    <div style="font-size:clamp(.6rem,1.5vw,.85rem);letter-spacing:.35em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-top:10px;font-weight:400;">Portfolio &amp; Resume</div>
+  </div>
 </div>
 
 <!-- PROFILE SCREEN -->
 <div id="profile-screen">
   <div class="profile-header">
-    <svg viewBox="0 0 111 30" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:36px">
-      <path d="M105.062 14.28L111 30c-1.75-.25-3.5-.563-5.28-.845l-3.345-9.547-3.437 8.375c-1.687-.282-3.344-.376-5.031-.595l6.031-13.61L94.468 0h5.063l3.062 8.903L105.937 0h5.032l-5.907 14.28zM90.47 0h-4.782v27.594c1.563.094 3.157.219 4.782.344V0zM81.188 0H61.25v4.5h7.032v23.719c1.593.063 3.218.156 4.812.25V4.5h8.094V0zM56.657 0H42.22v30h4.75V17.063h7.656v-4.5H46.97V4.5h9.688V0zM34.375 0h-4.75v23.063L20.562 0H15.97v30h4.719V6.625L30.094 30h4.281V0zM0 0v30c1.594-.032 3.25-.094 4.875-.125V0H0z" fill="#E50914"/>
-    </svg>
+    <div style="font-size:1.5rem;font-weight:900;letter-spacing:-.01em;color:#E50914;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">ROHAN IYER</div>
   </div>
   <div class="profiles-center">
     <h2>Who's watching?</h2>
@@ -783,9 +785,7 @@
         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M10.354 3.646a.5.5 0 0 1 0 .708L6.707 8l3.647 3.646a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 0 1 .708 0z"/></svg>
         Back
       </button>
-      <svg viewBox="0 0 111 30" fill="none" xmlns="http://www.w3.org/2000/svg" class="navbar-logo">
-        <path d="M105.062 14.28L111 30c-1.75-.25-3.5-.563-5.28-.845l-3.345-9.547-3.437 8.375c-1.687-.282-3.344-.376-5.031-.595l6.031-13.61L94.468 0h5.063l3.062 8.903L105.937 0h5.032l-5.907 14.28zM90.47 0h-4.782v27.594c1.563.094 3.157.219 4.782.344V0zM81.188 0H61.25v4.5h7.032v23.719c1.593.063 3.218.156 4.812.25V4.5h8.094V0zM56.657 0H42.22v30h4.75V17.063h7.656v-4.5H46.97V4.5h9.688V0zM34.375 0h-4.75v23.063L20.562 0H15.97v30h4.719V6.625L30.094 30h4.281V0zM0 0v30c1.594-.032 3.25-.094 4.875-.125V0H0z" fill="#E50914"/>
-      </svg>
+      <div style="font-size:1.15rem;font-weight:900;letter-spacing:-.01em;color:#E50914;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;white-space:nowrap;">ROHAN IYER</div>
       <ul class="nav-links">
         <li><a href="#skills">Skills</a></li>
         <li><a href="#experience">Experience</a></li>
@@ -804,6 +804,12 @@
 
   <!-- HERO -->
   <section class="hero">
+    <!-- Video backdrop -->
+    <video autoplay muted loop playsinline id="hero-video"
+      style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:0;">
+      <source src="./resume.mp4" type="video/mp4">
+    </video>
+    <!-- Fallback static bg (shows if video doesn't load) -->
     <div class="hero-bg"></div>
     <div class="hero-shape hero-shape-1"></div>
     <div class="hero-shape hero-shape-2"></div>
@@ -1366,8 +1372,8 @@
         <div class="info-card">
           <div class="info-card-title">Get In Touch</div>
           <div class="info-card-body" style="line-height:2.2;">
-            <div>📧 <a href="mailto:rohan.iyer78@nmims.in" class="info-card-link">rohan.iyer78@nmims.in</a></div>
-            <div>📧 <a href="mailto:rohan.iyer5603@gmail.com" class="info-card-link">rohan.iyer5603@gmail.com</a></div>
+            <div>📧 <a href="/cdn-cgi/l/email-protection#8bf9e4e3eae5a5e2f2eef9bcb3cbe5e6e2e6f8a5e2e5" class="info-card-link"><span class="__cf_email__" data-cfemail="65170a0d040b4b0c1c0017525d250b080c08164b0c0b">[email&#160;protected]</span></a></div>
+            <div>📧 <a href="/cdn-cgi/l/email-protection#d9abb6b1b8b7f7b0a0bcabecefe9ea99beb4b8b0b5f7bab6b4" class="info-card-link"><span class="__cf_email__" data-cfemail="483a272029266621312d3a7d7e787b082f25292124662b2725">[email&#160;protected]</span></a></div>
             <div>📱 +91-9820623425</div>
             <div>💼 <a href="https://linkedin.com/in/rohan-iyer-461787264" target="_blank" class="info-card-link">linkedin.com/in/rohan-iyer-461787264</a></div>
             <div>💻 <a href="https://github.com/roronoa2003" target="_blank" class="info-card-link">github.com/roronoa2003</a></div>
@@ -1397,7 +1403,7 @@
     <div class="footer-grid">
       <div>
         <a href="#">rohaniyer.com</a>
-        <a href="mailto:rohan.iyer78@nmims.in">rohan.iyer78@nmims.in</a>
+        <a href="/cdn-cgi/l/email-protection#b8cad7d0d9d696d1c1ddca8f80f8d6d5d1d5cb96d1d6"><span class="__cf_email__" data-cfemail="186a777079763671617d6a2f2058767571756b367176">[email&#160;protected]</span></a>
         <a href="tel:+919820623425">+91-9820623425</a>
       </div>
       <div>
@@ -1423,7 +1429,7 @@
 
 </div><!-- /resume -->
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   // INTRO
   window.addEventListener('load', () => {
     setTimeout(() => {
@@ -1443,6 +1449,9 @@
   // Profile click
   document.getElementById('rohan-profile-btn').addEventListener('click', e => {
     e.preventDefault();
+    // Click sound (same as original)
+    const clickAudio = new Audio('./mixkit-mouse-click-close-1113.mp3');
+    clickAudio.play().catch(() => {});
     const ps = document.getElementById('profile-screen');
     const resume = document.getElementById('resume');
     ps.style.transition = 'opacity .4s ease';
@@ -1470,22 +1479,4 @@
       requestAnimationFrame(() => {
         ps.style.transition = 'opacity .5s ease';
         ps.style.opacity = '1';
-        window.scrollTo({ top: 0, behavior: 'instant' });
-      });
-    }, 400);
-  }
-
-  // Navbar scroll effect
-  window.addEventListener('scroll', () => {
-    const nav = document.getElementById('navbar');
-    nav.classList.toggle('scrolled', window.scrollY > 50);
-  });
-
-  // Scroll reveal
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
-  }, { threshold: 0.1 });
-  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-</script>
-</body>
-</html>
+        window.scrollTo({ top
