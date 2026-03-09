@@ -194,7 +194,6 @@
     width: 100%; height: 100%;
     object-fit: cover; z-index: 0;
   }
-  /* Animated ambient fallback shapes */
   .ambient {
     position: absolute; inset: 0; z-index: 0;
     background: #0a0a1a;
@@ -387,6 +386,99 @@
   }
   @media(max-width:640px){ .billboard{ grid-template-columns: 1fr; } .billboard-visual{ height: 120px; } }
 
+  /* Work carousel */
+  .work-carousel-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .work-carousel {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    width: 100%;
+    padding: 0.2rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .work-carousel::-webkit-scrollbar {
+    display: none;
+  }
+
+  .work-card {
+    flex: 0 0 340px;
+    scroll-snap-align: start;
+    background: var(--card-bg);
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .work-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(229, 9, 20, 0.45);
+    box-shadow: 0 14px 36px rgba(229, 9, 20, 0.16);
+  }
+
+  .work-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid #333;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #ccc;
+    letter-spacing: 0.04em;
+  }
+
+  .work-card iframe {
+    display: block;
+    width: 100%;
+    height: 620px;
+    border: none;
+    background: #000;
+  }
+
+  .work-nav {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(20,20,20,0.95);
+    color: #fff;
+    font-size: 1.8rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .work-nav:hover {
+    background: var(--red);
+    transform: scale(1.05);
+  }
+
+  @media (max-width: 768px) {
+    .work-card {
+      flex: 0 0 270px;
+    }
+
+    .work-card iframe {
+      height: 540px;
+    }
+
+    .work-nav {
+      display: none;
+    }
+  }
+
   /* Cert section */
   .cert-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 1rem; margin-bottom: 2rem; }
   .cert-badge {
@@ -536,6 +628,7 @@
       <div class="wordmark">ROHAN IYER</div>
       <ul class="nav-links">
         <li><a href="#experience">Experience</a></li>
+        <li><a href="#work">Work</a></li>
         <li><a href="#projects">Projects</a></li>
         <li><a href="#certifications">Certifications</a></li>
         <li><a href="#contact">Contact</a></li>
@@ -584,7 +677,7 @@
     <div class="stat-item"><div class="stat-number">9.5</div><div class="stat-label">GPA / 10</div></div>
     <div class="stat-item"><div class="stat-number">10+</div><div class="stat-label">Projects</div></div>
     <div class="stat-item"><div class="stat-number">2</div><div class="stat-label">Publications</div></div>
-    <div class="stat-item"><div class="stat-number">4+</div><div class="stat-label">Hackathons Participated</div></div>
+    <div class="stat-item"><div class="stat-number">₹30K</div><div class="stat-label">Prize Won</div></div>
   </div>
 
   <!-- PERSONAL INFO -->
@@ -673,17 +766,6 @@
           </div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-inner">
-          <div class="card-logo">⚙️</div>
-          <div class="card-body">
-            <h3>Practus</h3>
-            <div class="meta">AI Automation Engineer · 2026</div>
-            <p>Designed and implemented AI-driven automation workflows to streamline business processes. Developed intelligent pipelines leveraging NLP and ML to enhance operational efficiency.</p>
-            <div class="tag-row"><span class="tag">AI Automation</span><span class="tag">NLP</span><span class="tag">Python</span><span class="tag">ML</span></div>
-          </div>
-        </div>
-      </div>
       <a href="https://uppercelestials.com/" target="_blank" style="text-decoration:none;">
         <div class="card" style="height:100%;">
           <div class="card-inner">
@@ -697,6 +779,81 @@
           </div>
         </div>
       </a>
+    </div>
+  </section>
+
+  <div class="sep"></div>
+
+  <!-- WORK -->
+  <section id="work" class="content-section reveal">
+    <div class="section-label"><span class="section-icon">🎥</span> Work</div>
+
+    <div class="work-carousel-wrap">
+      <button class="work-nav work-prev" onclick="scrollWork(-1)">‹</button>
+
+      <div class="work-carousel" id="workCarousel">
+        <div class="work-card">
+          <div class="work-card-header">
+            <div class="iframe-dot"></div>
+            <span>Upper Celestials Reel 1</span>
+          </div>
+          <iframe
+            src="https://www.instagram.com/reel/DTNNJSKDMle/embed"
+            loading="lazy"
+            allowtransparency="true"
+            frameborder="0"
+            scrolling="no"
+            allowfullscreen>
+          </iframe>
+        </div>
+
+        <div class="work-card">
+          <div class="work-card-header">
+            <div class="iframe-dot"></div>
+            <span>Upper Celestials Reel 2</span>
+          </div>
+          <iframe
+            src="https://www.instagram.com/reel/DRKbq3RSBRu/embed"
+            loading="lazy"
+            allowtransparency="true"
+            frameborder="0"
+            scrolling="no"
+            allowfullscreen>
+          </iframe>
+        </div>
+
+        <div class="work-card">
+          <div class="work-card-header">
+            <div class="iframe-dot"></div>
+            <span>Upper Celestials Reel 3</span>
+          </div>
+          <iframe
+            src="https://www.instagram.com/reel/DTxmJR8jBGF/embed"
+            loading="lazy"
+            allowtransparency="true"
+            frameborder="0"
+            scrolling="no"
+            allowfullscreen>
+          </iframe>
+        </div>
+
+        <div class="work-card">
+          <div class="work-card-header">
+            <div class="iframe-dot"></div>
+            <span>Upper Celestials Reel 4</span>
+          </div>
+          <iframe
+            src="https://www.instagram.com/reel/DMVVEKmoaVw/embed"
+            loading="lazy"
+            allowtransparency="true"
+            frameborder="0"
+            scrolling="no"
+            allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+
+      <button class="work-nav work-next" onclick="scrollWork(1)">›</button>
     </div>
   </section>
 
@@ -1059,12 +1216,28 @@
   }
 
   // ── Navbar solid on scroll
+  let navScrollInitialized = false;
   function initNavScroll() {
+    if (navScrollInitialized) return;
+    navScrollInitialized = true;
+
     const nav = document.getElementById('navbar');
     const onScroll = () => {
       nav.classList.toggle('solid', window.scrollY > 60);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+
+  // ── Work carousel
+  function scrollWork(direction) {
+    const carousel = document.getElementById('workCarousel');
+    if (!carousel) return;
+
+    carousel.scrollBy({
+      left: direction * 360,
+      behavior: 'smooth'
+    });
   }
 
   // ── If video fails, ambient is already visible as fallback
