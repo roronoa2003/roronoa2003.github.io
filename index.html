@@ -1,671 +1,1491 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1" name="viewport"/>
-    <title>Netflix Profiles & Rohan's Resume</title>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Rohan Iyer — Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Netflix+Sans:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --red: #E50914;
+    --red-dark: #B81D24;
+    --black: #141414;
+    --bg: #141414;
+    --surface: #1f1f1f;
+    --surface2: #2a2a2a;
+    --text: #e5e5e5;
+    --muted: #808080;
+    --white: #ffffff;
+  }
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet"/>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Netflix+Sans&display=swap');
+  html { scroll-behavior: smooth; }
 
-        html {
-            scroll-behavior: smooth;
-        }
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'Netflix Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
 
-        body {
-            font-family: 'Netflix Sans', 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont,
-            "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji",
-            "Segoe UI Emoji", "Segoe UI Symbol";
-        }
+  /* ── INTRO OVERLAY ── */
+  #intro-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #000;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.8s ease;
+  }
+  #intro-overlay .nf-logo {
+    width: 220px;
+    animation: logoZoom 1.6s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  @keyframes logoZoom {
+    0%   { opacity:0; transform:scale(0.5); }
+    60%  { opacity:1; transform:scale(1.05); }
+    100% { opacity:1; transform:scale(1); }
+  }
 
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-        }
+  /* ── PROFILE SCREEN ── */
+  #profile-screen {
+    display: none; min-height: 100vh;
+    background: var(--black);
+    flex-direction: column;
+  }
+  #profile-screen.visible { display: flex; }
 
-        .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+  .profile-header {
+    padding: 28px 56px;
+  }
+  .profile-header img { height: 44px; }
 
-        .card-hover {
-            transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
-            border: 1px solid transparent;
-        }
+  .profiles-center {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 48px;
+    padding-bottom: 60px;
+  }
 
-        .card-hover:hover {
-            transform: scale(1.02);
-            box-shadow: 0 12px 35px rgba(229, 9, 20, 0.22);
-            border-color: rgba(229, 9, 20, 0.35);
-        }
+  .profiles-center h2 {
+    font-size: 3.4rem; font-weight: 400;
+    color: #fff; letter-spacing: -.5px;
+  }
 
-        .fade-in-section {
-            opacity: 0;
-            transform: translateY(28px);
-            transition: opacity 0.8s ease, transform 0.8s ease;
-        }
+  .profiles-list {
+    display: flex; gap: 24px;
+  }
 
-        .fade-in-section.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
+  .profile-btn {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 12px;
+    cursor: pointer; text-decoration: none;
+    transition: transform .2s;
+  }
+  .profile-btn:hover { transform: scale(1.08); }
+  .profile-btn:hover .profile-avatar {
+    outline: 3px solid #fff;
+  }
+  .profile-btn:hover .profile-name {
+    color: #fff;
+  }
 
-        .glow-btn {
-            transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
-        }
+  .profile-avatar {
+    width: 150px; height: 150px;
+    border-radius: 4px;
+    object-fit: cover;
+    outline: 3px solid transparent;
+    transition: outline-color .2s;
+    background: #333;
+  }
 
-        .glow-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 18px rgba(229, 9, 20, 0.35);
-        }
+  .profile-name {
+    font-size: 1.3rem; font-weight: 400;
+    color: var(--muted);
+    transition: color .2s;
+  }
 
-        .profile-card {
-            transition: transform 0.25s ease;
-        }
+  .manage-btn {
+    margin-top: 16px;
+    border: 1px solid var(--muted);
+    color: var(--muted);
+    background: transparent;
+    padding: 10px 24px;
+    font-size: .9rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: inherit;
+    transition: color .2s, border-color .2s;
+  }
+  .manage-btn:hover { color: #fff; border-color: #fff; }
 
-        .profile-card:hover {
-            transform: scale(1.06);
-        }
+  /* ── MAIN RESUME ── */
+  #resume {
+    display: none; min-height: 100vh;
+    flex-direction: column;
+    background: var(--black);
+    opacity: 0;
+    transition: opacity .5s ease;
+  }
+  #resume.visible { display: flex; opacity: 1; }
 
-        .resume-hidden {
-            display: none;
-            opacity: 0;
-        }
+  /* ── NAVBAR ── */
+  .navbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 56px;
+    height: 68px;
+    background: linear-gradient(180deg, rgba(0,0,0,.9) 0%, rgba(0,0,0,0) 100%);
+    transition: background .3s;
+  }
+  .navbar.scrolled { background: rgba(20,20,20,.97); }
 
-        .floating-backdrop {
-            background: linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,0.65));
-        }
+  .navbar-left {
+    display: flex; align-items: center; gap: 32px;
+  }
+  .navbar-logo { height: 36px; }
 
-        .section-title-badge {
-            min-width: 24px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-    </style>
+  .nav-links {
+    display: flex; gap: 20px;
+    list-style: none;
+  }
+  .nav-links a {
+    color: rgba(255,255,255,.7);
+    text-decoration: none; font-size: .9rem;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: #fff; }
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'netflix-red': '#E50914',
-                        'netflix-black': '#141414',
-                        'card-start': '#2C3E50',
-                        'card-end': '#34495E',
-                    }
-                }
-            }
-        }
-    </script>
+  .navbar-right {
+    display: flex; align-items: center; gap: 20px;
+  }
+
+  .back-btn {
+    background: none; border: none;
+    color: rgba(255,255,255,.7);
+    font-size: .85rem; font-family: inherit;
+    cursor: pointer; display: flex; align-items: center; gap: 6px;
+    padding: 6px 0;
+    transition: color .2s;
+  }
+  .back-btn:hover { color: #fff; }
+  .back-btn svg { width: 16px; height: 16px; }
+
+  .navbar-avatar {
+    width: 32px; height: 32px;
+    border-radius: 4px; object-fit: cover;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    width: 100%; height: 85vh; min-height: 600px;
+    overflow: hidden;
+    display: flex; align-items: flex-end;
+  }
+
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      135deg,
+      #0a0a14 0%,
+      #1a1028 35%,
+      #0d1a2e 65%,
+      #0a0a0a 100%
+    );
+  }
+
+  .hero-bg::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+  }
+
+  .hero-gradient {
+    position: absolute; inset: 0;
+    background: linear-gradient(
+      to right,
+      rgba(0,0,0,.95) 0%,
+      rgba(0,0,0,.6) 50%,
+      rgba(0,0,0,.05) 100%
+    ),
+    linear-gradient(
+      to top,
+      rgba(20,20,20,1) 0%,
+      rgba(20,20,20,.1) 30%,
+      transparent 100%
+    );
+  }
+
+  /* Animated abstract shapes */
+  .hero-shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: .12;
+    animation: float 12s ease-in-out infinite;
+  }
+  .hero-shape-1 {
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, #e50914, transparent);
+    right: 5%; top: -15%;
+    animation-delay: 0s;
+  }
+  .hero-shape-2 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, #0050ff, transparent);
+    right: 30%; bottom: 0%;
+    animation-delay: -4s;
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+  }
+
+  .hero-content {
+    position: relative; z-index: 2;
+    padding: 0 56px 72px;
+    max-width: 650px;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--red);
+    color: #fff;
+    font-size: .7rem; font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 2px;
+    margin-bottom: 18px;
+  }
+
+  .hero-title {
+    font-size: clamp(2.8rem, 5vw, 4.5rem);
+    font-weight: 700; line-height: 1.05;
+    color: #fff;
+    text-shadow: 2px 4px 20px rgba(0,0,0,.5);
+    margin-bottom: 12px;
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem; font-weight: 400;
+    color: rgba(255,255,255,.75);
+    margin-bottom: 6px;
+  }
+
+  .hero-meta {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .hero-meta-tag {
+    font-size: .8rem; color: rgba(255,255,255,.65);
+  }
+  .hero-meta-dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--muted);
+  }
+
+  .hero-desc {
+    font-size: .95rem; line-height: 1.65;
+    color: rgba(255,255,255,.75);
+    max-width: 520px;
+    margin-bottom: 28px;
+  }
+
+  .hero-actions {
+    display: flex; gap: 12px; flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #fff; color: #000;
+    font-size: 1rem; font-weight: 700;
+    padding: 12px 28px; border-radius: 4px;
+    text-decoration: none; border: none; cursor: pointer;
+    font-family: inherit;
+    transition: background .2s, transform .15s;
+  }
+  .btn-primary:hover { background: rgba(255,255,255,.8); transform: scale(1.02); }
+
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(109,109,110,.7); color: #fff;
+    font-size: 1rem; font-weight: 700;
+    padding: 12px 28px; border-radius: 4px;
+    text-decoration: none; border: none; cursor: pointer;
+    font-family: inherit;
+    transition: background .2s, transform .15s;
+  }
+  .btn-secondary:hover { background: rgba(109,109,110,.4); transform: scale(1.02); }
+
+  .btn-icon { width: 20px; height: 20px; flex-shrink: 0; }
+
+  /* ── ROW SECTION ── */
+  .content { padding: 0 56px 80px; }
+
+  .row { margin-bottom: 48px; }
+
+  .row-title {
+    font-size: 1.3rem; font-weight: 700;
+    color: #fff; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .row-title-icon { font-size: 1.2rem; }
+  .row-title-explore {
+    font-size: .8rem; font-weight: 500;
+    color: #54b9c5;
+    display: flex; align-items: center; gap: 4px;
+    cursor: pointer; margin-left: auto;
+    transition: color .2s;
+  }
+  .row-title-explore:hover { color: #8dd8e0; }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 8px;
+  }
+  .cards-grid-3 {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+  .cards-grid-2 {
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  }
+
+  /* Netflix card */
+  .card {
+    background: var(--surface);
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    transition: transform .3s cubic-bezier(.2,0,.4,1), z-index 0s .3s, box-shadow .3s;
+  }
+  .card:hover {
+    transform: scale(1.08);
+    z-index: 10;
+    box-shadow: 0 20px 60px rgba(0,0,0,.8);
+    transition: transform .3s cubic-bezier(.2,0,.4,1), z-index 0s;
+  }
+
+  .card-thumb {
+    width: 100%; aspect-ratio: 16/9;
+    background: linear-gradient(135deg, var(--surface2), #333);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+  .card-thumb-icon {
+    font-size: 3rem; opacity: .4;
+  }
+  .card-thumb-gradient {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 60%;
+    background: linear-gradient(transparent, rgba(0,0,0,.8));
+  }
+
+  .card-bar {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--red);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform .3s ease;
+  }
+  .card:hover .card-bar { transform: scaleX(1); }
+
+  .card-info {
+    padding: 12px 14px 14px;
+    display: none;
+    background: var(--surface2);
+  }
+  .card:hover .card-info { display: block; }
+  .card-static-info {
+    padding: 12px 14px 14px;
+  }
+
+  .card-actions {
+    display: flex; gap: 8px; margin-bottom: 10px;
+  }
+  .card-action-btn {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.5);
+    background: rgba(0,0,0,.5);
+    color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .8rem;
+    transition: border-color .2s, background .2s;
+  }
+  .card-action-btn:hover { border-color: #fff; background: rgba(255,255,255,.1); }
+  .card-action-btn.play {
+    background: #fff; border-color: #fff; color: #000;
+  }
+
+  .card-tags {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .card-tag {
+    font-size: .7rem; color: rgba(255,255,255,.6);
+    padding: 2px 6px;
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 2px;
+  }
+  .card-tag-green { color: #46d369; border-color: #46d369; }
+  .card-tag-red { color: var(--red); border-color: var(--red); }
+
+  .card-title {
+    font-size: .95rem; font-weight: 700; color: #fff;
+    margin-bottom: 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .card-year { font-size: .8rem; color: var(--muted); }
+
+  .card-body {
+    font-size: .82rem; color: rgba(255,255,255,.7);
+    line-height: 1.5; margin-top: 6px;
+  }
+
+  /* Wide info card */
+  .info-card {
+    background: var(--surface);
+    border-radius: 4px;
+    padding: 24px 28px;
+    position: relative;
+    border-left: 3px solid var(--red);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .info-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,.5);
+  }
+  .info-card-title {
+    font-size: .75rem; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: var(--red); margin-bottom: 10px;
+  }
+  .info-card-body {
+    font-size: .9rem; color: rgba(255,255,255,.75);
+    line-height: 1.65;
+  }
+  .info-card-link {
+    color: #54b9c5; text-decoration: none;
+    transition: color .2s;
+  }
+  .info-card-link:hover { color: #8dd8e0; text-decoration: underline; }
+
+  /* Skill pills */
+  .skill-pill {
+    display: inline-flex; align-items: center;
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.1);
+    color: rgba(255,255,255,.8);
+    font-size: .8rem; padding: 5px 12px;
+    border-radius: 3px; margin: 4px;
+    transition: background .2s, border-color .2s;
+  }
+  .skill-pill:hover {
+    background: rgba(229,9,20,.15);
+    border-color: rgba(229,9,20,.4);
+  }
+
+  /* Experience card */
+  .exp-card {
+    background: var(--surface);
+    border-radius: 4px;
+    padding: 24px;
+    display: flex; gap: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .exp-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--red), transparent);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform .3s;
+  }
+  .exp-card:hover::before { transform: scaleX(1); }
+  .exp-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 40px rgba(0,0,0,.5);
+  }
+
+  .exp-logo-box {
+    width: 68px; height: 68px; flex-shrink: 0;
+    background: #fff;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    font-size: 1.6rem;
+  }
+  .exp-logo-box img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
+
+  .exp-body {}
+  .exp-company {
+    font-size: 1.05rem; font-weight: 700; color: #fff;
+    margin-bottom: 3px;
+  }
+  .exp-role {
+    font-size: .85rem; color: var(--red); font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .exp-desc {
+    font-size: .85rem; color: rgba(255,255,255,.65);
+    line-height: 1.6;
+  }
+
+  /* Award item */
+  .award-item {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .award-item:last-child { border-bottom: none; }
+  .award-rank {
+    font-size: 1.8rem; font-weight: 700;
+    color: rgba(255,255,255,.1);
+    width: 32px; flex-shrink: 0; line-height: 1;
+    font-style: italic;
+  }
+  .award-content {}
+  .award-title {
+    font-size: .95rem; font-weight: 700; color: #fff;
+    margin-bottom: 3px;
+  }
+  .award-desc {
+    font-size: .82rem; color: var(--muted);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #0a0a0a;
+    border-top: 1px solid rgba(255,255,255,.06);
+    padding: 60px 56px 40px;
+    color: var(--muted);
+  }
+
+  .footer-top {
+    display: flex; gap: 24px; margin-bottom: 32px;
+  }
+  .footer-social {
+    display: flex; gap: 12px;
+  }
+  .social-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.15);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); text-decoration: none;
+    font-size: .85rem;
+    transition: color .2s, border-color .2s;
+  }
+  .social-btn:hover { color: #fff; border-color: rgba(255,255,255,.5); }
+
+  .footer-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    font-size: .82rem; line-height: 2;
+  }
+  .footer-grid a {
+    color: var(--muted); text-decoration: none; display: block;
+    transition: color .2s;
+  }
+  .footer-grid a:hover { color: #fff; }
+
+  .footer-copy {
+    margin-top: 28px;
+    font-size: .72rem; color: rgba(255,255,255,.2);
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar-bg {
+    position: absolute; bottom: 5px; left: 12px; right: 12px;
+    height: 3px; background: rgba(255,255,255,.2); border-radius: 2px;
+  }
+  .progress-bar-fill {
+    height: 100%; border-radius: 2px; background: var(--red);
+  }
+
+  /* ── FEATURED ROW (billboard style) ── */
+  .featured-row {
+    display: grid; grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 8px; margin-bottom: 8px;
+  }
+  .featured-card {
+    background: var(--surface);
+    border-radius: 4px; overflow: hidden;
+    cursor: pointer; position: relative;
+    transition: transform .3s, box-shadow .3s;
+  }
+  .featured-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 16px 40px rgba(0,0,0,.6);
+  }
+  .featured-card-main { grid-row: span 2; }
+  .featured-card-thumb {
+    width: 100%;
+    background: linear-gradient(135deg, #1e1e2e, #2a1a2e, #1a2a1e);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 4rem;
+    position: relative; overflow: hidden;
+  }
+  .featured-card-main .featured-card-thumb { height: 280px; }
+  .featured-card:not(.featured-card-main) .featured-card-thumb { height: 136px; }
+
+  .featured-card-gradient {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 70%;
+    background: linear-gradient(transparent, rgba(0,0,0,.9));
+  }
+
+  .featured-card-info {
+    padding: 12px 14px;
+  }
+  .featured-card-title {
+    font-size: .95rem; font-weight: 700; color: #fff; margin-bottom: 3px;
+  }
+  .featured-card-meta {
+    font-size: .78rem; color: var(--muted);
+  }
+
+  /* ── CERTIFICATIONS ── */
+  .cert-card {
+    background: var(--surface);
+    border-radius: 4px; padding: 20px 22px;
+    display: flex; align-items: center; gap: 16px;
+    transition: transform .2s, box-shadow .2s;
+    border: 1px solid rgba(255,255,255,.06);
+  }
+  .cert-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,.5);
+    border-color: rgba(229,9,20,.3);
+  }
+  .cert-icon {
+    width: 44px; height: 44px; border-radius: 8px;
+    background: rgba(229,9,20,.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; flex-shrink: 0;
+  }
+  .cert-body {}
+  .cert-name {
+    font-size: .9rem; font-weight: 600; color: #fff;
+    margin-bottom: 3px;
+  }
+  .cert-issuer {
+    font-size: .78rem; color: var(--muted);
+  }
+
+  /* Scroll anim */
+  .reveal {
+    opacity: 0; transform: translateY(24px);
+    transition: opacity .7s ease, transform .7s ease;
+  }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* Top10 badge */
+  .top10-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: linear-gradient(135deg, #FFDF00, #FF8C00);
+    color: #000; font-size: .65rem; font-weight: 800;
+    padding: 2px 7px; border-radius: 2px;
+    letter-spacing: .08em; margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  /* Section divider */
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.06), transparent);
+    margin: 8px 0 40px;
+  }
+
+  /* Stats row */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 2px; margin-bottom: 48px;
+  }
+  .stat-box {
+    background: var(--surface);
+    padding: 28px 24px;
+    text-align: center;
+  }
+  .stat-number {
+    font-size: 2.6rem; font-weight: 700; color: #fff;
+    line-height: 1;
+  }
+  .stat-number span { color: var(--red); }
+  .stat-label {
+    font-size: .78rem; color: var(--muted);
+    margin-top: 6px; letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width:900px) {
+    .navbar { padding: 0 28px; }
+    .hero-content { padding: 0 28px 56px; }
+    .content { padding: 0 28px 60px; }
+    .profiles-center h2 { font-size: 2.2rem; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    footer { padding: 40px 28px 30px; }
+    .footer-grid { grid-template-columns: repeat(2, 1fr); }
+    .featured-row { grid-template-columns: 1fr; }
+    .cards-grid-2 { grid-template-columns: 1fr; }
+    .cert-iframes-grid { grid-template-columns: 1fr !important; }
+  }
+  @media (max-width:600px) {
+    .nav-links { display: none; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+</style>
 </head>
+<body>
 
-<body class="bg-[#141414] min-h-screen flex flex-col items-center justify-center px-4">
-    <!-- Intro Overlay -->
-    <div id="transition-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black">
-        <img src="./intro1.gif" alt="Transition" class="w-full h-full object-cover">
-        <audio id="intro-audio" src="./nouveau-jingle-netflix.mp3" autoplay hidden></audio>
+<!-- INTRO OVERLAY -->
+<div id="intro-overlay">
+  <svg class="nf-logo" viewBox="0 0 111 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M105.062 14.28L111 30c-1.75-.25-3.5-.563-5.28-.845l-3.345-9.547-3.437 8.375c-1.687-.282-3.344-.376-5.031-.595l6.031-13.61L94.468 0h5.063l3.062 8.903L105.937 0h5.032l-5.907 14.28zM90.47 0h-4.782v27.594c1.563.094 3.157.219 4.782.344V0zM81.188 0H61.25v4.5h7.032v23.719c1.593.063 3.218.156 4.812.25V4.5h8.094V0zM56.657 0H42.22v30h4.75V17.063h7.656v-4.5H46.97V4.5h9.688V0zM34.375 0h-4.75v23.063L20.562 0H15.97v30h4.719V6.625L30.094 30h4.281V0zM0 0v30c1.594-.032 3.25-.094 4.875-.125V0H0z" fill="#E50914"/>
+  </svg>
+</div>
+
+<!-- PROFILE SCREEN -->
+<div id="profile-screen">
+  <div class="profile-header">
+    <svg viewBox="0 0 111 30" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:36px">
+      <path d="M105.062 14.28L111 30c-1.75-.25-3.5-.563-5.28-.845l-3.345-9.547-3.437 8.375c-1.687-.282-3.344-.376-5.031-.595l6.031-13.61L94.468 0h5.063l3.062 8.903L105.937 0h5.032l-5.907 14.28zM90.47 0h-4.782v27.594c1.563.094 3.157.219 4.782.344V0zM81.188 0H61.25v4.5h7.032v23.719c1.593.063 3.218.156 4.812.25V4.5h8.094V0zM56.657 0H42.22v30h4.75V17.063h7.656v-4.5H46.97V4.5h9.688V0zM34.375 0h-4.75v23.063L20.562 0H15.97v30h4.719V6.625L30.094 30h4.281V0zM0 0v30c1.594-.032 3.25-.094 4.875-.125V0H0z" fill="#E50914"/>
+    </svg>
+  </div>
+  <div class="profiles-center">
+    <h2>Who's watching?</h2>
+    <div class="profiles-list">
+      <a href="#" class="profile-btn" id="rohan-profile-btn">
+        <img src="./profilephoto.png" alt="Rohan" id="profile-avatar-box"
+          style="width:150px;height:150px;border-radius:4px;object-fit:cover;outline:3px solid transparent;transition:outline-color .2s;display:block;"
+          onerror="this.style.display='none';document.getElementById('profile-avatar-fallback').style.display='flex';"
+        />
+        <div id="profile-avatar-fallback" style="display:none;width:150px;height:150px;border-radius:4px;background:linear-gradient(135deg,#1a1a2e,#e50914);align-items:center;justify-content:center;font-size:4rem;">👨‍💻</div>
+        <span class="profile-name">Rohan</span>
+      </a>
+    </div>
+    <button class="manage-btn">MANAGE PROFILES</button>
+  </div>
+</div>
+
+<!-- RESUME -->
+<div id="resume">
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <div class="navbar-left">
+      <button class="back-btn" onclick="backToProfiles()">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M10.354 3.646a.5.5 0 0 1 0 .708L6.707 8l3.647 3.646a.5.5 0 0 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 0 1 .708 0z"/></svg>
+        Back
+      </button>
+      <svg viewBox="0 0 111 30" fill="none" xmlns="http://www.w3.org/2000/svg" class="navbar-logo">
+        <path d="M105.062 14.28L111 30c-1.75-.25-3.5-.563-5.28-.845l-3.345-9.547-3.437 8.375c-1.687-.282-3.344-.376-5.031-.595l6.031-13.61L94.468 0h5.063l3.062 8.903L105.937 0h5.032l-5.907 14.28zM90.47 0h-4.782v27.594c1.563.094 3.157.219 4.782.344V0zM81.188 0H61.25v4.5h7.032v23.719c1.593.063 3.218.156 4.812.25V4.5h8.094V0zM56.657 0H42.22v30h4.75V17.063h7.656v-4.5H46.97V4.5h9.688V0zM34.375 0h-4.75v23.063L20.562 0H15.97v30h4.719V6.625L30.094 30h4.281V0zM0 0v30c1.594-.032 3.25-.094 4.875-.125V0H0z" fill="#E50914"/>
+      </svg>
+      <ul class="nav-links">
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#experience">Experience</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#awards">Awards</a></li>
+        <li><a href="#certifications">Certifications</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+    <div class="navbar-right">
+      <img src="./profilephoto.png" alt="Rohan" class="navbar-avatar"
+        onerror="this.outerHTML='<div style=\'width:32px;height:32px;border-radius:4px;background:linear-gradient(135deg,#1a1a2e,#e50914);display:flex;align-items:center;justify-content:center;font-size:.9rem;\'>👨‍💻</div>'"
+      />
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-shape hero-shape-1"></div>
+    <div class="hero-shape hero-shape-2"></div>
+    <div class="hero-gradient"></div>
+    <div class="hero-content">
+      <div class="hero-badge">📌 Featured Profile</div>
+      <h1 class="hero-title">Rohan Iyer</h1>
+      <p class="hero-subtitle">B.Tech IT · NMIMS University</p>
+      <div class="hero-meta">
+        <span class="hero-meta-tag" style="color:#46d369;font-weight:600;">3.83 GPA</span>
+        <span class="hero-meta-dot"></span>
+        <span class="hero-meta-tag">AI & ML</span>
+        <span class="hero-meta-dot"></span>
+        <span class="hero-meta-tag">NLP</span>
+        <span class="hero-meta-dot"></span>
+        <span class="hero-meta-tag">Mumbai, India</span>
+      </div>
+      <p class="hero-desc">
+        A highly motivated engineer specialising in AI, ML, and NLP. Built financial forecasting models at Quantiphi, won IMT PitchUp among 500+ entries, and published at IEEE & international AI conferences.
+      </p>
+      <div class="hero-actions">
+        <a href="#contact" class="btn-primary">
+          <svg class="btn-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
+          Contact Me
+        </a>
+        <a href="#projects" class="btn-secondary">
+          <svg class="btn-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          View Projects
+        </a>
+        <a href="https://drive.google.com/file/d/1PWbHZNDVtJUMyn4qVDJni3VnzaItRSyj/view?usp=sharing" target="_blank" class="btn-secondary">
+          <svg class="btn-icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+          Download CV
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-row reveal">
+      <div class="stat-box">
+        <div class="stat-number">9<span>.</span>57</div>
+        <div class="stat-label">CGPA / 10</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">10<span>+</span></div>
+        <div class="stat-label">Projects</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">2<span></span></div>
+        <div class="stat-label">Publications</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">4<span>+</span></div>
+        <div class="stat-label">Hackathons</div>
+      </div>
     </div>
 
-    <!-- Netflix Profile Selection -->
-    <div id="netflix-profiles" class="w-full -mt-[200px] hidden">
-        <header class="w-full max-w-7xl flex justify-start pt-8 pl-8 sm:pl-16">
-            <h1 class="text-[#E50914] font-bold text-3xl sm:text-4xl leading-none select-none" style="font-family: 'Netflix Sans', system-ui, sans-serif;">
-                <img src="./netflix.png" width="200" height="150" alt="Netflix">
-            </h1>
-        </header>
-
-        <main class="flex flex-col items-center mt-20 sm:mt-28">
-            <h2 class="text-white text-3xl sm:text-4xl font-normal mb-12 select-none">
-                Who's watching?
-            </h2>
-
-            <ul class="flex space-x-8 sm:space-x-12">
-                <li>
-                    <a href="#" id="rohan-profile" class="profile-card flex flex-col items-center cursor-pointer group">
-                        <img
-                            alt="Profile picture of Rohan"
-                            class="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded group-hover:ring-4 group-hover:ring-[#E50914] transition"
-                            height="96"
-                            src="./profilephoto.png"
-                            width="96"
-                        />
-                        <span class="text-gray-500 text-sm mt-2 select-none group-hover:text-white transition">
-                            Rohan
-                        </span>
-                    </a>
-                </li>
-            </ul>
-
-            <button class="mt-16 border border-gray-700 text-gray-500 text-xs tracking-widest px-6 py-2 hover:border-gray-500 hover:text-gray-300 transition select-none" style="letter-spacing: 0.15em;">
-                MANAGE PROFILES
-            </button>
-        </main>
+    <!-- ABOUT / OBJECTIVE -->
+    <div class="section-divider"></div>
+    <div class="row reveal">
+      <div class="row-title">
+        <span class="row-title-icon">🎯</span> Objective
+      </div>
+      <div class="info-card">
+        <div class="info-card-body" style="font-size:1rem;line-height:1.75;">
+          A highly motivated B.Tech student specialising in Information Technology with a strong analytical and solution-oriented approach. Seeks dynamic opportunities to apply AI, ML, and NLP skills in solving real-world problems and contributing to innovative outcomes.
+        </div>
+      </div>
     </div>
 
-    <!-- Resume Section -->
-    <div id="rohan-resume" class="resume-hidden bg-black text-white w-full">
-        <!-- Header -->
-        <header class="sticky top-0 z-40 flex items-center justify-between px-4 sm:px-6 md:px-10 py-4 bg-gradient-to-b from-[#1a2a3a] to-black backdrop-blur">
-            <div class="flex items-center space-x-3 sm:space-x-6 text-xs sm:text-sm md:text-base font-normal text-white flex-wrap">
-                <button onclick="backToProfiles()" class="glow-btn bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-semibold">
-                    ← Back
-                </button>
-
-                <div class="font-extrabold text-red-600 tracking-widest select-none">
-                    <img src="logo.png" width="125" height="100" alt="Logo">
-                </div>
-
-                <div>B.Tech IT Student</div>
-                <div class="text-gray-300">MPSTME, NMIMS University</div>
-                <div class="text-gray-300">AI, ML & NLP Enthusiast</div>
+    <!-- EDUCATION -->
+    <div class="section-divider"></div>
+    <div class="row reveal">
+      <div class="row-title">
+        <span class="row-title-icon">📚</span> Education
+      </div>
+      <div class="cards-grid cards-grid-2">
+        <div class="exp-card">
+          <div class="exp-logo-box" style="background:#fff;">
+            <img src="./college.png" alt="NMIMS" style="width:100%;height:100%;object-fit:contain;padding:6px;" onerror="this.parentElement.innerHTML='<span style=\'font-size:2rem;\'>🏛️</span>'"/>
+          </div>
+          <div class="exp-body">
+            <div class="exp-company">B.Tech in Information Technology</div>
+            <div class="exp-role">MPSTME, NMIMS University · 2021 – 2025</div>
+            <div class="exp-desc">
+              GPA: <strong style="color:#46d369;">3.83 / 4.0</strong> &nbsp;(9.575 / 10)
             </div>
-
-            <div class="relative">
-                <img alt="Profile picture of Rohan Iyer" class="rounded-full w-10 h-10 object-cover ring-2 ring-red-600/60" height="40" src="./profilephoto.png" width="40"/>
+          </div>
+        </div>
+        <div class="exp-card">
+          <div class="exp-logo-box" style="background:#fff;">
+            <img src="./image-removebg-preview (2).png" alt="Singhania School" style="width:100%;height:100%;object-fit:contain;padding:6px;" onerror="this.parentElement.innerHTML='<span style=\'font-size:2rem;\'>🏫</span>'"/>
+          </div>
+          <div class="exp-body">
+            <div class="exp-company">Smt. Sulochanadevi Singhania School</div>
+            <div class="exp-role">ISC Class XII (2021) · ICSE Class X (2019)</div>
+            <div class="exp-desc">
+              Class XII: <strong style="color:#46d369;">96.2%</strong> &nbsp;·&nbsp; Class X: <strong style="color:#46d369;">94.17%</strong>
             </div>
-        </header>
-
-        <!-- Hero Section -->
-        <section class="relative w-full h-[560px] overflow-hidden">
-            <video autoplay muted loop playsinline class="absolute top-0 left-0 w-full h-full object-cover z-0">
-                <source src="./resume.mp4" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-
-            <div class="absolute inset-0 floating-backdrop flex flex-col justify-center px-4 sm:px-6 md:px-10">
-                <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight max-w-xl text-white">
-                    Rohan Iyer
-                    <br>
-                    Portfolio & Resume
-                </h1>
-
-                <div class="flex items-center space-x-2 mt-4 max-w-xl">
-                    <div class="bg-red-600 text-white text-[10px] font-bold uppercase px-1.5 py-[1px] rounded select-none">📌</div>
-                    <p class="text-white font-semibold text-sm sm:text-base">Personal Info & Professional Highlights</p>
-                </div>
-
-                <p class="max-w-xl text-xs sm:text-sm text-white mt-2 leading-relaxed">
-                    B.Tech IT student at NMIMS University with strong skills in AI, ML, NLP, and software development. Passionate about sustainability and circular economy.
-                </p>
-
-                <div class="flex flex-wrap gap-3 mt-5 max-w-xl">
-                    <a href="#contact" class="glow-btn flex items-center space-x-2 bg-white text-black font-semibold rounded px-4 py-2 text-sm sm:text-base cursor-pointer">
-                        <i class="fas fa-envelope"></i>
-                        <span>Contact Me</span>
-                    </a>
-
-                    <a href="#projects" class="glow-btn flex items-center space-x-2 bg-gray-600 bg-opacity-50 text-white font-semibold rounded px-4 py-2 text-sm sm:text-base cursor-pointer hover:bg-opacity-70">
-                        <i class="fas fa-folder-open"></i>
-                        <span>View Projects</span>
-                    </a>
-
-                    <a href="https://drive.google.com/file/d/1PWbHZNDVtJUMyn4qVDJni3VnzaItRSyj/view?usp=sharing" target="_blank" class="glow-btn flex items-center space-x-2 bg-green-600 text-white font-semibold rounded px-4 py-2 text-sm sm:text-base cursor-pointer hover:bg-green-700">
-                        <i class="fas fa-download"></i>
-                        <span>Download CV</span>
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Personal Info -->
-        <section class="fade-in-section px-4 sm:px-6 md:px-10 mt-6 max-w-5xl mx-auto">
-            <h2 class="text-xs sm:text-sm font-semibold mb-2 flex items-center space-x-2">
-                <span class="section-title-badge">📌</span>
-                <span>Personal Info</span>
-            </h2>
-            <div class="card-hover grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-300 text-sm sm:text-base bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
-                <div>
-                    <p><span class="font-semibold">Name:</span> Rohan Iyer</p>
-                    <p><span class="font-semibold">DOB:</span> 5th June 2003</p>
-                    <p><span class="font-semibold">Location:</span> Mumbai, India</p>
-                </div>
-                <div>
-                    <p><span class="font-semibold">Email:</span> <a class="text-red-600 hover:underline" href="mailto:rohan.iyer78@nmims.in">rohan.iyer78@nmims.in</a> | <a class="text-red-600 hover:underline" href="mailto:rohan.iyer5603@gmail.com">rohan.iyer5603@gmail.com</a></p>
-                    <p><span class="font-semibold">Phone:</span> +91-9820623425</p>
-                    <p><span class="font-semibold">LinkedIn:</span> <a class="text-red-600 hover:underline" href="https://linkedin.com/in/rohan-iyer-461787264" target="_blank" rel="noreferrer">linkedin.com/in/rohan-iyer-461787264</a></p>
-                    <p><span class="font-semibold">GitHub:</span> <a class="text-red-600 hover:underline" href="https://github.com/roronoa2003" target="_blank" rel="noreferrer">github.com/roronoa2003</a></p>
-                    <p><span class="font-semibold">Kaggle:</span> <a class="text-red-600 hover:underline" href="https://kaggle.com/rohaniyer5603" target="_blank" rel="noreferrer">kaggle.com/rohaniyer5603</a></p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Objective -->
-        <section class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
-            <h2 class="text-xs sm:text-sm font-semibold mb-2 flex items-center space-x-2">
-                <span class="section-title-badge">🎯</span>
-                <span>Objective</span>
-            </h2>
-            <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
-                <p class="text-gray-300 text-sm sm:text-base max-w-3xl">
-                    A highly motivated B.Tech student specializing in Information Technology with a strong analytical and solution-oriented approach. Seeks dynamic opportunities to apply AI, ML, and NLP skills in solving real-world problems and contributing to innovative outcomes.
-                </p>
-            </div>
-        </section>
-
-        <!-- Education -->
-        <section class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
-            <h2 class="text-xs sm:text-sm font-semibold mb-4 flex items-center space-x-2">
-                <span class="section-title-badge">📚</span>
-                <span>Education</span>
-            </h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
-                    <img alt="NMIMS University logo" class="w-20 h-20 object-contain rounded" height="80" src="./college.png" width="80"/>
-                    <div>
-                        <h3 class="text-white font-bold text-lg mb-1">B.Tech in Information Technology</h3>
-                        <p class="text-gray-400 mb-1">MPSTME, NMIMS University (2021–2025)</p>
-                        <p class="text-gray-400">GPA: 3.83 / 4.0 (9.575 / 10)</p>
-                    </div>
-                </div>
-
-                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
-                    <img alt="Smt. Sulochanadevi Singhania School logo" class="w-20 h-20 object-contain rounded" height="80" src="./image-removebg-preview (2).png" width="80"/>
-                    <div>
-                        <h3 class="text-white font-bold text-lg mb-1">Class XII (ISC)</h3>
-                        <p class="text-gray-400 mb-1">Smt. Sulochanadevi Singhania School – 96.2% (2021)</p>
-                        <h3 class="text-white font-bold text-lg mb-1 mt-4">Class X (ICSE)</h3>
-                        <p class="text-gray-400">Smt. Sulochanadevi Singhania School – 94.17% (2019)</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Technical Skills -->
-        <section class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
-            <h2 class="text-xs sm:text-sm font-semibold mb-4 flex items-center space-x-2">
-                <span class="section-title-badge">🧠</span>
-                <span>Technical Skills</span>
-            </h2>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
-                    <h3 class="text-white font-bold text-lg mb-2">Languages</h3>
-                    <p class="text-gray-400">Python, Java, JavaScript, C, C++, HTML, CSS, SQL, C#</p>
-                </div>
-
-                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
-                    <h3 class="text-white font-bold text-lg mb-2">Frameworks/Libraries</h3>
-                    <p class="text-gray-400">Flask, NumPy, Pandas, Matplotlib, Seaborn, Sklearn, OpenCV, Roboflow, Flutter, Django</p>
-                </div>
-
-                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
-                    <h3 class="text-white font-bold text-lg mb-2">Concepts & Tools</h3>
-                    <p class="text-gray-400">OOP, DSA, OS, DBMS, ML, NLP, Software Engineering, Algorithms, GCP, AWS, Tableau, MS Excel, Power BI, Git, Android Studio, Shopify</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Experience -->
-        <section id="experience" class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
-            <h2 class="text-xs sm:text-sm font-semibold mb-4 flex items-center space-x-2">
-                <span class="section-title-badge">💼</span>
-                <span>Experience</span>
-            </h2>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
-                    <img alt="Quantiphi logo" class="w-20 h-20 object-contain rounded" height="80" src="./quantiphi.png" width="80"/>
-                    <div>
-                        <h3 class="text-white font-bold text-lg mb-1">Quantiphi Analytics Solutions Pvt Ltd.</h3>
-                        <p class="text-gray-400 mb-1 font-semibold">Machine Learning Intern | Jan 2025 – Aug 2025</p>
-                        <p class="text-gray-400">Built financial forecasting and budgeting models using Python on GCP and AWS. Delivered insights for financial sector clients through cloud-deployed ML models.</p>
-                    </div>
-                </div>
-
-                <a href="https://uppercelestials.com/" target="_blank" rel="noreferrer" class="block">
-                    <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4 h-full">
-                        <img alt="Upper Celestials logo" class="w-20 h-20 object-contain rounded" height="80" src="./uppercelestials.png" width="80"/>
-                        <div>
-                            <h3 class="text-white font-bold text-lg mb-1">Upper Celestials</h3>
-                            <p class="text-gray-400 mb-1 font-semibold">Co-Founder | Feb 2024 – Present</p>
-                            <p class="text-gray-400">Created and managed Gen-Z focused luxury fashion brand. Developed Shopify site, executed ad funnels, and handled brand marketing.</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </section>
-
-        <!-- Projects -->
-        <section id="projects" class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
-            <h2 class="text-xs sm:text-sm font-semibold mb-4 flex items-center space-x-2">
-                <span class="section-title-badge">💡</span>
-                <span>Projects</span>
-            </h2>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
-                    <img alt="Kubera AI Finance Manager logo" class="w-20 h-20 object-contain rounded" src="./kubera.png" height="80" width="80"/>
-                    <div>
-                        <h3 class="text-white font-bold text-lg mb-1">Kubera – AI Finance Manager (2024)</h3>
-                        <p class="text-gray-400">Voice-to-text transaction logging, NLP-based spend classification, sentiment-linked portfolio news dashboard, and GCP-based deployment.</p>
-                    </div>
-                </div>
-
-                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
-                    <img alt="Paytm logo" class="w-20 h-20 object-contain rounded" height="80" src="./Paytm-Logo.png" width="80"/>
-                    <div>
-                        <h3 class="text-white font-bold text-lg mb-1">Paytm Logo Detection in Cricket Footage (2025)</h3>
-                        <p class="text-gray-400">YOLOv8 model trained on ICC highlights to detect Paytm logo visibility with 92.3% mAP@0.5; delivered heatmaps and ad ROI insights.</p>
-                    </div>
-                </div>
-
-                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
-                    <img alt="Stock market graph" class="w-20 h-20 object-contain rounded" height="80" src="./stocks.png" width="80"/>
-                    <div>
-                        <h3 class="text-white font-bold text-lg mb-1">Stock Price Analyzer and Forecasting (2025)</h3>
-                        <p class="text-gray-400">Dashboard and predictive model using Python and AWS to correlate real-world news with market data.</p>
-                    </div>
-                </div>
-
-                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
-                    <img alt="IMDB logo" class="w-20 h-20 object-contain rounded" height="80" src="https://upload.wikimedia.org/wikipedia/commons/6/69/IMDB_Logo_2016.svg" width="80"/>
-                    <div>
-                        <h3 class="text-white font-bold text-lg mb-1">IMDB Movie Analyzer (2024)</h3>
-                        <p class="text-gray-400">Sentiment analysis of movie reviews to provide feedback and suggestions using a custom-built Python dashboard.</p>
-                    </div>
-                </div>
-
-                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
-                    <img alt="Android Studio logo" class="w-20 h-20 object-contain rounded" height="80" src="./as.png" width="80"/>
-                    <div>
-                        <h3 class="text-white font-bold text-lg mb-1">Hisaab Khitaab – Expense Manager (2024)</h3>
-                        <p class="text-gray-400">Android Studio app for tracking group and project-based settlements with timely alerts and credit scoring.</p>
-                    </div>
-                </div>
-
-                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
-                    <img alt="Train icon" class="w-20 h-20 object-contain rounded" height="80" src="./train.png" width="80"/>
-                    <div>
-                        <h3 class="text-white font-bold text-lg mb-1">Railway Navigation System (2023)</h3>
-                        <p class="text-gray-400">Java-based Dijkstra pathfinding for optimal train routes considering time and cost preferences.</p>
-                    </div>
-                </div>
-
-                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
-                    <img alt="Sneaker icon" class="w-20 h-20 object-contain rounded" height="80" src="./image-removebg-preview (3).png" width="80"/>
-                    <div>
-                        <h3 class="text-white font-bold text-lg mb-1">HypeSociety Sneaker Resale Site (2023)</h3>
-                        <p class="text-gray-400">HTML/CSS web prototype with Razorpay integration and product display.</p>
-                    </div>
-                </div>
-
-                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
-                    <img alt="Arduino logo" class="w-20 h-20 object-contain rounded" height="80" src="./Arduino_Logo.png" width="80"/>
-                    <div>
-                        <h3 class="text-white font-bold text-lg mb-1">Automated Mailbox with Passcode Lock (2023)</h3>
-                        <p class="text-gray-400">Arduino-powered IoT mailbox with motion detection, security code, and live streaming.</p>
-                    </div>
-                </div>
-
-                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
-                    <img alt="Electric vehicle icon" class="w-20 h-20 object-contain rounded" height="80" src="./image-removebg-preview.png" width="80"/>
-                    <div>
-                        <h3 class="text-white font-bold text-lg mb-1">Infinity Motors UI/UX Design (2021)</h3>
-                        <p class="text-gray-400">Designed modern user interface mockups for an electric vehicle company’s digital presence.</p>
-                    </div>
-                </div>
-
-                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg flex space-x-4">
-                    <img alt="Java icon" class="w-20 h-20 object-contain rounded" height="80" src="https://upload.wikimedia.org/wikipedia/en/3/30/Java_programming_language_logo.svg" width="80"/>
-                    <div>
-                        <h3 class="text-white font-bold text-lg mb-1">Bag Store Billing System (2019)</h3>
-                        <p class="text-gray-400">Java software for a customizable bag store with 2000+ lines of code and feature-rich options.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Awards & Leadership -->
-        <section class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
-            <h2 class="text-xs sm:text-sm font-semibold mb-4 flex items-center space-x-2">
-                <span class="section-title-badge">🏆</span>
-                <span>Awards & Leadership</span>
-            </h2>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
-                    <ul class="list-disc list-inside text-gray-300 text-sm sm:text-base space-y-2">
-                        <li>IMT PitchUp 10.0 (2024): Winner among 500+ entries; won ₹30,000 for Kubera AI pitch.</li>
-                        <li>Hintweis AIDE 2024 (Third Int'l Conf. on AI & DS): Published paper on NLP in financial management.</li>
-                        <li>Model United Nations: Delegate – Futuristic Security Council</li>
-                        <li>Heritage Club Member: Cultural preservation advocacy</li>
-                        <li>Athletics: Lawn Tennis – State-level tournaments (Top 3 placements)</li>
-                    </ul>
-                </div>
-
-                <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg">
-                    <p class="font-semibold text-white mb-2">Co-curricular Leadership (Clever Harvey):</p>
-                    <ul class="list-disc list-inside text-gray-300 text-sm sm:text-base space-y-1">
-                        <li>Junior CEO: ShoeBox sustainability business model</li>
-                        <li>Junior CMO: Electric car concept & go-to-market strategy</li>
-                        <li>Junior CTO: "Park It" parking app</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-        <!-- Publications -->
-        <section class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
-            <h2 class="text-xs sm:text-sm font-semibold mb-4 flex items-center space-x-2">
-                <span class="section-title-badge">📜</span>
-                <span>Publications</span>
-            </h2>
-
-            <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg max-w-4xl mx-auto">
-                <ul class="list-disc list-inside text-gray-300 text-sm sm:text-base space-y-2">
-                    <li>IEEE ICCC 2025: LSTM Encoder-Decoder for Text Summarization</li>
-                    <li>AIDE 2024: Kubera: NLP-Based Financial Analysis Tool</li>
-                </ul>
-            </div>
-        </section>
-
-        <!-- Certifications -->
-        <section class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
-            <h2 class="text-xs sm:text-sm font-semibold mb-4 flex items-center space-x-2">
-                <span class="section-title-badge">📚</span>
-                <span>Certifications</span>
-            </h2>
-
-            <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg max-w-4xl mx-auto">
-                <ul class="list-disc list-inside text-gray-300 text-sm sm:text-base space-y-2">
-                    <li>GCP Associate Cloud Engineer – Issued March 2025</li>
-                    <li>Udemy Courses:
-                        <ul class="list-disc list-inside ml-5 mt-1 space-y-1">
-                            <li>Convolutional Neural Networks with TensorFlow</li>
-                            <li>Deep Learning with Python</li>
-                            <li>Python for Data Science and ML</li>
-                        </ul>
-                    </li>
-                    <li>Clever Harvey: Junior CEO, CFO, CMO, UI/UX</li>
-                </ul>
-
-                <div class="mt-6">
-                    <h3 class="text-white font-semibold mb-2">Google Cloud Architect Certificate:</h3>
-                    <iframe
-                        src="https://drive.google.com/file/d/164Hflfywh5Y3Miq3rfIG6T-hbGL6Wr9J/preview"
-                        width="100%"
-                        height="500"
-                        class="border-0 rounded-lg shadow-lg">
-                    </iframe>
-                </div>
-
-                <div class="mt-7">
-                    <h3 class="text-white font-semibold mb-2">Claude Code in Action:</h3>
-                    <iframe
-                        src="https://drive.google.com/file/d/1aBqNIkIkHy1adXcZ_fOEL_jvRsgDM1fn/preview"
-                        width="100%"
-                        height="500"
-                        class="border-0 rounded-lg shadow-lg">
-                    </iframe>
-                </div>
-            </div>
-        </section>
-
-        <!-- Participation -->
-        <section class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 max-w-5xl mx-auto">
-            <h2 class="text-xs sm:text-sm font-semibold mb-4 flex items-center space-x-2">
-                <span class="section-title-badge">🎤</span>
-                <span>Participation</span>
-            </h2>
-
-            <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg max-w-4xl mx-auto">
-                <ul class="list-disc list-inside text-gray-300 text-sm sm:text-base space-y-2">
-                    <li>Jio Creative Lab Hackathon</li>
-                    <li>Smart India Hackathon</li>
-                    <li>Volkswagen Hackathon</li>
-                    <li>IMT Ideathon (Winner)</li>
-                </ul>
-            </div>
-        </section>
-
-        <!-- Volunteering & Community Work -->
-        <section id="contact" class="fade-in-section px-4 sm:px-6 md:px-10 mt-8 mb-12 max-w-5xl mx-auto">
-            <h2 class="text-xs sm:text-sm font-semibold mb-4 flex items-center space-x-2">
-                <span class="section-title-badge">🤝</span>
-                <span>Volunteering & Community Work</span>
-            </h2>
-
-            <div class="card-hover bg-gradient-to-tr from-gray-800 to-gray-900 rounded-lg p-5 shadow-lg max-w-4xl mx-auto">
-                <p class="text-gray-300 text-sm sm:text-base max-w-3xl">
-                    Prayaas Charitable Trust: 60 hours of community service
-                </p>
-
-                <div class="mt-6 space-y-2 text-gray-400 text-xs sm:text-sm max-w-4xl">
-                    <p><span class="font-semibold">Email:</span> <a class="text-red-600 hover:underline" href="mailto:rohan.iyer78@nmims.in">rohan.iyer78@nmims.in</a> | <a class="text-red-600 hover:underline" href="mailto:rohan.iyer5603@gmail.com">rohan.iyer5603@gmail.com</a></p>
-                    <p><span class="font-semibold">Phone:</span> +91-9820623425</p>
-                    <p><span class="font-semibold">LinkedIn:</span> <a class="text-red-600 hover:underline" href="https://linkedin.com/in/rohan-iyer-461787264" target="_blank" rel="noreferrer">linkedin.com/in/rohan-iyer-461787264</a></p>
-                    <p><span class="font-semibold">GitHub:</span> <a class="text-red-600 hover:underline" href="https://github.com/roronoa2003" target="_blank" rel="noreferrer">github.com/roronoa2003</a></p>
-                    <p><span class="font-semibold">Kaggle:</span> <a class="text-red-600 hover:underline" href="https://kaggle.com/rohaniyer5603" target="_blank" rel="noreferrer">kaggle.com/rohaniyer5603</a></p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Footer -->
-        <footer class="bg-black px-4 sm:px-6 md:px-10 py-8 text-gray-400 text-xs sm:text-sm max-w-5xl mx-auto">
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:space-x-10 mb-6">
-                <div class="flex space-x-4 mb-4 sm:mb-0">
-                    <a aria-label="Twitter" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700" href="#">
-                        <i class="fab fa-twitter text-gray-400 hover:text-white"></i>
-                    </a>
-                    <a aria-label="LinkedIn" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700" href="https://linkedin.com/in/rohan-iyer-461787264" target="_blank" rel="noreferrer">
-                        <i class="fab fa-linkedin-in text-gray-400 hover:text-white"></i>
-                    </a>
-                    <a aria-label="GitHub" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700" href="https://github.com/roronoa2003" target="_blank" rel="noreferrer">
-                        <i class="fab fa-github text-gray-400 hover:text-white"></i>
-                    </a>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-4 gap-6 text-gray-400">
-                    <div class="space-y-2">
-                        <div>rohaniyer.com</div>
-                        <div>rohan.iyer78@nmims.in</div>
-                        <div>+91-9820623425</div>
-                    </div>
-                    <div class="space-y-2">
-                        <div>MPSTME, NMIMS University</div>
-                        <div>AI, ML & NLP Skills</div>
-                        <div>Circular Economy Advocate</div>
-                    </div>
-                    <div class="space-y-2">
-                        <div>Research</div>
-                        <div>Design</div>
-                        <div>Software Development</div>
-                    </div>
-                    <div class="space-y-2">
-                        <div>English</div>
-                        <div>Hindi</div>
-                        <div>Marathi</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="text-[9px] text-gray-600 max-w-4xl mx-auto">
-                All information and logos showcased belong to their respective owners. Used for illustrative purposes only.
-            </div>
-        </footer>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <script>
-        window.addEventListener('load', function () {
-            const overlay = document.getElementById('transition-overlay');
-            const profiles = document.getElementById('netflix-profiles');
-            const audio = document.getElementById('intro-audio');
+    <!-- SKILLS -->
+    <div id="skills" class="section-divider"></div>
+    <div class="row reveal">
+      <div class="row-title">
+        <span class="row-title-icon">🧠</span> Technical Skills
+      </div>
+      <div class="cards-grid cards-grid-3">
 
-            audio.play().catch(() => {});
+        <div class="info-card">
+          <div class="info-card-title">Languages</div>
+          <div>
+            <span class="skill-pill">Python</span><span class="skill-pill">Java</span><span class="skill-pill">JavaScript</span><span class="skill-pill">C</span><span class="skill-pill">C++</span><span class="skill-pill">HTML</span><span class="skill-pill">CSS</span><span class="skill-pill">SQL</span><span class="skill-pill">C#</span>
+          </div>
+        </div>
 
-            setTimeout(() => {
-                overlay.style.transition = 'opacity 0.6s ease';
-                overlay.style.opacity = '0';
+        <div class="info-card">
+          <div class="info-card-title">Frameworks & Libraries</div>
+          <div>
+            <span class="skill-pill">Flask</span><span class="skill-pill">Django</span><span class="skill-pill">NumPy</span><span class="skill-pill">Pandas</span><span class="skill-pill">Sklearn</span><span class="skill-pill">OpenCV</span><span class="skill-pill">Flutter</span><span class="skill-pill">Seaborn</span><span class="skill-pill">Roboflow</span>
+          </div>
+        </div>
 
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    profiles.classList.remove('hidden');
-                }, 600);
-            }, 1000);
-        });
+        <div class="info-card">
+          <div class="info-card-title">Tools & Cloud</div>
+          <div>
+            <span class="skill-pill">GCP</span><span class="skill-pill">AWS</span><span class="skill-pill">Git</span><span class="skill-pill">Tableau</span><span class="skill-pill">Power BI</span><span class="skill-pill">MS Excel</span><span class="skill-pill">Shopify</span><span class="skill-pill">Android Studio</span>
+          </div>
+        </div>
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const rohanProfile = document.getElementById('rohan-profile');
-            const netflixProfiles = document.getElementById('netflix-profiles');
-            const rohanResume = document.getElementById('rohan-resume');
-            const clickAudio = new Audio('./mixkit-mouse-click-close-1113.mp3');
+      </div>
+    </div>
 
-            rohanProfile.addEventListener('click', function (e) {
-                e.preventDefault();
-                clickAudio.play().catch(() => {});
+    <!-- EXPERIENCE -->
+    <div id="experience" class="section-divider"></div>
+    <div class="row reveal">
+      <div class="row-title">
+        <span class="row-title-icon">💼</span> Experience
+      </div>
+      <div class="cards-grid cards-grid-2">
 
-                netflixProfiles.style.transition = 'opacity 0.45s ease';
-                netflixProfiles.style.opacity = '0';
+        <div class="exp-card">
+          <div class="exp-logo-box" style="background:#fff;">
+            <img src="./quantiphi.png" alt="Quantiphi" style="width:100%;height:100%;object-fit:contain;padding:6px;" onerror="this.parentElement.style.background='#5b1092';this.parentElement.innerHTML='<span style=\'color:#fff;font-weight:800;font-size:.65rem;text-align:center;\'>Quantiphi</span>'"/>
+          </div>
+          <div class="exp-body">
+            <div class="exp-company">Quantiphi Analytics Solutions</div>
+            <div class="exp-role">Machine Learning Intern · Jan 2025 – Aug 2025</div>
+            <div class="exp-desc">Built financial forecasting and budgeting models using Python on GCP and AWS. Delivered insights for financial sector clients through cloud-deployed ML models.</div>
+          </div>
+        </div>
 
-                setTimeout(() => {
-                    netflixProfiles.style.display = 'none';
-                    rohanResume.style.display = 'block';
+        <a href="https://uppercelestials.com/" target="_blank" rel="noreferrer" style="text-decoration:none;color:inherit;">
+          <div class="exp-card" style="height:100%;">
+            <div class="exp-logo-box" style="background:#fff;">
+              <img src="./uppercelestials.png" alt="Upper Celestials" style="width:100%;height:100%;object-fit:contain;padding:6px;" onerror="this.parentElement.style.background='linear-gradient(135deg,#1a1a2e,#2d1a3e)';this.parentElement.innerHTML='<span style=\'font-size:1.5rem;\'>✨</span>'"/>
+            </div>
+            <div class="exp-body">
+              <div class="exp-company">Upper Celestials</div>
+              <div class="exp-role">Co-Founder · Feb 2024 – Present</div>
+              <div class="exp-desc">Gen-Z focused luxury fashion brand. Developed Shopify site, executed ad funnels, and led brand marketing strategy.</div>
+            </div>
+          </div>
+        </a>
 
-                    setTimeout(() => {
-                        rohanResume.style.transition = 'opacity 0.6s ease';
-                        rohanResume.style.opacity = '1';
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }, 50);
-                }, 450);
-            });
+      </div>
+    </div>
 
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                    }
-                });
-            }, {
-                threshold: 0.12
-            });
+    <!-- PROJECTS -->
+    <div id="projects" class="section-divider"></div>
+    <div class="row reveal">
+      <div class="row-title">
+        <span class="row-title-icon">💡</span> Projects
+        <span class="top10-badge">#TOP 10</span>
+      </div>
 
-            document.querySelectorAll('.fade-in-section').forEach((section) => {
-                observer.observe(section);
-            });
-        });
+      <!-- Featured row -->
+      <div class="featured-row" style="margin-bottom:8px;">
+        <div class="featured-card featured-card-main">
+          <div class="featured-card-thumb" style="height:280px; background:linear-gradient(135deg,#0a1628,#1a2a4a,#0d2035); position:relative; overflow:hidden;">
+            <img src="./kubera.png" alt="Kubera" style="width:90px;height:90px;object-fit:contain;position:relative;z-index:1;" onerror="this.outerHTML='<span style=\'font-size:4rem;position:relative;z-index:1;\'>📊</span>'"/>
+            <div class="featured-card-gradient"></div>
+          </div>
+          <div class="featured-card-info">
+            <div class="card-tags">
+              <span class="card-tag card-tag-green">NLP</span>
+              <span class="card-tag card-tag-red">Winner</span>
+              <span class="card-tag">GCP</span>
+            </div>
+            <div class="featured-card-title">Kubera – AI Finance Manager</div>
+            <div class="featured-card-meta">2024 · Voice-to-text · Sentiment analysis · GCP</div>
+          </div>
+        </div>
+        <div class="featured-card">
+          <div class="featured-card-thumb" style="background:linear-gradient(135deg,#1a0a0a,#3a1212,#1a0a0a); position:relative; overflow:hidden;">
+            <img src="./Paytm-Logo.png" alt="Paytm" style="width:70px;height:70px;object-fit:contain;position:relative;z-index:1;" onerror="this.outerHTML='<span style=\'font-size:2.5rem;position:relative;z-index:1;\'>🏏</span>'"/>
+            <div class="featured-card-gradient"></div>
+          </div>
+          <div class="featured-card-info">
+            <div class="card-tags"><span class="card-tag">YOLOv8</span><span class="card-tag">92.3% mAP</span></div>
+            <div class="featured-card-title">Paytm Logo Detection</div>
+          </div>
+        </div>
+        <div class="featured-card">
+          <div class="featured-card-thumb" style="background:linear-gradient(135deg,#0a1a0a,#1a3a1a,#0a1a0a); position:relative; overflow:hidden;">
+            <img src="./stocks.png" alt="Stocks" style="width:70px;height:70px;object-fit:contain;position:relative;z-index:1;" onerror="this.outerHTML='<span style=\'font-size:2.5rem;position:relative;z-index:1;\'>📈</span>'"/>
+            <div class="featured-card-gradient"></div>
+          </div>
+          <div class="featured-card-info">
+            <div class="card-tags"><span class="card-tag">AWS</span><span class="card-tag">Python</span></div>
+            <div class="featured-card-title">Stock Price Analyzer</div>
+          </div>
+        </div>
+      </div>
 
-        function backToProfiles() {
-            const netflixProfiles = document.getElementById('netflix-profiles');
-            const rohanResume = document.getElementById('rohan-resume');
+      <!-- Rest of projects -->
+      <div class="cards-grid">
 
-            rohanResume.style.transition = 'opacity 0.45s ease';
-            rohanResume.style.opacity = '0';
+        <div class="card">
+          <div class="card-thumb" style="background:linear-gradient(135deg,#1a1a2e,#2e1a1a); position:relative; overflow:hidden;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/6/69/IMDB_Logo_2016.svg" alt="IMDB" style="width:70px;height:70px;object-fit:contain;position:relative;z-index:1;" onerror="this.outerHTML='<span class=\'card-thumb-icon\'>🎬</span>'"/>
+            <div class="card-thumb-gradient"></div>
+          </div>
+          <div class="card-bar"></div>
+          <div class="card-static-info">
+            <div class="card-title">IMDB Movie Analyzer</div>
+            <div class="card-year">2024</div>
+          </div>
+          <div class="card-info">
+            <div class="card-actions">
+              <button class="card-action-btn play">▶</button>
+              <button class="card-action-btn">+</button>
+            </div>
+            <div class="card-tags">
+              <span class="card-tag">Sentiment Analysis</span>
+              <span class="card-tag">Python</span>
+            </div>
+            <div class="card-body">NLP-powered movie review analyser with custom Python dashboard for feedback and ratings.</div>
+          </div>
+        </div>
 
-            setTimeout(() => {
-                rohanResume.style.display = 'none';
-                netflixProfiles.style.display = 'block';
-                netflixProfiles.style.opacity = '0';
+        <div class="card">
+          <div class="card-thumb" style="background:linear-gradient(135deg,#1a2e1a,#2e2e1a); position:relative; overflow:hidden;">
+            <img src="./as.png" alt="Android Studio" style="width:70px;height:70px;object-fit:contain;position:relative;z-index:1;" onerror="this.outerHTML='<span class=\'card-thumb-icon\'>💰</span>'"/>
+            <div class="card-thumb-gradient"></div>
+          </div>
+          <div class="card-bar"></div>
+          <div class="card-static-info">
+            <div class="card-title">Hisaab Khitaab</div>
+            <div class="card-year">2024 · Expense Manager</div>
+          </div>
+          <div class="card-info">
+            <div class="card-actions">
+              <button class="card-action-btn play">▶</button>
+              <button class="card-action-btn">+</button>
+            </div>
+            <div class="card-tags"><span class="card-tag">Android</span><span class="card-tag">Java</span></div>
+            <div class="card-body">Group expense & settlement tracking app with credit scoring and timely alerts.</div>
+          </div>
+        </div>
 
-                setTimeout(() => {
-                    netflixProfiles.style.transition = 'opacity 0.5s ease';
-                    netflixProfiles.style.opacity = '1';
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }, 50);
-            }, 450);
-        }
-    </script>
+        <div class="card">
+          <div class="card-thumb" style="background:linear-gradient(135deg,#2e1a2e,#1a1a2e); position:relative; overflow:hidden;">
+            <img src="./train.png" alt="Train" style="width:70px;height:70px;object-fit:contain;position:relative;z-index:1;" onerror="this.outerHTML='<span class=\'card-thumb-icon\'>🚂</span>'"/>
+            <div class="card-thumb-gradient"></div>
+          </div>
+          <div class="card-bar"></div>
+          <div class="card-static-info">
+            <div class="card-title">Railway Navigation System</div>
+            <div class="card-year">2023</div>
+          </div>
+          <div class="card-info">
+            <div class="card-actions">
+              <button class="card-action-btn play">▶</button>
+              <button class="card-action-btn">+</button>
+            </div>
+            <div class="card-tags"><span class="card-tag">Java</span><span class="card-tag">Dijkstra</span></div>
+            <div class="card-body">Optimal train route finder using Dijkstra's algorithm with time & cost preferences.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-thumb" style="background:linear-gradient(135deg,#2e2e1a,#1a2e2e); position:relative; overflow:hidden;">
+            <img src="./image-removebg-preview (3).png" alt="Sneaker" style="width:70px;height:70px;object-fit:contain;position:relative;z-index:1;" onerror="this.outerHTML='<span class=\'card-thumb-icon\'>👟</span>'"/>
+            <div class="card-thumb-gradient"></div>
+          </div>
+          <div class="card-bar"></div>
+          <div class="card-static-info">
+            <div class="card-title">HypeSociety Sneaker Site</div>
+            <div class="card-year">2023</div>
+          </div>
+          <div class="card-info">
+            <div class="card-actions">
+              <button class="card-action-btn play">▶</button>
+              <button class="card-action-btn">+</button>
+            </div>
+            <div class="card-tags"><span class="card-tag">HTML/CSS</span><span class="card-tag">Razorpay</span></div>
+            <div class="card-body">Sneaker resale web prototype with Razorpay payment integration and product showcase.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-thumb" style="background:linear-gradient(135deg,#1a2e2e,#2e1a1a); position:relative; overflow:hidden;">
+            <img src="./Arduino_Logo.png" alt="Arduino" style="width:70px;height:70px;object-fit:contain;position:relative;z-index:1;" onerror="this.outerHTML='<span class=\'card-thumb-icon\'>📮</span>'"/>
+            <div class="card-thumb-gradient"></div>
+          </div>
+          <div class="card-bar"></div>
+          <div class="card-static-info">
+            <div class="card-title">Automated Mailbox IoT</div>
+            <div class="card-year">2023</div>
+          </div>
+          <div class="card-info">
+            <div class="card-actions">
+              <button class="card-action-btn play">▶</button>
+              <button class="card-action-btn">+</button>
+            </div>
+            <div class="card-tags"><span class="card-tag">Arduino</span><span class="card-tag">IoT</span></div>
+            <div class="card-body">Motion detection, passcode security, and live streaming powered by Arduino.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-thumb" style="background:linear-gradient(135deg,#1a1a1a,#2e2e2e); position:relative; overflow:hidden;">
+            <img src="./image-removebg-preview.png" alt="EV" style="width:70px;height:70px;object-fit:contain;position:relative;z-index:1;" onerror="this.outerHTML='<span class=\'card-thumb-icon\'>🚗</span>'"/>
+            <div class="card-thumb-gradient"></div>
+          </div>
+          <div class="card-bar"></div>
+          <div class="card-static-info">
+            <div class="card-title">Infinity Motors UI/UX</div>
+            <div class="card-year">2021</div>
+          </div>
+          <div class="card-info">
+            <div class="card-actions">
+              <button class="card-action-btn play">▶</button>
+              <button class="card-action-btn">+</button>
+            </div>
+            <div class="card-tags"><span class="card-tag">UI/UX</span><span class="card-tag">Design</span></div>
+            <div class="card-body">Modern interface mockups for an electric vehicle company's digital presence.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- AWARDS -->
+    <div id="awards" class="section-divider"></div>
+    <div class="row reveal">
+      <div class="row-title">
+        <span class="row-title-icon">🏆</span> Awards & Leadership
+      </div>
+      <div class="cards-grid cards-grid-2">
+        <div class="info-card">
+          <div class="info-card-title">Achievements</div>
+          <div>
+            <div class="award-item">
+              <div class="award-rank">1</div>
+              <div class="award-content">
+                <div class="award-title">IMT PitchUp 10.0 – Winner 🏆</div>
+                <div class="award-desc">Among 500+ entries; won ₹30,000 for Kubera AI Finance pitch (2024)</div>
+              </div>
+            </div>
+            <div class="award-item">
+              <div class="award-rank">2</div>
+              <div class="award-content">
+                <div class="award-title">Hintweis AIDE 2024 Publication</div>
+                <div class="award-desc">Third Int'l Conference on AI & DS — NLP in financial management</div>
+              </div>
+            </div>
+            <div class="award-item">
+              <div class="award-rank">3</div>
+              <div class="award-content">
+                <div class="award-title">Lawn Tennis – State Level</div>
+                <div class="award-desc">Top 3 placements in state-level tournaments</div>
+              </div>
+            </div>
+            <div class="award-item">
+              <div class="award-rank">4</div>
+              <div class="award-content">
+                <div class="award-title">Model United Nations Delegate</div>
+                <div class="award-desc">Futuristic Security Council</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-title">Co-curricular Leadership — Clever Harvey</div>
+          <div>
+            <div class="award-item">
+              <div class="award-rank" style="color:rgba(229,9,20,.3)">→</div>
+              <div class="award-content">
+                <div class="award-title">Junior CEO</div>
+                <div class="award-desc">ShoeBox sustainability business model</div>
+              </div>
+            </div>
+            <div class="award-item">
+              <div class="award-rank" style="color:rgba(229,9,20,.3)">→</div>
+              <div class="award-content">
+                <div class="award-title">Junior CMO</div>
+                <div class="award-desc">Electric car concept & go-to-market strategy</div>
+              </div>
+            </div>
+            <div class="award-item">
+              <div class="award-rank" style="color:rgba(229,9,20,.3)">→</div>
+              <div class="award-content">
+                <div class="award-title">Junior CTO</div>
+                <div class="award-desc">"Park It" parking app</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PUBLICATIONS -->
+    <div class="section-divider"></div>
+    <div class="row reveal">
+      <div class="row-title">
+        <span class="row-title-icon">📜</span> Publications
+      </div>
+      <div class="cards-grid cards-grid-2">
+        <div class="exp-card">
+          <div class="exp-logo-box" style="background:#00629b; color:#fff; font-size:.7rem; font-weight:800; text-align:center; padding:8px; line-height:1.2;">IEEE</div>
+          <div class="exp-body">
+            <div class="exp-company">LSTM Encoder-Decoder for Text Summarization</div>
+            <div class="exp-role">IEEE ICCC 2025</div>
+          </div>
+        </div>
+        <div class="exp-card">
+          <div class="exp-logo-box" style="background:#1a2a3a; font-size:1.4rem;">📄</div>
+          <div class="exp-body">
+            <div class="exp-company">Kubera: NLP-Based Financial Analysis Tool</div>
+            <div class="exp-role">AIDE 2024</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CERTIFICATIONS -->
+    <div id="certifications" class="section-divider"></div>
+    <div class="row reveal">
+      <div class="row-title">
+        <span class="row-title-icon">🎓</span> Certifications
+      </div>
+
+      <!-- Cert badge cards -->
+      <div class="cards-grid cards-grid-3" style="margin-bottom:32px;">
+        <div class="cert-card">
+          <div class="cert-icon">☁️</div>
+          <div class="cert-body">
+            <div class="cert-name">GCP Associate Cloud Engineer</div>
+            <div class="cert-issuer">Google Cloud · March 2025</div>
+          </div>
+        </div>
+        <div class="cert-card">
+          <div class="cert-icon">🧠</div>
+          <div class="cert-body">
+            <div class="cert-name">CNNs with TensorFlow</div>
+            <div class="cert-issuer">Udemy</div>
+          </div>
+        </div>
+        <div class="cert-card">
+          <div class="cert-icon">🐍</div>
+          <div class="cert-body">
+            <div class="cert-name">Python for Data Science & ML</div>
+            <div class="cert-issuer">Udemy</div>
+          </div>
+        </div>
+        <div class="cert-card">
+          <div class="cert-icon">🔬</div>
+          <div class="cert-body">
+            <div class="cert-name">Deep Learning with Python</div>
+            <div class="cert-issuer">Udemy</div>
+          </div>
+        </div>
+        <div class="cert-card">
+          <div class="cert-icon">💼</div>
+          <div class="cert-body">
+            <div class="cert-name">Junior CEO / CFO / CMO / UI/UX</div>
+            <div class="cert-issuer">Clever Harvey</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Certificate iframes -->
+      <div class="cert-iframes-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+
+        <div class="info-card" style="padding:0; overflow:hidden; border-left:none; border:1px solid rgba(255,255,255,.08);">
+          <div style="padding:18px 22px 14px; border-bottom:1px solid rgba(255,255,255,.06); display:flex; align-items:center; gap:10px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:var(--red);flex-shrink:0;"></div>
+            <span style="font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.7);">Google Cloud Architect Certificate</span>
+          </div>
+          <iframe
+            src="https://drive.google.com/file/d/164Hflfywh5Y3Miq3rfIG6T-hbGL6Wr9J/preview"
+            width="100%"
+            height="480"
+            style="border:0;display:block;"
+            allow="autoplay"
+            loading="lazy">
+          </iframe>
+        </div>
+
+        <div class="info-card" style="padding:0; overflow:hidden; border-left:none; border:1px solid rgba(255,255,255,.08);">
+          <div style="padding:18px 22px 14px; border-bottom:1px solid rgba(255,255,255,.06); display:flex; align-items:center; gap:10px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:var(--red);flex-shrink:0;"></div>
+            <span style="font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.7);">Claude Code in Action</span>
+          </div>
+          <iframe
+            src="https://drive.google.com/file/d/1aBqNIkIkHy1adXcZ_fOEL_jvRsgDM1fn/preview"
+            width="100%"
+            height="480"
+            style="border:0;display:block;"
+            allow="autoplay"
+            loading="lazy">
+          </iframe>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PARTICIPATION -->
+    <div class="section-divider"></div>
+    <div class="row reveal">
+      <div class="row-title">
+        <span class="row-title-icon">🎤</span> Hackathons & Events
+      </div>
+      <div class="cards-grid cards-grid-3">
+        <div class="cert-card">
+          <div class="cert-icon">📡</div>
+          <div class="cert-body"><div class="cert-name">Jio Creative Lab Hackathon</div></div>
+        </div>
+        <div class="cert-card">
+          <div class="cert-icon">🇮🇳</div>
+          <div class="cert-body"><div class="cert-name">Smart India Hackathon</div></div>
+        </div>
+        <div class="cert-card">
+          <div class="cert-icon">🚘</div>
+          <div class="cert-body"><div class="cert-name">Volkswagen Hackathon</div></div>
+        </div>
+        <div class="cert-card" style="border-color:rgba(229,9,20,.4)">
+          <div class="cert-icon" style="background:rgba(229,9,20,.2);">🏆</div>
+          <div class="cert-body"><div class="cert-name">IMT Ideathon</div><div class="cert-issuer" style="color:#46d369;">Winner</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACT -->
+    <div id="contact" class="section-divider"></div>
+    <div class="row reveal">
+      <div class="row-title">
+        <span class="row-title-icon">🤝</span> Contact & Volunteering
+      </div>
+      <div class="cards-grid cards-grid-2">
+        <div class="info-card">
+          <div class="info-card-title">Get In Touch</div>
+          <div class="info-card-body" style="line-height:2.2;">
+            <div>📧 <a href="mailto:rohan.iyer78@nmims.in" class="info-card-link">rohan.iyer78@nmims.in</a></div>
+            <div>📧 <a href="mailto:rohan.iyer5603@gmail.com" class="info-card-link">rohan.iyer5603@gmail.com</a></div>
+            <div>📱 +91-9820623425</div>
+            <div>💼 <a href="https://linkedin.com/in/rohan-iyer-461787264" target="_blank" class="info-card-link">linkedin.com/in/rohan-iyer-461787264</a></div>
+            <div>💻 <a href="https://github.com/roronoa2003" target="_blank" class="info-card-link">github.com/roronoa2003</a></div>
+            <div>📊 <a href="https://kaggle.com/rohaniyer5603" target="_blank" class="info-card-link">kaggle.com/rohaniyer5603</a></div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-title">Volunteering</div>
+          <div class="info-card-body">
+            <p style="margin-bottom:8px;">🤲 <strong style="color:#fff;">Prayaas Charitable Trust</strong></p>
+            <p>60 hours of community service — contributing to social welfare and educational initiatives.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <footer>
+    <div class="footer-top">
+      <div class="footer-social">
+        <a href="https://linkedin.com/in/rohan-iyer-461787264" target="_blank" class="social-btn" aria-label="LinkedIn">in</a>
+        <a href="https://github.com/roronoa2003" target="_blank" class="social-btn" aria-label="GitHub">gh</a>
+        <a href="https://kaggle.com/rohaniyer5603" target="_blank" class="social-btn" aria-label="Kaggle">ka</a>
+      </div>
+    </div>
+    <div class="footer-grid">
+      <div>
+        <a href="#">rohaniyer.com</a>
+        <a href="mailto:rohan.iyer78@nmims.in">rohan.iyer78@nmims.in</a>
+        <a href="tel:+919820623425">+91-9820623425</a>
+      </div>
+      <div>
+        <a href="#">MPSTME, NMIMS</a>
+        <a href="#">AI, ML & NLP</a>
+        <a href="#">Circular Economy</a>
+      </div>
+      <div>
+        <a href="#">Research</a>
+        <a href="#">Design</a>
+        <a href="#">Software Dev</a>
+      </div>
+      <div>
+        <a href="#">English</a>
+        <a href="#">Hindi</a>
+        <a href="#">Marathi</a>
+      </div>
+    </div>
+    <div class="footer-copy">
+      All company logos and trademarks are property of their respective owners. Used for illustrative purposes only.
+    </div>
+  </footer>
+
+</div><!-- /resume -->
+
+<script>
+  // INTRO
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      const overlay = document.getElementById('intro-overlay');
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        const ps = document.getElementById('profile-screen');
+        ps.classList.add('visible');
+        ps.style.opacity = '0';
+        ps.style.transition = 'opacity .6s ease';
+        requestAnimationFrame(() => { ps.style.opacity = '1'; });
+      }, 800);
+    }, 1800);
+  });
+
+  // Profile click
+  document.getElementById('rohan-profile-btn').addEventListener('click', e => {
+    e.preventDefault();
+    const ps = document.getElementById('profile-screen');
+    const resume = document.getElementById('resume');
+    ps.style.transition = 'opacity .4s ease';
+    ps.style.opacity = '0';
+    setTimeout(() => {
+      ps.classList.remove('visible');
+      resume.style.display = 'flex';
+      requestAnimationFrame(() => {
+        resume.classList.add('visible');
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      });
+    }, 400);
+  });
+
+  function backToProfiles() {
+    const ps = document.getElementById('profile-screen');
+    const resume = document.getElementById('resume');
+    resume.style.opacity = '0';
+    setTimeout(() => {
+      resume.classList.remove('visible');
+      resume.style.display = 'none';
+      resume.style.opacity = '';
+      ps.style.opacity = '0';
+      ps.classList.add('visible');
+      requestAnimationFrame(() => {
+        ps.style.transition = 'opacity .5s ease';
+        ps.style.opacity = '1';
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      });
+    }, 400);
+  }
+
+  // Navbar scroll effect
+  window.addEventListener('scroll', () => {
+    const nav = document.getElementById('navbar');
+    nav.classList.toggle('scrolled', window.scrollY > 50);
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
 </body>
 </html>
