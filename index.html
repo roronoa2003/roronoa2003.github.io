@@ -497,6 +497,21 @@
     background: var(--card-bg); border-radius: 8px; overflow: hidden;
     border: 1px solid #2a2a2a;
   }
+  /* ───── WEB BANNER ───── */
+.web-banner {
+  width: 100%;
+  margin-top: 72px; /* keeps it below fixed navbar */
+  overflow: hidden;
+  background: #000;
+}
+
+.web-banner-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 420px;
+  object-fit: cover;
+}
   .iframe-header {
     display: flex; align-items: center; gap: 0.5rem;
     padding: 0.7rem 1rem; border-bottom: 1px solid #333;
@@ -780,6 +795,9 @@
         </div>
       </a>
     </div>
+  </section>
+  <section class="web-banner">
+  <img src="./banner.jpg" alt="Rohan Iyer Banner" class="web-banner-img" />
   </section>
 
   <div class="sep"></div>
