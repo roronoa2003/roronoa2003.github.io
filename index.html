@@ -672,6 +672,8 @@ const flyFQ=new THREE.Quaternion(),flyTQ=new THREE.Quaternion();
 let autoOrbit=true,autoAngle=Math.PI;
 let isDragging=false,dLastX=0,dLastY=0;
 let camYaw=Math.PI,camPitch=0.06;
+let targetYaw=Math.PI,targetPitch=0.06;// smooth look inertia targets
+let camBobT=0,camBobAmp=0;// walking bob timer + smoothed amplitude
 const camPos=new THREE.Vector3(0,1.8,-16);
 const keys={w:false,a:false,s:false,d:false};
 const isMobile='ontouchstart' in window;
@@ -784,6 +786,7 @@ function buildFloor(){
   // Dark alien tint — will be multiplied on top of the real rock diffuse
   const terrMat=new THREE.MeshStandardMaterial({color:0x2a0809,roughness:.96,metalness:.03});
   WS.add(new THREE.Mesh(geo,terrMat));
+  WS.userData.terrMat=terrMat;// store for world 2 texture sharing
 
   // Load PBR maps — try primary first; fall back gracefully
   const txLoader=new THREE.TextureLoader();
@@ -1209,7 +1212,7 @@ function bindControls(){
   cv.addEventListener('mousedown',e=>{if(e.target!==cv)return;isDragging=true;dLastX=e.clientX;dLastY=e.clientY;autoOrbit=false;});
   document.addEventListener('mouseup',()=>isDragging=false);
   document.addEventListener('mousemove',e=>{
-    if(isDragging){camYaw-=e.movementX*.0025;camPitch-=e.movementY*.002;camPitch=Math.max(-Math.PI/2.1,Math.min(Math.PI/2.1,camPitch));}
+    if(isDragging){targetYaw-=e.movementX*.0025;targetPitch-=e.movementY*.002;targetPitch=Math.max(-Math.PI/2.1,Math.min(Math.PI/2.1,targetPitch));}
     // Hover tooltip
     const r=cv.getBoundingClientRect();
     const nmx=((e.clientX-r.left)/r.width)*2-1,nmy=-((e.clientY-r.top)/r.height)*2+1;
@@ -1219,7 +1222,7 @@ function bindControls(){
   let lastTX=0,lastTY=0,lastDist=0;
   cv.addEventListener('touchstart',e=>{lastTX=e.touches[0].clientX;lastTY=e.touches[0].clientY;if(e.touches.length===2)lastDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);autoOrbit=false;},{passive:true});
   cv.addEventListener('touchmove',e=>{
-    if(e.touches.length===1){camYaw-=(e.touches[0].clientX-lastTX)*.003;camPitch-=(e.touches[0].clientY-lastTY)*.002;camPitch=Math.max(-Math.PI/2.1,Math.min(Math.PI/2.1,camPitch));lastTX=e.touches[0].clientX;lastTY=e.touches[0].clientY;}
+    if(e.touches.length===1){targetYaw-=(e.touches[0].clientX-lastTX)*.003;targetPitch-=(e.touches[0].clientY-lastTY)*.002;targetPitch=Math.max(-Math.PI/2.1,Math.min(Math.PI/2.1,targetPitch));lastTX=e.touches[0].clientX;lastTY=e.touches[0].clientY;}
   },{passive:true});
   // Click on panels
   cv.addEventListener('click',e=>{
@@ -1267,9 +1270,13 @@ function bindControls(){
 }
 
 function doRaycast(nmx,nmy){
+  const tt=document.getElementById('hud-tooltip');
+  // Suppress all panel hover when in second world or during transitions
+  if(inSecondWorld||suckupActive||returnActive){
+    hoveredPanel=null;if(tt){tt.textContent='';tt.style.opacity='0';}return;
+  }
   const ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2(nmx,nmy),WC);
   const hits=ray.intersectObjects(panelMeshes);
-  const tt=document.getElementById('hud-tooltip');
   hoveredPanel=hits.length?hits[0].object:null;
   tt.textContent=hoveredPanel?hoveredPanel.userData.sec.title:'';
   tt.style.opacity=hoveredPanel?'1':'0';
@@ -1297,9 +1304,9 @@ function buildSecondWorld(){
   WS2=new THREE.Scene();
   WS2.fog=new THREE.FogExp2(0x1a0230,.025);
 
-  // ── Lights — pink-purple palette ──
-  WS2.add(new THREE.AmbientLight(0x2d0a4a,3.5));
-  const d2=new THREE.DirectionalLight(0xcc88ff,1.8);d2.position.set(-5,18,8);WS2.add(d2);
+  // ── Lights — keep ambient neutral so rock texture reads naturally; purple comes from point lights ──
+  WS2.add(new THREE.AmbientLight(0x100810,2.8));// dark neutral — same feel as world 1
+  const d2=new THREE.DirectionalLight(0xd0b8e8,1.6);d2.position.set(-5,18,8);WS2.add(d2);// subtle cool-purple directional
   const p1=new THREE.PointLight(0xcc44ff,3.5,40);p1.position.set(0,8,0);WS2.add(p1);
   const p2=new THREE.PointLight(0xff44aa,1.2,28);p2.position.set(-5,3,5);WS2.add(p2);
   const p3=new THREE.PointLight(0x8822ff,.8,32);p3.position.set(5,5,-8);WS2.add(p3);
@@ -1320,16 +1327,26 @@ function buildSecondWorld(){
     pos2.setY(i,h-.02);
   }
   geo2.computeVertexNormals();
-  const terrMat2=new THREE.MeshStandardMaterial({color:0x2a0809,roughness:.96,metalness:.03});// same tint as world 1
+  // Same material tint as world 1 — EXACT match
+  const terrMat2=new THREE.MeshStandardMaterial({color:0x2a0809,roughness:.96,metalness:.03});
   WS2.add(new THREE.Mesh(geo2,terrMat2));
+  // ── Instantly share already-loaded textures from world 1 ──
+  const _w1m=WS.userData.terrMat;
+  if(_w1m){
+    if(_w1m.map){terrMat2.map=_w1m.map;}
+    if(_w1m.normalMap){terrMat2.normalMap=_w1m.normalMap;terrMat2.normalScale.set(1.6,1.6);}
+    if(_w1m.roughnessMap){terrMat2.roughnessMap=_w1m.roughnessMap;}
+    terrMat2.needsUpdate=true;
+  }
+  // ── Fallback async load if world 1 textures not yet ready ──
   const txL2=new THREE.TextureLoader();
   function tile2(t,r){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(r,r);t.anisotropy=Math.min(16,WR.capabilities.getMaxAnisotropy());return t;}
   const RD='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_ground_rough/rock_ground_rough_diff_2k.jpg';
   const RN='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_ground_rough/rock_ground_rough_nor_gl_2k.jpg';
   const RR='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_ground_rough/rock_ground_rough_rough_2k.jpg';
-  txL2.load(RD,t=>{terrMat2.map=tile2(t,28);terrMat2.needsUpdate=true;});
-  txL2.load(RN,t=>{terrMat2.normalMap=tile2(t,28);terrMat2.normalScale.set(1.6,1.6);terrMat2.needsUpdate=true;});
-  txL2.load(RR,t=>{terrMat2.roughnessMap=tile2(t,28);terrMat2.needsUpdate=true;});
+  if(!_w1m||!_w1m.map){txL2.load(RD,t=>{terrMat2.map=tile2(t,28);terrMat2.needsUpdate=true;});}
+  if(!_w1m||!_w1m.normalMap){txL2.load(RN,t=>{terrMat2.normalMap=tile2(t,28);terrMat2.normalScale.set(1.6,1.6);terrMat2.needsUpdate=true;});}
+  if(!_w1m||!_w1m.roughnessMap){txL2.load(RR,t=>{terrMat2.roughnessMap=tile2(t,28);terrMat2.needsUpdate=true;});}
 
   // ── Sky — pinkish-purple, same NASA map with pink multiplier ──
   const skyGeo2=new THREE.SphereGeometry(280,48,24);
@@ -1422,7 +1439,7 @@ function triggerReturn(){
 // ANIMATION LOOP
 // ══════════════════════════════════════════════════════
 const clk=new THREE.Clock();
-const FPS_CAP=60,FRAME_MS=1000/FPS_CAP;
+const FPS_CAP=120,FRAME_MS=1000/FPS_CAP;// allow up to 120 fps for smoother input
 let _lastFrameNow=0;
 function animLoop(now){
   requestAnimationFrame(animLoop);
@@ -1444,7 +1461,7 @@ function animLoop(now){
   }
 
   // Auto orbit
-  if(autoOrbit){autoAngle+=dt*.08;const orbitR=16;camPos.set(Math.sin(autoAngle)*orbitR,1.8,Math.cos(autoAngle)*orbitR);camYaw=autoAngle;camPitch=.07+Math.sin(autoAngle*.18)*.035;}
+  if(autoOrbit){autoAngle+=dt*.08;const orbitR=16;camPos.set(Math.sin(autoAngle)*orbitR,1.8,Math.cos(autoAngle)*orbitR);camYaw=autoAngle;targetYaw=autoAngle;camPitch=.07+Math.sin(autoAngle*.18)*.035;targetPitch=camPitch;}
 
   // WASD
   if(!autoOrbit){
@@ -1464,7 +1481,19 @@ function animLoop(now){
     camPos.z+=(-Math.cos(camYaw)*(-jY)-Math.sin(camYaw)*jX)*spd;
   }
 
-  WC.position.copy(camPos);WC.rotation.set(camPitch,camYaw,0,'YXZ');
+  // ── Smooth look inertia ──
+  if(!suckupActive&&!returnActive){
+    const ll=1-Math.pow(.002,dt);// exponential decay ~12 frames to settle
+    camYaw+=(targetYaw-camYaw)*ll;
+    camPitch+=(targetPitch-camPitch)*ll;
+  }
+  // ── Walking camera bob (smooth amplitude fade in/out) ──
+  const _isWalking=(keys.w||keys.s||keys.a||keys.d||jActive)&&!autoOrbit&&!suckupActive&&!returnActive;
+  camBobAmp+=((_isWalking?1:0)-camBobAmp)*Math.min(1,dt*5);// lerp amplitude
+  if(_isWalking)camBobT+=dt*5.8;
+  const _bob=Math.sin(camBobT)*.052*camBobAmp;
+  WC.position.copy(camPos);WC.position.y+=_bob;
+  WC.rotation.set(camPitch,camYaw,0,'YXZ');
 
   // Panels
   panelMeshes.forEach((p,i)=>{
@@ -1570,30 +1599,36 @@ function animLoop(now){
   if(suckupActive){
     suckupT+=dt;
     const ov=suckOverlay;
-    if(suckupT<2.0){
-      // Phase 1: spiral camera upward + spin + overlay brightens
-      const prog=suckupT/2.0;
-      const spiral=prog*Math.PI*5;
-      const sr=(1-prog)*2.5;
-      camPos.x+=(Math.sin(spiral)*sr-camPos.x)*.1;
-      camPos.z+=(Math.cos(spiral)*sr-camPos.z)*.1;
-      camPos.y+=(1.8+prog*40-camPos.y)*.07;
-      camYaw+=dt*3.5;
-      camPitch=Math.min(Math.PI/2.1,camPitch+dt*.8);
-      if(ov)ov.style.opacity=(prog*.9).toString();
-    } else if(suckupT<2.6){
-      // Phase 2: full bright flash — switch scenes
+    if(suckupT<2.2){
+      // Phase 1: accelerating spiral upward (ease-in cubic)
+      const prog=suckupT/2.2;
+      const eased=prog*prog*(3-2*prog);// smoothstep
+      const spiral=eased*Math.PI*6;
+      const sr=(1-eased)*3.5;
+      // Shake increases as we approach the end
+      const shk=eased*.18;
+      camPos.x+=(Math.sin(spiral)*sr-camPos.x)*.12+(Math.random()-.5)*shk;
+      camPos.z+=(Math.cos(spiral)*sr-camPos.z)*.12+(Math.random()-.5)*shk;
+      camPos.y+=(1.8+eased*55-camPos.y)*.09;
+      const spinRate=2.5+eased*5;
+      camYaw+=dt*spinRate;targetYaw=camYaw;
+      camPitch=Math.min(Math.PI/2.1,camPitch+dt*1.1*eased+dt*.25);targetPitch=camPitch;
+      if(ov)ov.style.opacity=(eased*.95).toString();
+    } else if(suckupT<2.8){
+      // Phase 2: full white flash — switch scenes
       if(ov)ov.style.opacity='1';
       if(!inSecondWorld){
         inSecondWorld=true;
-        camPos.set(8,1.8,8);camYaw=Math.PI+Math.PI/4;camPitch=.06;
+        camPos.set(8,1.8,8);camYaw=Math.PI+Math.PI/4;targetYaw=camYaw;camPitch=.06;targetPitch=.06;
+        hoveredPanel=null;const tt=document.getElementById('hud-tooltip');if(tt){tt.textContent='';tt.style.opacity='0';}
         const rh=document.getElementById('return-hint');if(rh)rh.style.opacity='1';
       }
     } else {
-      // Phase 3: fade into second world
-      const prog=(suckupT-2.6)/1.0;
-      if(ov)ov.style.opacity=Math.max(0,1-prog).toString();
-      if(suckupT>3.6){suckupActive=false;if(ov)ov.style.opacity='0';}
+      // Phase 3: fade into second world (ease-out)
+      const prog=(suckupT-2.8)/1.0;
+      const eased=1-Math.pow(1-prog,3);
+      if(ov)ov.style.opacity=Math.max(0,1-eased).toString();
+      if(suckupT>3.8){suckupActive=false;if(ov)ov.style.opacity='0';}
     }
     WC.position.copy(camPos);WC.rotation.set(camPitch,camYaw,0,'YXZ');
   }
@@ -1601,19 +1636,25 @@ function animLoop(now){
   if(returnActive){
     returnT+=dt;
     const ov=suckOverlay;
-    if(returnT<1.2){
-      if(ov)ov.style.opacity=(returnT/1.2).toString();
-    } else if(returnT<1.8){
+    if(returnT<1.0){
+      // Phase 1: bright flash fade-in (ease-in)
+      const prog=returnT/1.0;
+      const eased=prog*prog;
+      if(ov)ov.style.opacity=Math.min(1,eased).toString();
+    } else if(returnT<1.5){
+      // Phase 2: hold white — switch scene
       if(ov)ov.style.opacity='1';
       if(inSecondWorld){
         inSecondWorld=false;
-        camPos.set(-14,1.8,0);camYaw=0;camPitch=.06;
+        camPos.set(-14,1.8,0);camYaw=0;targetYaw=0;camPitch=.06;targetPitch=.06;
         const rh=document.getElementById('return-hint');if(rh)rh.style.opacity='0';
       }
     } else {
-      const prog=(returnT-1.8)/1.0;
-      if(ov)ov.style.opacity=Math.max(0,1-prog).toString();
-      if(returnT>2.8){returnActive=false;if(ov)ov.style.opacity='0';}
+      // Phase 3: ease-out fade back to world 1
+      const prog=(returnT-1.5)/1.2;
+      const eased=1-Math.pow(1-Math.min(1,prog),3);
+      if(ov)ov.style.opacity=Math.max(0,1-eased).toString();
+      if(returnT>2.7){returnActive=false;if(ov)ov.style.opacity='0';autoOrbit=true;}
     }
     WC.position.copy(camPos);WC.rotation.set(camPitch,camYaw,0,'YXZ');
   }
