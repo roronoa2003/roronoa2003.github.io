@@ -506,38 +506,46 @@ function getContent(id){
 // PANEL CANVAS TEXTURE
 // ══════════════════════════════════════════════════════
 function makePanelTex(sec){
-  const W=768,H=480,cv=document.createElement('canvas');
+  const W=1536,H=960,cv=document.createElement('canvas');
   cv.width=W;cv.height=H;const ctx=cv.getContext('2d');
-  const g=ctx.createRadialGradient(W/2,H*.4,0,W/2,H*.4,350);
-  g.addColorStop(0,'#1c0508');g.addColorStop(1,'#070407');
+  // Background
+  const g=ctx.createRadialGradient(W/2,H*.38,0,W/2,H*.38,700);
+  g.addColorStop(0,'#240810');g.addColorStop(1,'#060307');
   ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  // Scanlines
-  ctx.fillStyle='rgba(0,0,0,.07)';for(let y=0;y<H;y+=3)ctx.fillRect(0,y,W,1.5);
-  // Top bar gradient
-  const tg=ctx.createLinearGradient(0,0,W,0);tg.addColorStop(0,'#E50914');tg.addColorStop(.5,'#ff4444');tg.addColorStop(1,'#E50914');
-  ctx.fillStyle=tg;ctx.fillRect(0,0,W,4);
-  // Bottom subtle glow line
-  const bg2=ctx.createLinearGradient(0,H-3,W,H-3);bg2.addColorStop(0,'transparent');bg2.addColorStop(.5,'rgba(229,9,20,.3)');bg2.addColorStop(1,'transparent');
-  ctx.fillStyle=bg2;ctx.fillRect(0,H-3,W,3);
+  // Subtle scanlines
+  ctx.fillStyle='rgba(0,0,0,.05)';for(let y=0;y<H;y+=4)ctx.fillRect(0,y,W,2);
+  // Top accent bar
+  const tg=ctx.createLinearGradient(0,0,W,0);
+  tg.addColorStop(0,'#c40010');tg.addColorStop(.5,'#ff3333');tg.addColorStop(1,'#c40010');
+  ctx.fillStyle=tg;ctx.fillRect(0,0,W,8);
+  // Bottom glow line
+  const bg2=ctx.createLinearGradient(0,H-4,W,H-4);
+  bg2.addColorStop(0,'transparent');bg2.addColorStop(.5,'rgba(229,9,20,.35)');bg2.addColorStop(1,'transparent');
+  ctx.fillStyle=bg2;ctx.fillRect(0,H-4,W,4);
   // Corner brackets
-  ctx.strokeStyle='rgba(229,9,20,.45)';ctx.lineWidth=2;
-  [[20,20,50,0,0,50],[W-20,20,-50,0,0,50],[20,H-20,50,0,0,-50],[W-20,H-20,-50,0,0,-50]].forEach(([x,y,dx,dy,dx2,dy2])=>{
-    ctx.beginPath();ctx.moveTo(x+dx,y);ctx.lineTo(x,y);ctx.lineTo(x,y+dy2+Math.sign(dy2)*50);ctx.stroke();
+  ctx.strokeStyle='rgba(229,9,20,.55)';ctx.lineWidth=3.5;
+  [[36,36,80],[W-36,36,-80],[36,H-36,80],[W-36,H-36,-80]].forEach(([x,y,d])=>{
+    ctx.beginPath();ctx.moveTo(x+d,y);ctx.lineTo(x,y);ctx.lineTo(x,y+d);ctx.stroke();
   });
-  // Icon shadow glow
-  ctx.shadowColor='rgba(229,9,20,.7)';ctx.shadowBlur=28;
-  ctx.font='100px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(sec.icon,W/2,H*.38);
+  // Icon
+  ctx.shadowColor='rgba(229,9,20,.85)';ctx.shadowBlur=55;
+  ctx.font='200px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='#fff';ctx.fillText(sec.icon,W/2,H*.36);
   ctx.shadowBlur=0;
-  // Title
-  ctx.shadowColor='rgba(229,9,20,.3)';ctx.shadowBlur=10;
-  ctx.font='bold 58px "Bebas Neue",Impact,sans-serif';ctx.fillStyle='#fff';ctx.textBaseline='top';
-  ctx.fillText(sec.title,W/2,H*.58);ctx.shadowBlur=0;
-  // Sub
-  ctx.font='18px "Outfit",Arial,sans-serif';ctx.fillStyle='rgba(180,180,180,.7)';
-  ctx.fillText(sec.sub,W/2,H*.76);
+  // Section title — large, crisp Bebas Neue
+  ctx.shadowColor='rgba(229,9,20,.5)';ctx.shadowBlur=22;
+  ctx.font='bold 128px "Bebas Neue",Impact,sans-serif';
+  ctx.fillStyle='#ffffff';ctx.textBaseline='top';
+  ctx.fillText(sec.title,W/2,H*.57);
+  ctx.shadowBlur=0;
+  // Subtitle
+  ctx.font='500 38px "Outfit",Arial,sans-serif';
+  ctx.fillStyle='rgba(210,210,210,.85)';
+  ctx.fillText(sec.sub,W/2,H*.755);
   // CTA hint
-  ctx.font='11px "Outfit",Arial,sans-serif';ctx.fillStyle='rgba(229,9,20,.5)';
-  ctx.fillText('— CLICK TO EXPLORE —',W/2,H*.88);
+  ctx.font='300 26px "Outfit",Arial,sans-serif';
+  ctx.fillStyle='rgba(229,9,20,.7)';
+  ctx.fillText('— CLICK TO EXPLORE —',W/2,H*.875);
   return new THREE.CanvasTexture(cv);
 }
 
@@ -578,6 +586,7 @@ function initWorld(){
 
   buildLights();
   buildFloor();
+
   buildStars();
   buildDust();
   buildPanels();
@@ -641,18 +650,6 @@ function buildFloor(){
   txLoader.load(NOR_URL,  t=>{terrMat.normalMap=tile(t);terrMat.normalScale.set(.6,.6);terrMat.needsUpdate=true;},undefined,()=>{});
   txLoader.load(ROUGH_URL,t=>{terrMat.roughnessMap=tile(t);terrMat.needsUpdate=true;},undefined,()=>{});
 
-  // ── Scattered low-poly boulders ──────────────────────
-  const bCols=[0x1e0814,0x2b0d1c,0x130410,0x3c1028,0x240a16];
-  for(let i=0;i<(isMobile?22:44);i++){
-    const a=Math.random()*Math.PI*2,d=11+Math.random()*90;
-    const sc=.3+Math.random()*2.2;
-    const bGeo=new THREE.IcosahedronGeometry(sc,0);
-    const bMat=new THREE.MeshStandardMaterial({color:bCols[i%bCols.length],roughness:.92,metalness:.03});
-    const b=new THREE.Mesh(bGeo,bMat);
-    b.position.set(Math.sin(a)*d,sc*.25,Math.cos(a)*d);
-    b.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
-    WS.add(b);
-  }
 
   // ── Glowing lava fissures ────────────────────────────
   const fPts=[];
@@ -678,20 +675,53 @@ function buildFloor(){
 }
 
 function buildStars(){
-  const cnt=isMobile?1500:3000;
-  const sG=new THREE.BufferGeometry(),sP=new Float32Array(cnt*3),sC=new Float32Array(cnt*3);
-  for(let i=0;i<cnt;i++){
-    const t=Math.random()*Math.PI*2,p=Math.random()*Math.PI,r=40+Math.random()*120;
-    sP[i*3]=r*Math.sin(p)*Math.cos(t);sP[i*3+1]=Math.abs(r*Math.cos(p))+3;sP[i*3+2]=r*Math.sin(p)*Math.sin(t);
-    const col=Math.random();
-    if(col<.12){sC[i*3]=.9;sC[i*3+1]=.04;sC[i*3+2]=.07;}
-    else if(col<.22){sC[i*3]=.9;sC[i*3+1]=.6;sC[i*3+2]=.1;}
-    else{const b=.4+Math.random()*.6;sC[i*3]=b;sC[i*3+1]=b;sC[i*3+2]=b;}
+  // ── NASA real Milky Way equirectangular sky sphere ──
+  const skyGeo=new THREE.SphereGeometry(280,48,24);
+  const skyMat=new THREE.MeshBasicMaterial({side:THREE.BackSide,depthWrite:false,fog:false});
+  const skySphere=new THREE.Mesh(skyGeo,skyMat);
+  WS.add(skySphere);
+
+  function buildCanvasGalaxy(){
+    // Procedural fallback – deep space with colour-varied stars + milky band
+    const W=2048,H=1024;
+    const c=document.createElement('canvas');c.width=W;c.height=H;
+    const ctx=c.getContext('2d');
+    ctx.fillStyle='#00000a';ctx.fillRect(0,0,W,H);
+    // Milky way diffuse band
+    const band=ctx.createLinearGradient(0,280,0,H-280);
+    band.addColorStop(0,'rgba(0,0,0,0)');band.addColorStop(.35,'rgba(80,50,30,.1)');
+    band.addColorStop(.5,'rgba(150,90,50,.15)');band.addColorStop(.65,'rgba(80,50,30,.1)');band.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=band;ctx.fillRect(0,0,W,H);
+    // Stars
+    for(let i=0;i<12000;i++){
+      const x=Math.random()*W,y=Math.random()*H,r=Math.random()*1.4+.1;
+      const v=Math.random();
+      let col;
+      if(v<.08)col=`rgba(255,120,100,${.6+Math.random()*.4})`;
+      else if(v<.16)col=`rgba(150,170,255,${.6+Math.random()*.4})`;
+      else if(v<.22)col=`rgba(255,220,130,${.5+Math.random()*.5})`;
+      else col=`rgba(255,255,255,${.25+Math.random()*.75})`;
+      ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+    }
+    // Nebula glows
+    [[400,350,180,180,'rgba(120,20,40,.07)'],[1200,500,220,140,'rgba(20,40,120,.06)'],[1700,300,160,120,'rgba(80,10,50,.06)']].forEach(([cx,cy,rx,ry,col])=>{
+      const g=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(rx,ry));
+      g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.fill();
+    });
+    return new THREE.CanvasTexture(c);
   }
-  sG.setAttribute('position',new THREE.BufferAttribute(sP,3));
-  sG.setAttribute('color',new THREE.BufferAttribute(sC,3));
-  WS.add(new THREE.Points(sG,new THREE.PointsMaterial({size:.1,vertexColors:true,transparent:true,opacity:.75})));
+
+  const txLoader=new THREE.TextureLoader();
+  txLoader.crossOrigin='anonymous';
+  txLoader.load(
+    'https://svs.gsfc.nasa.gov/vis/a000000/a004800/a004851/starmap_2020_4k_print.jpg',
+    t=>{skyMat.map=t;skyMat.needsUpdate=true;},
+    undefined,
+    ()=>{skyMat.map=buildCanvasGalaxy();skyMat.needsUpdate=true;}
+  );
 }
+
 
 function buildDust(){
   const cnt=isMobile?500:1000;
@@ -752,44 +782,72 @@ function buildDecorations(){
 }
 
 function buildProfileAvatar(){
-  // Circular photo frame using canvas
-  const cv=document.createElement('canvas');cv.width=512;cv.height=512;
+  const S=1024; // high-res canvas for crisp display
+  const cv=document.createElement('canvas');cv.width=S;cv.height=S;
   const ctx=cv.getContext('2d');
-  const img=new Image();
-  img.onload=()=>{
-    ctx.beginPath();ctx.arc(256,256,248,0,Math.PI*2);ctx.clip();
-    ctx.drawImage(img,0,0,512,512);
-    // Overlay vignette
-    const v=ctx.createRadialGradient(256,256,180,256,256,256);v.addColorStop(0,'transparent');v.addColorStop(1,'rgba(0,0,0,.35)');
-    ctx.fillStyle=v;ctx.fillRect(0,0,512,512);
+
+  function buildAvatar(imgSrc){
+    if(imgSrc){
+      // Clip to circle — no crossOrigin needed for local file
+      ctx.save();
+      ctx.beginPath();ctx.arc(S/2,S/2,S/2-4,0,Math.PI*2);ctx.clip();
+      ctx.drawImage(imgSrc,0,0,S,S);
+      ctx.restore();
+      // Thin dark edge only (no heavy vignette — keeps photo bright & clear)
+      const edge=ctx.createRadialGradient(S/2,S/2,S*.38,S/2,S/2,S/2);
+      edge.addColorStop(0,'transparent');edge.addColorStop(1,'rgba(0,0,0,.18)');
+      ctx.fillStyle=edge;ctx.beginPath();ctx.arc(S/2,S/2,S/2,0,Math.PI*2);ctx.fill();
+    }else{
+      // Stylised placeholder when no photo
+      ctx.fillStyle='#1a0008';ctx.beginPath();ctx.arc(S/2,S/2,S/2-4,0,Math.PI*2);ctx.fill();
+      ctx.font='bold 320px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillStyle='rgba(229,9,20,.6)';ctx.fillText('R',S/2,S/2+20);
+    }
     const tex=new THREE.CanvasTexture(cv);
-    const photoMesh=new THREE.Mesh(new THREE.CircleGeometry(1.05,64),new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:1}));
+    tex.anisotropy=WR.capabilities.getMaxAnisotropy(); // maximum sharpness
+    const photoMesh=new THREE.Mesh(
+      new THREE.CircleGeometry(1.15,128),
+      new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:1,fog:false})
+    );
     photoMesh.position.set(0,5.8,0);WS.add(photoMesh);
     WS.userData.photoMesh=photoMesh;
-    // Outer ring
-    const ringGeo=new THREE.TorusGeometry(1.18,.04,16,80);
-    const ring=new THREE.Mesh(ringGeo,new THREE.MeshStandardMaterial({color:0xe50914,emissive:0xe50914,emissiveIntensity:.8,roughness:.3,metalness:.9}));
+    // Glowing red ring
+    const ring=new THREE.Mesh(
+      new THREE.TorusGeometry(1.28,.05,20,90),
+      new THREE.MeshStandardMaterial({color:0xe50914,emissive:0xe50914,emissiveIntensity:1.2,roughness:.2,metalness:.9})
+    );
     ring.position.set(0,5.8,0);WS.add(ring);WS.userData.photoRing=ring;
-    // Outer glow ring (wider)
-    const ring2=new THREE.Mesh(new THREE.TorusGeometry(1.32,.015,12,80),new THREE.MeshBasicMaterial({color:0xe50914,transparent:true,opacity:.25,blending:THREE.AdditiveBlending}));
+    // Wide glow halo
+    const ring2=new THREE.Mesh(
+      new THREE.TorusGeometry(1.46,.018,12,90),
+      new THREE.MeshBasicMaterial({color:0xff3322,transparent:true,opacity:.35,blending:THREE.AdditiveBlending})
+    );
     ring2.position.set(0,5.8,0);WS.add(ring2);WS.userData.photoRing2=ring2;
-    // Name label below photo
-    const nc=document.createElement('canvas');nc.width=512;nc.height=96;
+    // Name label — high-res 1024×128 canvas
+    const nc=document.createElement('canvas');nc.width=1024;nc.height=128;
     const nctx=nc.getContext('2d');
-    nctx.font='bold 52px "Bebas Neue",Impact,sans-serif';nctx.textAlign='center';nctx.fillStyle='rgba(255,255,255,.9)';nctx.fillText('ROHAN IYER',256,60);
-    nctx.font='13px "Outfit",Arial,sans-serif';nctx.fillStyle='rgba(229,9,20,.8)';nctx.letterSpacing='4px';nctx.fillText('AI · ML · PORTFOLIO 2026',256,82);
+    nctx.clearRect(0,0,1024,128);
+    nctx.font='bold 88px "Bebas Neue",Impact,sans-serif';
+    nctx.textAlign='center';nctx.fillStyle='#ffffff';
+    nctx.shadowColor='rgba(229,9,20,.7)';nctx.shadowBlur=20;
+    nctx.fillText('ROHAN IYER',512,82);
+    nctx.shadowBlur=0;
+    nctx.font='500 26px "Outfit",Arial,sans-serif';
+    nctx.fillStyle='rgba(229,9,20,.9)';
+    nctx.fillText('AI  ·  ML  ·  PORTFOLIO  2026',512,116);
     const nameTex=new THREE.CanvasTexture(nc);
-    const nameMesh=new THREE.Mesh(new THREE.PlaneGeometry(2.4,.45),new THREE.MeshBasicMaterial({map:nameTex,transparent:true,depthWrite:false}));
-    nameMesh.position.set(0,4.4,0);WS.add(nameMesh);WS.userData.nameMesh=nameMesh;
-    // Point light behind photo
-    const pl=new THREE.PointLight(0xe50914,1.5,8);pl.position.set(0,5.8,.3);WS.add(pl);
-  };
-  img.onerror=()=>{
-    // Fallback: emissive sphere
-    const fb=new THREE.Mesh(new THREE.SphereGeometry(1,32,32),new THREE.MeshStandardMaterial({color:0x330010,emissive:0xe50914,emissiveIntensity:.3,roughness:.8}));
-    fb.position.set(0,5.8,0);WS.add(fb);
-  };
-  img.crossOrigin='anonymous';
+    nameTex.anisotropy=WR.capabilities.getMaxAnisotropy();
+    const nameMesh=new THREE.Mesh(
+      new THREE.PlaneGeometry(2.8,.35),
+      new THREE.MeshBasicMaterial({map:nameTex,transparent:true,depthWrite:false,fog:false})
+    );
+    nameMesh.position.set(0,4.3,0);WS.add(nameMesh);WS.userData.nameMesh=nameMesh;
+    const pl=new THREE.PointLight(0xe50914,1.8,10);pl.position.set(0,5.8,.4);WS.add(pl);
+  }
+
+  const img=new Image(); // no crossOrigin — local file is same-origin
+  img.onload=()=>buildAvatar(img);
+  img.onerror=()=>buildAvatar(null);
   img.src='./profilephoto.png';
 }
 
