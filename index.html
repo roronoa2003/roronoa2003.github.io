@@ -339,7 +339,7 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   <div id="st-vignette"></div>
   <!-- World transition -->
   <div id="suck-overlay"></div>
-  <div id="world2-hint">⚠ APPROACH THE HELMET TO ENTER THE UPSIDE DOWN</div>
+  <div id="world2-hint">⚠ APPROACH THE DEMOGORGON TO ENTER THE UPSIDE DOWN</div>
   <div id="return-hint">◎ STEP INTO THE PORTAL TO RETURN</div>
 
   <!-- Content Overlay -->
@@ -1175,16 +1175,40 @@ function buildProfileAvatar(){
 function loadGLBModel(){
   if(!THREE.GLTFLoader){buildFallbackModel();return;}
   const loader=new THREE.GLTFLoader();
-  const URL='https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/DamagedHelmet/glTF-Binary/DamagedHelmet.glb';
-  loader.load(URL,gltf=>{
+  // Demogorgon from Stranger Things — sits at scene centre
+  loader.load('./demogorgon_stranger_things.glb',gltf=>{
     const model=gltf.scene;
-    model.scale.set(1.4,1.4,1.4);model.position.set(0,2.6,0);
-    model.traverse(n=>{if(n.isMesh){n.castShadow=false;if(n.material){n.material.envMapIntensity=1.5;}}});
+    // Auto-fit: normalise bounding box so the model stands at a good height
+    const box=new THREE.Box3().setFromObject(model);
+    const size=new THREE.Vector3();box.getSize(size);
+    const maxDim=Math.max(size.x,size.y,size.z);
+    const targetH=4.2;// desired height in world units
+    const s=targetH/maxDim;
+    model.scale.set(s,s,s);
+    // Place feet on ground, centred
+    const box2=new THREE.Box3().setFromObject(model);
+    model.position.set(0,-box2.min.y+0.05,0);
+    model.traverse(n=>{
+      if(n.isMesh){
+        n.castShadow=false;
+        if(n.material){
+          n.material.envMapIntensity=1.2;
+          // Slight emissive red so it glows in the dark alien lighting
+          if(!n.material.emissive)n.material.emissive=new THREE.Color(0x1a0000);
+          else n.material.emissive.set(0x1a0000);
+          n.material.emissiveIntensity=.18;
+          n.material.needsUpdate=true;
+        }
+      }
+    });
     WS.add(model);WS.userData.glbModel=model;WS.userData.glbLoaded=true;
-    // Dismiss loading
+    // Update helmetPos to match actual model centre for suck-up trigger
+    const finalBox=new THREE.Box3().setFromObject(model);
+    const centre=new THREE.Vector3();finalBox.getCenter(centre);
+    WS.userData.glbCentreY=centre.y;
     setTimeout(dismissLoading,400);
   },undefined,()=>{buildFallbackModel();});
-  setTimeout(()=>{if(!WS.userData.glbLoaded){buildFallbackModel();}},5000);
+  setTimeout(()=>{if(!WS.userData.glbLoaded){buildFallbackModel();}},8000);
 }
 
 function buildFallbackModel(){
@@ -1584,7 +1608,8 @@ function animLoop(now){
 
   // ══ SUCK-UP / PORTAL SYSTEM ═════════════════════════
   const suckOverlay=document.getElementById('suck-overlay');
-  const helmetPos=new THREE.Vector3(0,2.6,0);
+  const _cy=WS.userData.glbCentreY||2.1;
+  const helmetPos=new THREE.Vector3(0,_cy,0);
 
   if(!inSecondWorld&&!suckupActive&&!returnActive){
     // Proximity hint
