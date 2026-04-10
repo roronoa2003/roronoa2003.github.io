@@ -167,6 +167,33 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   color:rgba(255,150,255,.9);text-shadow:0 0 14px rgba(200,80,255,.8);
   pointer-events:none;opacity:0;transition:opacity .6s;white-space:nowrap;z-index:15;}
 
+/* ── WELCOME TO THE VOID ── */
+#void-welcome{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  font-family:'ITC Benguiat Std','ITC Benguiat',Georgia,serif;
+  font-size:clamp(2rem,6vw,4.2rem);
+  letter-spacing:.18em;text-transform:uppercase;
+  color:#fff;
+  text-shadow:0 0 40px rgba(200,80,255,1),0 0 80px rgba(180,40,255,.7),0 0 140px rgba(140,0,255,.4);
+  pointer-events:none;z-index:190;
+  opacity:0;white-space:nowrap;
+  animation:none;
+}
+@keyframes voidWelcome{
+  0%  {opacity:0;  letter-spacing:.08em; filter:blur(18px)  brightness(.4);}
+  18% {opacity:1;  letter-spacing:.20em; filter:blur(0px)   brightness(1.6);}
+  22% {opacity:.92;letter-spacing:.18em; filter:blur(0px)   brightness(1);}
+  /* subtle glitch pulse at ~30% */
+  30% {opacity:.95;filter:brightness(1.4) contrast(1.3);}
+  31% {opacity:.8; filter:none;}
+  32% {opacity:.95;filter:brightness(1.3);}
+  33% {opacity:.9; filter:none;}
+  72% {opacity:.88;filter:none;}
+  /* fade out */
+  100%{opacity:0;  letter-spacing:.26em; filter:blur(10px)  brightness(.3);}
+}
+
 /* MOBILE SECTIONS BUTTON */
 #mob-sections-btn{display:block;position:absolute;bottom:1.4rem;left:1.8rem;background:rgba(229,9,20,.15);border:1px solid rgba(229,9,20,.4);color:rgba(229,9,20,.9);font-family:'Outfit',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:.35rem 1rem;border-radius:3px;pointer-events:all;cursor:none;}
 @media(pointer:coarse){#mob-sections-btn{cursor:pointer;}}
@@ -372,6 +399,7 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   <div id="suck-overlay"></div>
   <div id="world2-hint">⚠ APPROACH THE DEMOGORGON TO ENTER THE UPSIDE DOWN</div>
   <div id="return-hint">◎ STEP INTO THE PORTAL TO RETURN</div>
+  <div id="void-welcome">WELCOME TO THE VOID</div>
 
   <!-- Content Overlay -->
   <div id="content-overlay">
@@ -1707,6 +1735,16 @@ function animLoop(now){
         camPos.set(8,1.8,8);camYaw=Math.PI+Math.PI/4;targetYaw=camYaw;camPitch=.06;targetPitch=.06;
         hoveredPanel=null;const tt=document.getElementById('hud-tooltip');if(tt){tt.textContent='';tt.style.opacity='0';}
         const rh=document.getElementById('return-hint');if(rh)rh.style.opacity='1';
+        // ── Welcome to the Void ──
+        (function(){
+          const vw=document.getElementById('void-welcome');
+          if(!vw)return;
+          vw.style.animation='none';vw.style.opacity='0';
+          // small delay so the flash-white overlay clears first
+          setTimeout(()=>{
+            vw.style.animation='voidWelcome 5.2s cubic-bezier(.4,0,.2,1) forwards';
+          },320);
+        })();
       }
     } else {
       // Phase 3: fade into second world (ease-out)
