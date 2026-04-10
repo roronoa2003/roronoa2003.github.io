@@ -340,15 +340,17 @@ window.addEventListener('load',()=>{
 // ══════════════════════════════════════════════════════
 // SECTIONS METADATA
 // ══════════════════════════════════════════════════════
+// h = panel centre height. Panels are 3.8 m tall → bottom at 2.5-1.9 = 0.6 m above ground.
+const PANEL_H=2.5;
 const SECTIONS=[
-  {id:'hero',      title:'ROHAN IYER',    icon:'🎬',sub:'Portfolio 2026',   angle:0,   h:1.9, dist:12},
-  {id:'about',     title:'ABOUT ME',       icon:'📌',sub:'Personal Info',    angle:40,  h:1.3, dist:12},
-  {id:'education', title:'EDUCATION',      icon:'📚',sub:'NMIMS · 9.575',    angle:80,  h:2.1, dist:12},
-  {id:'skills',    title:'TECH SKILLS',    icon:'🧠',sub:'AI · ML · Cloud',  angle:130, h:1.6, dist:12},
-  {id:'experience',title:'EXPERIENCE',     icon:'💼',sub:'3 Roles',          angle:180, h:1.9, dist:12},
-  {id:'projects',  title:'PROJECTS',       icon:'💡',sub:'9+ Projects',      angle:220, h:2.0, dist:12},
-  {id:'work',      title:'WORK & PRESS',   icon:'🎥',sub:'Reels & Papers',   angle:270, h:1.5, dist:12},
-  {id:'contact',   title:'CONTACT',        icon:'🤝',sub:'Awards & Connect', angle:320, h:1.8, dist:12},
+  {id:'hero',      title:'ROHAN IYER',    icon:'🎬',sub:'Portfolio 2026',   angle:0,   h:PANEL_H, dist:12},
+  {id:'about',     title:'ABOUT ME',       icon:'📌',sub:'Personal Info',    angle:40,  h:PANEL_H, dist:12},
+  {id:'education', title:'EDUCATION',      icon:'📚',sub:'NMIMS · 9.575',    angle:80,  h:PANEL_H, dist:12},
+  {id:'skills',    title:'TECH SKILLS',    icon:'🧠',sub:'AI · ML · Cloud',  angle:130, h:PANEL_H, dist:12},
+  {id:'experience',title:'EXPERIENCE',     icon:'💼',sub:'3 Roles',          angle:180, h:PANEL_H, dist:12},
+  {id:'projects',  title:'PROJECTS',       icon:'💡',sub:'9+ Projects',      angle:220, h:PANEL_H, dist:12},
+  {id:'work',      title:'WORK & PRESS',   icon:'🎥',sub:'Reels & Papers',   angle:270, h:PANEL_H, dist:12},
+  {id:'contact',   title:'CONTACT',        icon:'🤝',sub:'Awards & Connect', angle:320, h:PANEL_H, dist:12},
 ];
 
 // ══════════════════════════════════════════════════════
@@ -508,65 +510,94 @@ function getContent(id){
 function makePanelTex(sec){
   const W=1536,H=960,cv=document.createElement('canvas');
   cv.width=W;cv.height=H;const ctx=cv.getContext('2d');
-  // Background
-  const g=ctx.createRadialGradient(W/2,H*.38,0,W/2,H*.38,700);
-  g.addColorStop(0,'#240810');g.addColorStop(1,'#060307');
-  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  // Subtle scanlines
-  ctx.fillStyle='rgba(0,0,0,.05)';for(let y=0;y<H;y+=4)ctx.fillRect(0,y,W,2);
-  // Top accent bar
-  const tg=ctx.createLinearGradient(0,0,W,0);
-  tg.addColorStop(0,'#c40010');tg.addColorStop(.5,'#ff3333');tg.addColorStop(1,'#c40010');
-  ctx.fillStyle=tg;ctx.fillRect(0,0,W,8);
-  // Bottom glow line
-  const bg2=ctx.createLinearGradient(0,H-4,W,H-4);
-  bg2.addColorStop(0,'transparent');bg2.addColorStop(.5,'rgba(229,9,20,.35)');bg2.addColorStop(1,'transparent');
-  ctx.fillStyle=bg2;ctx.fillRect(0,H-4,W,4);
-  // Corner brackets
-  ctx.strokeStyle='rgba(229,9,20,.55)';ctx.lineWidth=3.5;
-  [[36,36,80],[W-36,36,-80],[36,H-36,80],[W-36,H-36,-80]].forEach(([x,y,d])=>{
-    ctx.beginPath();ctx.moveTo(x+d,y);ctx.lineTo(x,y);ctx.lineTo(x,y+d);ctx.stroke();
+  // ── Zone constants — pixel-absolute so every panel is structurally identical ──
+  const PAD=48, TOP_BAR=14, BOT_BAR=14;
+  const ICON_Y=210, ICON_SZ=108;
+  const TITLE_Y=348, RULE_Y=516, SUB_Y=554, CTA_Y=868;
+
+  // ── 1. Flat dark background (subtle linear gradient top→bottom) ───────
+  const bgGrad=ctx.createLinearGradient(0,0,0,H);
+  bgGrad.addColorStop(0,'#0e0314');bgGrad.addColorStop(1,'#050108');
+  ctx.fillStyle=bgGrad;ctx.fillRect(0,0,W,H);
+
+  // ── 2. Edge vignette ──────────────────────────────────────────────────
+  const vig=ctx.createRadialGradient(W/2,H/2,H*.22,W/2,H/2,H*.88);
+  vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(1,'rgba(0,0,0,.6)');
+  ctx.fillStyle=vig;ctx.fillRect(0,0,W,H);
+
+  // ── 3. Full-perimeter border ──────────────────────────────────────────
+  ctx.strokeStyle='rgba(229,9,20,.5)';ctx.lineWidth=3;
+  ctx.strokeRect(PAD*.5,PAD*.5,W-PAD,H-PAD);
+
+  // ── 4. Top + bottom red bars ──────────────────────────────────────────
+  const barGrad=ctx.createLinearGradient(0,0,W,0);
+  barGrad.addColorStop(0,'rgba(180,0,12,0)');barGrad.addColorStop(.12,'#e50914');
+  barGrad.addColorStop(.5,'#ff3a3a');barGrad.addColorStop(.88,'#e50914');
+  barGrad.addColorStop(1,'rgba(180,0,12,0)');
+  ctx.fillStyle=barGrad;
+  ctx.fillRect(0,0,W,TOP_BAR);
+  ctx.fillRect(0,H-BOT_BAR,W,BOT_BAR);
+
+  // ── 5. Icon with soft radial backdrop ────────────────────────────────
+  const iconBg=ctx.createRadialGradient(W/2,ICON_Y,0,W/2,ICON_Y,88);
+  iconBg.addColorStop(0,'rgba(229,9,20,.18)');iconBg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=iconBg;ctx.beginPath();ctx.arc(W/2,ICON_Y,88,0,Math.PI*2);ctx.fill();
+  ctx.save();
+  ctx.font=`${ICON_SZ}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.shadowColor='rgba(255,255,255,.28)';ctx.shadowBlur=18;
+  ctx.fillStyle='#fff';ctx.fillText(sec.icon,W/2,ICON_Y);
+  ctx.restore();
+
+  // ── 6. Title — crisp Bebas Neue, red drop-shadow for depth ───────────
+  ctx.save();
+  ctx.font='bold 112px "Bebas Neue",Impact,sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='top';
+  ctx.shadowColor='rgba(229,9,20,.7)';ctx.shadowBlur=22;ctx.shadowOffsetY=3;
+  ctx.fillStyle='#ffffff';
+  ctx.fillText(sec.title,W/2,TITLE_Y);
+  ctx.restore();
+
+  // ── 7. Horizontal rule ────────────────────────────────────────────────
+  const rLen=340;
+  const rGrad=ctx.createLinearGradient(W/2-rLen,RULE_Y,W/2+rLen,RULE_Y);
+  rGrad.addColorStop(0,'rgba(229,9,20,0)');rGrad.addColorStop(.25,'rgba(229,9,20,.9)');
+  rGrad.addColorStop(.5,'#ff4444');rGrad.addColorStop(.75,'rgba(229,9,20,.9)');
+  rGrad.addColorStop(1,'rgba(229,9,20,0)');
+  ctx.strokeStyle=rGrad;ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(W/2-rLen,RULE_Y);ctx.lineTo(W/2+rLen,RULE_Y);ctx.stroke();
+
+  // ── 8. Subtitle ───────────────────────────────────────────────────────
+  ctx.save();
+  ctx.font='400 35px "Outfit",Arial,sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='top';
+  ctx.shadowColor='rgba(229,9,20,.25)';ctx.shadowBlur=10;
+  ctx.fillStyle='rgba(210,210,220,.88)';
+  ctx.fillText(sec.sub,W/2,SUB_Y);
+  ctx.restore();
+
+  // ── 9. CTA thin separator + text ─────────────────────────────────────
+  const sepG=ctx.createLinearGradient(PAD*3,0,W-PAD*3,0);
+  sepG.addColorStop(0,'rgba(255,255,255,0)');sepG.addColorStop(.5,'rgba(255,255,255,.1)');sepG.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.strokeStyle=sepG;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(PAD*3,CTA_Y-22);ctx.lineTo(W-PAD*3,CTA_Y-22);ctx.stroke();
+
+  ctx.save();
+  ctx.font='300 26px "Outfit",Arial,sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='top';
+  ctx.fillStyle='rgba(229,9,20,.82)';
+  ctx.fillText('CLICK  TO  EXPLORE',W/2,CTA_Y);
+  ctx.restore();
+
+  // ── 10. Corner ticks — same length on every panel ─────────────────────
+  const TK=44;
+  ctx.strokeStyle='rgba(229,9,20,.72)';ctx.lineWidth=3;
+  [[PAD,PAD,1,1],[W-PAD,PAD,-1,1],[PAD,H-PAD,1,-1],[W-PAD,H-PAD,-1,-1]].forEach(([cx,cy,sx,sy])=>{
+    ctx.beginPath();ctx.moveTo(cx+sx*TK,cy);ctx.lineTo(cx,cy);ctx.lineTo(cx,cy+sy*TK);ctx.stroke();
   });
-  // Helper — draw text with layered white outer glow then fill
-  function glowText(text,x,y,font,fillCol,glowRadius,glowPasses){
-    ctx.save();
-    ctx.font=font;ctx.textAlign='center';ctx.textBaseline='top';
-    // Build up glow in multiple passes at decreasing opacity for smooth halo
-    for(let p=glowPasses;p>0;p--){
-      ctx.shadowColor='rgba(255,255,255,'+(0.08+(glowPasses-p)*0.03)+')';
-      ctx.shadowBlur=glowRadius*(p/glowPasses);
-      ctx.fillStyle='rgba(255,255,255,0)'; // transparent fill — only shadow counts
-      ctx.fillText(text,x,y);
-    }
-    // Final crisp fill on top
-    ctx.shadowColor='rgba(255,255,255,.55)';
-    ctx.shadowBlur=glowRadius*.35;
-    ctx.fillStyle=fillCol;
-    ctx.fillText(text,x,y);
-    ctx.shadowBlur=0;ctx.restore();
-  }
 
-  // Icon — white glow halo around emoji
-  ctx.save();
-  ctx.font='200px serif';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.shadowColor='rgba(255,255,255,.45)';ctx.shadowBlur=60;
-  ctx.fillStyle='#fff';ctx.fillText(sec.icon,W/2,H*.36);
-  ctx.shadowBlur=0;ctx.restore();
-
-  // Section title — large white glow outer bloom
-  glowText(sec.title,W/2,H*.57,'bold 128px "Bebas Neue",Impact,sans-serif','#ffffff',80,6);
-
-  // Subtitle — softer white glow
-  glowText(sec.sub,W/2,H*.755,'500 38px "Outfit",Arial,sans-serif','rgba(230,230,230,.95)',40,4);
-
-  // CTA hint — red tint with white glow
-  ctx.save();
-  ctx.font='300 26px "Outfit",Arial,sans-serif';ctx.textAlign='center';ctx.textBaseline='top';
-  ctx.shadowColor='rgba(255,255,255,.4)';ctx.shadowBlur=18;
-  ctx.fillStyle='rgba(255,120,120,.9)';
-  ctx.fillText('— CLICK TO EXPLORE —',W/2,H*.875);
-  ctx.shadowBlur=0;ctx.restore();
-  return new THREE.CanvasTexture(cv);
+  const tex=new THREE.CanvasTexture(cv);
+  tex.anisotropy=WR?WR.capabilities.getMaxAnisotropy():16;
+  return tex;
 }
 
 // ══════════════════════════════════════════════════════
@@ -628,11 +659,18 @@ function initWorld(){
 }
 
 function buildLights(){
-  WS.add(new THREE.AmbientLight(0x120008,2));
-  const d=new THREE.DirectionalLight(0xffeedd,2.5);d.position.set(5,15,8);WS.add(d);
-  const r1=new THREE.PointLight(0xe50914,4,35);r1.position.set(0,8,0);WS.add(r1);
-  const r2=new THREE.PointLight(0xff6030,1.5,25);r2.position.set(-5,3,5);WS.add(r2);
-  const b=new THREE.PointLight(0x2020ff,.8,30);b.position.set(5,5,-8);WS.add(b);
+  // Ambient — raised so distant vegetation is visible without harsh highlights
+  WS.add(new THREE.AmbientLight(0x180a0e,3.2));
+  // Main directional (moonlight from above)
+  const d=new THREE.DirectionalLight(0xdde8ff,2.2);d.position.set(5,18,8);WS.add(d);
+  // Central lava-glow point light
+  const r1=new THREE.PointLight(0xe50914,4,40);r1.position.set(0,8,0);WS.add(r1);
+  // Secondary warm fill
+  const r2=new THREE.PointLight(0xff6030,1.4,28);r2.position.set(-5,3,5);WS.add(r2);
+  // Cool accent from opposite side
+  const b=new THREE.PointLight(0x2040cc,.9,32);b.position.set(5,5,-8);WS.add(b);
+  // Wide low fill light illuminating outer vegetation ring
+  const outer=new THREE.PointLight(0xffe0cc,.6,60);outer.position.set(0,4,0);WS.add(outer);
 }
 
 function buildFloor(){
@@ -785,7 +823,7 @@ function buildPanels(){
     const ang=sec.angle*Math.PI/180;
     const x=Math.sin(ang)*sec.dist,z=-Math.cos(ang)*sec.dist;
     const geo=new THREE.PlaneGeometry(6,3.8);
-    const panel=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({map:makePanelTex(sec),transparent:true,opacity:.94,side:THREE.DoubleSide,roughness:.8,metalness:.1}));
+    const panel=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({map:makePanelTex(sec),transparent:true,opacity:.97,side:THREE.DoubleSide,roughness:.75,metalness:.08}));
     panel.position.set(x,sec.h,z);panel.lookAt(0,sec.h,0);panel.rotateY(Math.PI);
     panel.userData={sec,idx:i,baseY:sec.h,fp:Math.random()*Math.PI*2};
     WS.add(panel);panelMeshes.push(panel);
@@ -807,10 +845,6 @@ function buildDecorations(){
   const MP_DIFF ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate/metal_plate_diff_2k.jpg';
   const MP_NOR  ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate/metal_plate_nor_gl_2k.jpg';
   const MP_ROUGH='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate/metal_plate_rough_2k.jpg';
-  // rock_surface for floating debris
-  const RK_DIFF ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_surface/rock_surface_diff_2k.jpg';
-  const RK_NOR  ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_surface/rock_surface_nor_gl_2k.jpg';
-  const RK_ROUGH='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_surface/rock_surface_rough_2k.jpg';
 
   // Helper: load a set of PBR maps into a material
   function applyPBR(mat,diff,nor,rough,repeat){
@@ -827,36 +861,17 @@ function buildDecorations(){
   const tk=new THREE.Mesh(new THREE.TorusKnotGeometry(4.5,.12,160,18),tkMat);
   tk.position.y=3.5;WS.add(tk);WS.userData.tk=tk;
 
-  // ── Translucent icosahedron shells (keep as thin wireframe atmosphere) ─
-  const icoOuter=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(17,1)),new THREE.LineBasicMaterial({color:0xe50914,transparent:true,opacity:.02}));
-  WS.add(icoOuter);WS.userData.icoOuter=icoOuter;
-  const icoInner=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(8,1)),new THREE.LineBasicMaterial({color:0xe50914,transparent:true,opacity:.04}));
-  icoInner.position.y=2;WS.add(icoInner);WS.userData.icoInner=icoInner;
-
-  // ── Floating rock debris — solid PBR ───────────────────────────────────
-  const debris=[];
-  const debrisCnt=isMobile?10:20;
-  // Shared rock material (one material, multiple meshes for perf)
-  const rkMat=new THREE.MeshStandardMaterial({color:0x5a1a10,roughness:.92,metalness:.05});
-  applyPBR(rkMat,RK_DIFF,RK_NOR,RK_ROUGH,1);
-  for(let i=0;i<debrisCnt;i++){
-    const s=.18+Math.random()*.55;
-    // Alternate between tetra and dodecahedron for variety
-    const geo=i%3===0?new THREE.DodecahedronGeometry(s,0):new THREE.TetrahedronGeometry(s,0);
-    const d=new THREE.Mesh(geo,rkMat);
-    d.position.set((Math.random()-.5)*32,(Math.random()-.5)*9+2,(Math.random()-.5)*32);
-    d.userData={rx:(Math.random()-.5)*.013,ry:(Math.random()-.5)*.018,rz:(Math.random()-.5)*.01,fy:Math.random()*Math.PI*2,fs:.005+Math.random()*.011,by:d.position.y};
-    WS.add(d);debris.push(d);
-  }
-  WS.userData.debris=debris;
-
-  // ── Ring pillars — solid metal hoops ───────────────────────────────────
-  const ringMat=new THREE.MeshStandardMaterial({color:0xdd2211,emissive:0xe50914,emissiveIntensity:.35,roughness:.3,metalness:.9});
+  // ── Inner ring markers — 8 small upright metal hoops at radius 4.5 ───
+  // Placed well inside the panel ring (radius 12) so they never overlap panels.
+  const ringMat=new THREE.MeshStandardMaterial({color:0xdd2211,emissive:0xe50914,emissiveIntensity:.45,roughness:.25,metalness:.9});
   applyPBR(ringMat,MP_DIFF,MP_NOR,MP_ROUGH,1);
   for(let i=0;i<8;i++){
     const a=i*Math.PI/4;
-    const ring=new THREE.Mesh(new THREE.TorusGeometry(.35,.035,16,40),ringMat);
-    ring.position.set(Math.sin(a)*12,.2+Math.random()*5,-Math.cos(a)*12);ring.rotation.x=Math.PI/2;WS.add(ring);
+    // Upright ring (no X-rotation) at ground level — like portal arch markers
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(.38,.04,16,48),ringMat);
+    ring.position.set(Math.sin(a)*4.5,.55,-Math.cos(a)*4.5);
+    ring.lookAt(0,.55,0); // face centre
+    WS.add(ring);
   }
 }
 
@@ -884,42 +899,73 @@ function buildGrassAndCrystals(){
 
   function det(seed){let s=seed;return()=>{s=Math.sin(s*127.1+311.7)*43758.5453;return s-Math.floor(s);};}
 
+  // ── Shared bark PBR for fallback shrubs ──────────────────────────────
+  // bark_brown_02: realistic tree bark (Poly Haven CC0)
+  const barkMat=new THREE.MeshStandardMaterial({color:0x3a200c,roughness:.97,metalness:.01});
+  {
+    const txL=new THREE.TextureLoader();
+    const BD='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/bark_brown_02/bark_brown_02_diff_2k.jpg';
+    const BN='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/bark_brown_02/bark_brown_02_nor_gl_2k.jpg';
+    function tb(t){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(2,4);return t;}
+    txL.load(BD,t=>{barkMat.map=tb(t);barkMat.needsUpdate=true;},undefined,()=>{});
+    txL.load(BN,t=>{barkMat.normalMap=tb(t);barkMat.normalScale.set(1.2,1.2);barkMat.needsUpdate=true;},undefined,()=>{});
+  }
+
+  function buildFallbackBushes(){
+    const cnt=isMobile?22:44;
+    for(let i=0;i<cnt;i++){
+      const r=det(i*251.3+13);
+      const ang=r()*Math.PI*2,dist=17+r()*22;
+      const h=0.9+r()*.8;   // trunk height 0.9–1.7 m
+      const grp=new THREE.Group();
+      grp.position.set(Math.sin(ang)*dist,0,Math.cos(ang)*dist);
+      grp.rotation.y=r()*Math.PI*2;
+      // Bark trunk
+      const trunk=new THREE.Mesh(
+        new THREE.CylinderGeometry(.03+r()*.03,.06+r()*.04,h,8),barkMat);
+      trunk.position.y=h/2;
+      grp.add(trunk);
+      // Leaf canopy — 3–5 overlapping spheres with earthy-green PBR
+      const clusterCnt=3+Math.floor(r()*3);
+      for(let j=0;j<clusterCnt;j++){
+        const lr=0.22+r()*.2;
+        const leafCol=new THREE.Color().setHSL(.26+r()*.08,.52+r()*.22,.16+r()*.14);
+        const leaf=new THREE.Mesh(
+          new THREE.SphereGeometry(lr,9,7),
+          new THREE.MeshStandardMaterial({color:leafCol,roughness:.94,metalness:.01,
+            // Approximate subsurface: slight emissive so leaves catch ambient light
+            emissive:new THREE.Color().setHSL(.27+r()*.06,.5,.04),emissiveIntensity:.35})
+        );
+        leaf.position.set((r()-.5)*.4,h*.65+r()*.55,(r()-.5)*.4);
+        grp.add(leaf);
+      }
+      grp.userData={swayOff:r()*Math.PI*2,swaySpd:.3+r()*.25,swayAmp:.04+r()*.06};
+      WS.add(grp);grassArr.push(grp);
+    }
+  }
+
   // ── Alien flowers (Three.js Flower.glb) — keep original PBR textures ──
   const FLOWER='https://raw.githubusercontent.com/mrdoob/three.js/r128/examples/models/gltf/Flower/Flower.glb';
   loader.load(FLOWER,gltf=>{
     const tmpl=gltf.scene;
-    // Preserve original material colours/textures — only add a tiny emissive warmth
+    // Only boost emissive slightly so petals are visible at night — never override color/maps
     tmpl.traverse(n=>{if(n.isMesh&&n.material){
       n.material=n.material.clone();
-      // Keep n.material.color exactly as baked in the GLB
-      if(n.material.emissive){n.material.emissive.setHex(0x110004);}
-      n.material.emissiveIntensity=.12;   // very subtle, just to make it glow at night
+      if(n.material.emissive)n.material.emissive.setHex(0x0a0302);
+      n.material.emissiveIntensity=.18;
     }});
     const cnt=isMobile?22:44;
     for(let i=0;i<cnt;i++){
       const r=det(i*251.3+13);
-      // Placed OUTSIDE the camera orbit (radius 16) — behind the viewer's perspective
-      const ang=r()*Math.PI*2,dist=17+r()*22,sc=0.7+r()*1.1;
+      const ang=r()*Math.PI*2,dist=17+r()*22,sc=1.0+r()*1.4;  // 1–2.4m tall
       const inst=tmpl.clone(true);
-      inst.scale.set(sc,sc*(.8+r()*.5),sc);
+      inst.scale.set(sc,sc*(.85+r()*.3),sc);
       inst.position.set(Math.sin(ang)*dist,0,Math.cos(ang)*dist);
       inst.rotation.y=r()*Math.PI*2;
-      inst.userData={swayOff:r()*Math.PI*2,swaySpd:.35+r()*.3,swayAmp:.06+r()*.09};
+      inst.userData={swayOff:r()*Math.PI*2,swaySpd:.3+r()*.25,swayAmp:.04+r()*.06};
       WS.add(inst);grassArr.push(inst);
     }
-  },undefined,()=>{
-    // Fallback: realistic grass blade stand-ins (earthy green-brown tones)
-    const cnt=isMobile?22:44;
-    for(let i=0;i<cnt;i++){
-      const r=det(i*251.3+13);
-      const ang=r()*Math.PI*2,dist=17+r()*22,h=0.5+r()*.8;
-      const col=new THREE.Color().setHSL(.28+r()*.06,.45+r()*.25,.22+r()*.12);
-      const g=new THREE.Mesh(new THREE.CylinderGeometry(.015,.03,h,5),new THREE.MeshStandardMaterial({color:col,roughness:.95,metalness:.02}));
-      g.position.set(Math.sin(ang)*dist,h/2,Math.cos(ang)*dist);
-      g.userData={swayOff:r()*Math.PI*2,swaySpd:.35+r()*.3,swayAmp:.08+r()*.1};
-      WS.add(g);grassArr.push(g);
-    }
-  });
+  },undefined,buildFallbackBushes);
 
   // ── Crystal clusters (CC0 from ToxSam/cc0-models-Polygonal-Mind) ──
   const CRYSTAL='https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/crystal-crossroads/Crystal_Cluster.glb';
@@ -1222,15 +1268,12 @@ function animLoop(now){
   });
 
   // Decorations
-  const {tk,icoOuter,icoInner,debris,dustPts,dustVel,dustPos,dustCnt,glbModel,
+  const {tk,dustPts,dustVel,dustPos,dustCnt,glbModel,
          photoMesh,photoRing,photoRing2,nameMesh,
          skySphere,fissures,rippleRings,grassInstances,crystalInstances}=WS.userData;
 
   // Existing decorations
   if(tk){tk.rotation.x=t*.007;tk.rotation.y=t*.011;tk.rotation.z=t*.004;}
-  if(icoOuter){icoOuter.rotation.x=t*.002;icoOuter.rotation.y=t*.004;}
-  if(icoInner){icoInner.rotation.x=-t*.004;icoInner.rotation.y=t*.006;}
-  if(debris)debris.forEach(d=>{d.rotation.x+=d.userData.rx;d.rotation.y+=d.userData.ry;d.rotation.z+=d.userData.rz;d.userData.fy+=d.userData.fs;d.position.y=d.userData.by+Math.sin(d.userData.fy)*.4;});
   if(dustPts&&dustPos&&dustVel){for(let i=0;i<dustCnt;i++){dustPos[i*3]+=dustVel[i*3];dustPos[i*3+1]+=dustVel[i*3+1];dustPos[i*3+2]+=dustVel[i*3+2];if(dustPos[i*3+1]>18){dustPos[i*3+1]=0;const a=Math.random()*Math.PI*2,r=4+Math.random()*18;dustPos[i*3]=Math.cos(a)*r;dustPos[i*3+2]=Math.sin(a)*r;}}dustPts.geometry.attributes.position.needsUpdate=true;}
   if(glbModel){glbModel.rotation.y=t*.25;}
   if(photoMesh){photoMesh.lookAt(WC.position);}
