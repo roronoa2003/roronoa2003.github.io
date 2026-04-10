@@ -96,6 +96,46 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 #hud-crosshair::after{width:100%;height:1px;top:50%;left:0;}
 @media(max-width:640px){#hud-stats-row{display:none;}#hud-hint{display:none;}#hud-crosshair{display:none;}}
 
+/* ── STRANGER THINGS OVERLAYS ── */
+/* CRT scanlines */
+#st-scanlines{position:absolute;inset:0;pointer-events:none;z-index:11;
+  background:repeating-linear-gradient(to bottom,transparent 0px,transparent 3px,rgba(0,0,0,.13) 3px,rgba(0,0,0,.13) 4px);
+  mix-blend-mode:multiply;}
+/* Red vignette — Upside Down edge bleed */
+#st-vignette{position:absolute;inset:0;pointer-events:none;z-index:12;
+  background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(90,0,8,.45) 80%,rgba(120,0,10,.75) 100%);}
+/* Hawkins location tag */
+#hud-hawkins{position:absolute;top:4rem;left:1.8rem;font-family:'Bebas Neue',sans-serif;
+  font-size:.65rem;letter-spacing:.22em;color:rgba(229,9,20,.7);pointer-events:none;
+  text-shadow:0 0 10px rgba(229,9,20,.5);animation:hawkFlicker 6s 1s infinite;}
+@keyframes hawkFlicker{
+  0%,89%,91%,94%,96%,100%{opacity:.7;}
+  90%{opacity:.15;}95%{opacity:.4;}
+}
+/* Static glitch burst */
+@keyframes stGlitch{
+  0%{filter:none;}
+  5%{filter:brightness(1.4) contrast(1.2) hue-rotate(180deg) saturate(3);}
+  6%{filter:none;}
+  7%{filter:brightness(.6) contrast(2) saturate(0);}
+  8%{filter:none;}
+  100%{filter:none;}
+}
+#world-canvas.glitch{animation:stGlitch .18s steps(1) forwards;}
+
+/* ── SUCK-UP / WORLD TRANSITION OVERLAY ── */
+#suck-overlay{position:absolute;inset:0;pointer-events:none;z-index:180;opacity:0;
+  background:radial-gradient(ellipse at 50% 50%,rgba(255,200,255,1) 0%,rgba(160,40,220,0.95) 40%,rgba(80,0,120,0.9) 100%);
+  transition:opacity .05s;}
+#world2-hint{position:absolute;bottom:5rem;left:50%;transform:translateX(-50%);
+  font-family:'Bebas Neue',sans-serif;font-size:.85rem;letter-spacing:.2em;
+  color:rgba(255,150,255,.9);text-shadow:0 0 14px rgba(200,80,255,.8);
+  pointer-events:none;opacity:0;transition:opacity .6s;white-space:nowrap;z-index:15;}
+#return-hint{position:absolute;bottom:5rem;left:50%;transform:translateX(-50%);
+  font-family:'Bebas Neue',sans-serif;font-size:.85rem;letter-spacing:.2em;
+  color:rgba(255,150,255,.9);text-shadow:0 0 14px rgba(200,80,255,.8);
+  pointer-events:none;opacity:0;transition:opacity .6s;white-space:nowrap;z-index:15;}
+
 /* MOBILE SECTIONS BUTTON */
 #mob-sections-btn{display:block;position:absolute;bottom:1.4rem;left:1.8rem;background:rgba(229,9,20,.15);border:1px solid rgba(229,9,20,.4);color:rgba(229,9,20,.9);font-family:'Outfit',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:.35rem 1rem;border-radius:3px;pointer-events:all;cursor:none;}
 @media(pointer:coarse){#mob-sections-btn{cursor:pointer;}}
@@ -277,6 +317,7 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     <div id="hud-hint"><span>DRAG</span> to orbit &nbsp;·&nbsp; <span>WASD</span> to fly &nbsp;·&nbsp; <span>CLICK</span> panel</div>
     <div id="hud-tooltip"></div>
     <div id="hud-crosshair"></div>
+    <div id="hud-hawkins">📍 HAWKINS, IN &nbsp;·&nbsp; 1983</div>
     <div id="hud-cv"><a href="https://drive.google.com/file/d/1PWbHZNDVtJUMyn4qVDJni3VnzaItRSyj/view?usp=sharing" target="_blank">↓ CV</a></div>
   </div>
 
@@ -292,6 +333,14 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   <div id="joystick-zone">
     <div id="joystick-base"><div id="joystick-thumb"></div></div>
   </div>
+
+  <!-- Stranger Things overlays -->
+  <div id="st-scanlines"></div>
+  <div id="st-vignette"></div>
+  <!-- World transition -->
+  <div id="suck-overlay"></div>
+  <div id="world2-hint">⚠ APPROACH THE HELMET TO ENTER THE UPSIDE DOWN</div>
+  <div id="return-hint">◎ STEP INTO THE PORTAL TO RETURN</div>
 
   <!-- Content Overlay -->
   <div id="content-overlay">
@@ -612,6 +661,9 @@ function makePanelTex(sec){
 // WORLD ENGINE
 // ══════════════════════════════════════════════════════
 let WR,WS,WC; // renderer, scene, camera
+let WS2=null,WS2built=false; // second world (Upside Down portal)
+let inSecondWorld=false,suckupActive=false,suckupT=0,returnActive=false,returnT=0;
+let savedCamPos=new THREE.Vector3(),savedCamYaw=0,savedCamPitch=0;
 let panelMeshes=[],glowMeshes=[],panelLights=[];
 let hoveredPanel=null,focusedPanel=null;
 let isFlying=false,flyT=0;
@@ -631,14 +683,14 @@ function initWorld(){
   WR=new THREE.WebGLRenderer({canvas,antialias:!isMobile,alpha:false,powerPreference:'high-performance'});
   WR.setSize(innerWidth,innerHeight);
   WR.setPixelRatio(Math.min(devicePixelRatio,isMobile?1.5:2));
-  WR.setClearColor(0x03000a,1);
+  WR.setClearColor(0x050001,1);
   WR.physicallyCorrectLights=true;
   WR.outputEncoding=THREE.sRGBEncoding;
   WR.toneMapping=THREE.ACESFilmicToneMapping;
   WR.toneMappingExposure=1.2;
 
   WS=new THREE.Scene();
-  WS.fog=new THREE.FogExp2(0x03000a,.02);
+  WS.fog=new THREE.FogExp2(0x0d0003,.024);
   WC=new THREE.PerspectiveCamera(isMobile?80:70,innerWidth/innerHeight,.05,500);
   WC.position.set(0,38,4);
   WC.rotation.order='YXZ';
@@ -648,6 +700,9 @@ function initWorld(){
 
   buildStars();
   buildDust();
+  buildSpores();
+  buildVoidPlanet();
+  buildVines();
   buildPanels();
   buildDecorations();
   buildRipples();
@@ -655,6 +710,15 @@ function initWorld(){
   loadGLBModel();
   buildMobileMenu();
   bindControls();
+  // ── Static glitch bursts — random every 8–25s ──
+  (function scheduleGlitch(){
+    const delay=8000+Math.random()*17000;
+    setTimeout(()=>{
+      const cv=document.getElementById('world-canvas');
+      if(cv){cv.classList.add('glitch');setTimeout(()=>cv.classList.remove('glitch'),220);}
+      scheduleGlitch();
+    },delay);
+  })();
 
   // Intro fly-in
   flyFP.set(0,38,4);flyTP.set(0,1.8,0);
@@ -773,7 +837,6 @@ function buildStars(){
   const skyMat=new THREE.MeshBasicMaterial({color:0x333333,side:THREE.BackSide,depthWrite:false,fog:false});
   const skySphere=new THREE.Mesh(skyGeo,skyMat);
   WS.add(skySphere);WS.userData.skySphere=skySphere;
-
   function buildCanvasGalaxy(){
     // Procedural fallback – deep space with colour-varied stars + milky band
     const W=2048,H=1024;
@@ -804,7 +867,6 @@ function buildStars(){
     });
     return new THREE.CanvasTexture(c);
   }
-
   const txLoader=new THREE.TextureLoader();
   txLoader.crossOrigin='anonymous';
   txLoader.load(
@@ -843,6 +905,145 @@ function buildPanels(){
     // Light
     const pl=new THREE.PointLight(0xe50914,.7,14);pl.position.set(x,sec.h,z*.95);WS.add(pl);panelLights.push(pl);
   });
+}
+
+// ══════════════════════════════════════════════════════
+// STRANGER THINGS: UPSIDE DOWN SPORES
+// ══════════════════════════════════════════════════════
+function buildSpores(){
+  const cnt=600;
+  const geo=new THREE.BufferGeometry();
+  const pos=new Float32Array(cnt*3);
+  const vel=new Float32Array(cnt*3);
+  const sizes=new Float32Array(cnt);
+  for(let i=0;i<cnt;i++){
+    const a=Math.random()*Math.PI*2,r=2+Math.random()*22;
+    pos[i*3]=Math.cos(a)*r;
+    pos[i*3+1]=Math.random()*16;
+    pos[i*3+2]=Math.sin(a)*r;
+    vel[i*3]=(Math.random()-.5)*.004;
+    vel[i*3+1]=.005+Math.random()*.012;// drift upward
+    vel[i*3+2]=(Math.random()-.5)*.004;
+    sizes[i]=3+Math.random()*5;
+  }
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('size',new THREE.BufferAttribute(sizes,1));
+  const mat=new THREE.PointsMaterial({color:0xfff0e8,size:.08,transparent:true,opacity:.55,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true});
+  const pts=new THREE.Points(geo,mat);
+  WS.add(pts);
+  WS.userData.sporesPts=pts;WS.userData.sporesVel=vel;WS.userData.sporesPos=pos;WS.userData.sporesCnt=cnt;
+}
+
+// ══════════════════════════════════════════════════════
+// STRANGER THINGS: CHRISTMAS LIGHTS
+// ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// STRANGER THINGS: VOID PLANET (Upside Down overhead)
+// ══════════════════════════════════════════════════════
+function buildVoidPlanet(){
+  const grp=new THREE.Group();
+  grp.position.set(0,90,0);// straight up overhead
+
+  // ── Core planet — same rock_ground_rough texture as the floor ──
+  const planetGeo=new THREE.SphereGeometry(28,64,64);
+  // Dark crimson tint so it reads as the Upside Down mirror of the ground
+  const planetMat=new THREE.MeshStandardMaterial({
+    color:0x3a0008,emissive:0x2a0005,emissiveIntensity:.28,
+    roughness:.94,metalness:.03,side:THREE.FrontSide
+  });
+  const pTxLoader=new THREE.TextureLoader();
+  const ROCK_DIFF='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_ground_rough/rock_ground_rough_diff_2k.jpg';
+  const ROCK_NOR ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_ground_rough/rock_ground_rough_nor_gl_2k.jpg';
+  const ROCK_ROUGH='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_ground_rough/rock_ground_rough_rough_2k.jpg';
+  // helper: wrap + repeat for spherical UV coverage
+  function pTile(t,rep){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep,rep);return t;}
+  pTxLoader.load(ROCK_DIFF, t=>{planetMat.map=pTile(t,4);planetMat.needsUpdate=true;});
+  pTxLoader.load(ROCK_NOR,  t=>{planetMat.normalMap=pTile(t,4);planetMat.normalScale.set(1.2,1.2);planetMat.needsUpdate=true;});
+  pTxLoader.load(ROCK_ROUGH,t=>{planetMat.roughnessMap=pTile(t,4);planetMat.needsUpdate=true;});
+  grp.add(new THREE.Mesh(planetGeo,planetMat));
+
+  // ── Atmosphere halo — glowing red rim ──
+  const haloGeo=new THREE.SphereGeometry(30,48,48);
+  const haloMat=new THREE.MeshBasicMaterial({
+    color:0xcc1500,transparent:true,opacity:.08,side:THREE.BackSide,depthWrite:false,blending:THREE.AdditiveBlending
+  });
+  grp.add(new THREE.Mesh(haloGeo,haloMat));
+
+  // ── Outer glow corona ──
+  const coronaGeo=new THREE.SphereGeometry(34,32,32);
+  const coronaMat=new THREE.MeshBasicMaterial({
+    color:0x7a0005,transparent:true,opacity:.04,side:THREE.BackSide,depthWrite:false,blending:THREE.AdditiveBlending
+  });
+  grp.add(new THREE.Mesh(coronaGeo,coronaMat));
+
+  // ── Ring of debris (asteroid belt look) ──
+  const debrisGeo=new THREE.BufferGeometry();
+  const debrisCnt=300;const dp=new Float32Array(debrisCnt*3);
+  for(let i=0;i<debrisCnt;i++){
+    const a=Math.random()*Math.PI*2;
+    const r=32+Math.random()*6;
+    const tilt=(Math.random()-.5)*2;
+    dp[i*3]=Math.cos(a)*r;dp[i*3+1]=tilt;dp[i*3+2]=Math.sin(a)*r;
+  }
+  debrisGeo.setAttribute('position',new THREE.BufferAttribute(dp,3));
+  const debrisMat=new THREE.PointsMaterial({color:0x661100,size:.55,transparent:true,opacity:.6,depthWrite:false,blending:THREE.AdditiveBlending});
+  grp.add(new THREE.Points(debrisGeo,debrisMat));
+
+  // ── Down-beam: ghostly red light shaft connecting planet to ground ──
+  const beamGeo=new THREE.CylinderGeometry(.5,6,90,16,1,true);
+  const beamMat=new THREE.MeshBasicMaterial({color:0xaa0005,transparent:true,opacity:.035,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending});
+  const beam=new THREE.Mesh(beamGeo,beamMat);
+  beam.position.y=-45;// hangs down from planet center toward ground
+  grp.add(beam);
+
+  // ── Subtle downward point light from planet ──
+  const pl=new THREE.PointLight(0xaa0008,1.5,80);pl.position.set(0,-30,0);
+  grp.add(pl);WS.userData._voidPlanetLight=pl;
+
+  WS.add(grp);
+  WS.userData.voidPlanet=grp;
+  WS.userData.voidPlanetMat=planetMat;
+  WS.userData.voidHaloMat=haloMat;
+}
+
+// ══════════════════════════════════════════════════════
+// STRANGER THINGS: UPSIDE DOWN VINES
+// ══════════════════════════════════════════════════════
+function buildVines(){
+  const vineMat=new THREE.MeshStandardMaterial({color:0x1a0a08,roughness:.95,metalness:0,emissive:0x200505,emissiveIntensity:.3});
+  const vines=[];
+  const vineConfigs=[
+    {sx:-8,sz:-3,ex:3,ez:-10,cp1x:-5,cp1z:-6,cp2x:0,cp2z:-8},{sx:6,sz:4,ex:-4,ez:8,cp1x:4,cp1z:7,cp2x:-1,cp2z:9},
+    {sx:-5,sz:7,ex:5,ez:2,cp1x:-3,cp1z:5,cp2x:3,cp2z:4},{sx:9,sz:-6,ex:-2,ez:-8,cp1x:6,cp1z:-8,cp2x:2,cp2z:-9},
+    {sx:-10,sz:2,ex:-3,ez:-5,cp1x:-8,cp1z:1,cp2x:-5,cp2z:-3},{sx:4,sz:-3,ex:10,ez:5,cp1x:6,cp1z:-1,cp2x:8,cp2z:3},
+  ];
+  vineConfigs.forEach((cfg,vi)=>{
+    const pts=[];
+    const steps=12;
+    for(let s=0;s<=steps;s++){
+      const tt=s/steps;
+      // cubic bezier interpolation
+      const mt=1-tt;
+      const x=mt*mt*mt*cfg.sx+3*mt*mt*tt*cfg.cp1x+3*mt*tt*tt*cfg.cp2x+tt*tt*tt*cfg.ex;
+      const z=mt*mt*mt*cfg.sz+3*mt*mt*tt*cfg.cp1z+3*mt*tt*tt*cfg.cp2z+tt*tt*tt*cfg.ez;
+      const y=.04+Math.abs(Math.sin(tt*Math.PI))*.35;// slight arch above ground
+      pts.push(new THREE.Vector3(x,y,z));
+    }
+    const curve=new THREE.CatmullRomCurve3(pts);
+    const radius=.04+Math.random()*.05;
+    const geo=new THREE.TubeGeometry(curve,40,radius,5,false);
+    const mesh=new THREE.Mesh(geo,vineMat.clone());
+    WS.add(mesh);vines.push(mesh);
+    // add 2-3 tendril branches off each main vine
+    for(let b=0;b<2;b++){
+      const bStart=curve.getPoint(.2+b*.3+Math.random()*.15);
+      const bEnd=new THREE.Vector3(bStart.x+(Math.random()-.5)*3,0.02,bStart.z+(Math.random()-.5)*3);
+      const bCurve=new THREE.CatmullRomCurve3([bStart,new THREE.Vector3((bStart.x+bEnd.x)/2,bStart.y*.5+.02,(bStart.z+bEnd.z)/2),bEnd]);
+      const bGeo=new THREE.TubeGeometry(bCurve,12,.02,4,false);
+      WS.add(new THREE.Mesh(bGeo,vineMat));
+    }
+  });
+  WS.userData.stVines=vines;
 }
 
 function buildDecorations(){
@@ -1022,6 +1223,7 @@ function bindControls(){
   },{passive:true});
   // Click on panels
   cv.addEventListener('click',e=>{
+    if(inSecondWorld||suckupActive||returnActive)return;// no panel interaction in second world
     if(Math.abs(e.movementX||0)>5||Math.abs(e.movementY||0)>5)return;
     const r=cv.getBoundingClientRect();
     const nmx=((e.clientX-r.left)/r.width)*2-1,nmy=-((e.clientY-r.top)/r.height)*2+1;
@@ -1031,6 +1233,7 @@ function bindControls(){
   });
   // Tap on panels (touch)
   cv.addEventListener('touchend',e=>{
+    if(inSecondWorld||suckupActive||returnActive)return;
     if(e.changedTouches.length!==1)return;
     const t=e.changedTouches[0];
     const r=cv.getBoundingClientRect();
@@ -1088,6 +1291,134 @@ function flyToPanel(panel){
 }
 
 // ══════════════════════════════════════════════════════
+// SECOND WORLD — UPSIDE DOWN PORTAL DIMENSION
+// ══════════════════════════════════════════════════════
+function buildSecondWorld(){
+  WS2=new THREE.Scene();
+  WS2.fog=new THREE.FogExp2(0x1a0230,.025);
+
+  // ── Lights — pink-purple palette ──
+  WS2.add(new THREE.AmbientLight(0x2d0a4a,3.5));
+  const d2=new THREE.DirectionalLight(0xcc88ff,1.8);d2.position.set(-5,18,8);WS2.add(d2);
+  const p1=new THREE.PointLight(0xcc44ff,3.5,40);p1.position.set(0,8,0);WS2.add(p1);
+  const p2=new THREE.PointLight(0xff44aa,1.2,28);p2.position.set(-5,3,5);WS2.add(p2);
+  const p3=new THREE.PointLight(0x8822ff,.8,32);p3.position.set(5,5,-8);WS2.add(p3);
+  WS2.userData._w2FlickerLight=p1;
+
+  // ── Ground — same rock texture, purple tint ──
+  const segs=isMobile?100:200;
+  const geo2=new THREE.PlaneGeometry(260,260,segs,segs);
+  geo2.rotateX(-Math.PI/2);
+  const pos2=geo2.attributes.position;
+  for(let i=0;i<pos2.count;i++){
+    const x=pos2.getX(i),z=pos2.getZ(i);
+    const r=Math.sqrt(x*x+z*z);
+    let h=Math.sin(x*.10)*Math.cos(z*.09)*1.4+Math.sin(x*.23+z*.17)*Math.cos(z*.28-x*.08)*.75
+           +Math.sin(x*.51+1.3)*Math.cos(z*.47+.7)*.35+Math.sin(x*1.1+z*1.3)*.16+(Math.random()-.5)*.22;
+    h*=Math.min(1,Math.max(0,(r-8)/10));
+    if(r>20)h+=Math.abs(Math.sin(x*.16)*Math.cos(z*.19))*3.0*Math.min(1,(r-20)/14);
+    pos2.setY(i,h-.02);
+  }
+  geo2.computeVertexNormals();
+  const terrMat2=new THREE.MeshStandardMaterial({color:0x2a0809,roughness:.96,metalness:.03});// same tint as world 1
+  WS2.add(new THREE.Mesh(geo2,terrMat2));
+  const txL2=new THREE.TextureLoader();
+  function tile2(t,r){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(r,r);t.anisotropy=Math.min(16,WR.capabilities.getMaxAnisotropy());return t;}
+  const RD='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_ground_rough/rock_ground_rough_diff_2k.jpg';
+  const RN='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_ground_rough/rock_ground_rough_nor_gl_2k.jpg';
+  const RR='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_ground_rough/rock_ground_rough_rough_2k.jpg';
+  txL2.load(RD,t=>{terrMat2.map=tile2(t,28);terrMat2.needsUpdate=true;});
+  txL2.load(RN,t=>{terrMat2.normalMap=tile2(t,28);terrMat2.normalScale.set(1.6,1.6);terrMat2.needsUpdate=true;});
+  txL2.load(RR,t=>{terrMat2.roughnessMap=tile2(t,28);terrMat2.needsUpdate=true;});
+
+  // ── Sky — pinkish-purple, same NASA map with pink multiplier ──
+  const skyGeo2=new THREE.SphereGeometry(280,48,24);
+  const skyMat2=new THREE.MeshBasicMaterial({color:0x8822cc,side:THREE.BackSide,depthWrite:false,fog:false});
+  txL2.crossOrigin='anonymous';
+  txL2.load('https://svs.gsfc.nasa.gov/vis/a000000/a004800/a004851/starmap_2020_4k_print.jpg',
+    t=>{skyMat2.map=t;skyMat2.needsUpdate=true;},undefined,
+    ()=>{txL2.load('https://raw.githubusercontent.com/mrdoob/three.js/r128/examples/textures/equirectangular/starmap_2020_4k.jpg',t=>{skyMat2.map=t;skyMat2.needsUpdate=true;});}
+  );
+  const sky2=new THREE.Mesh(skyGeo2,skyMat2);
+  WS2.add(sky2);WS2.userData.sky2=sky2;
+
+  // ── Lavender spores ──
+  const sc2=600;const sp2geo=new THREE.BufferGeometry();
+  const sp2pos=new Float32Array(sc2*3),sp2vel=new Float32Array(sc2*3);
+  for(let i=0;i<sc2;i++){const a=Math.random()*Math.PI*2,r=2+Math.random()*22;sp2pos[i*3]=Math.cos(a)*r;sp2pos[i*3+1]=Math.random()*16;sp2pos[i*3+2]=Math.sin(a)*r;sp2vel[i*3]=(Math.random()-.5)*.004;sp2vel[i*3+1]=.005+Math.random()*.012;sp2vel[i*3+2]=(Math.random()-.5)*.004;}
+  sp2geo.setAttribute('position',new THREE.BufferAttribute(sp2pos,3));
+  const spores2=new THREE.Points(sp2geo,new THREE.PointsMaterial({color:0xddaaff,size:.09,transparent:true,opacity:.65,depthWrite:false,blending:THREE.AdditiveBlending}));
+  WS2.add(spores2);WS2.userData.sp2Pts=spores2;WS2.userData.sp2Vel=sp2vel;WS2.userData.sp2Pos=sp2pos;WS2.userData.sp2Cnt=sc2;
+
+  // ── Purple ground fissures ──
+  const fp2=[];
+  for(let i=0;i<55;i++){const a=Math.random()*Math.PI*2,r1=9+Math.random()*35,r2=r1+1.5+Math.random()*7;const j=()=>(Math.random()-.5)*2.5;fp2.push(Math.sin(a)*r1+j(),.05,Math.cos(a)*r1+j(),Math.sin(a)*r2+j(),.05,Math.cos(a)*r2+j());}
+  const fG2=new THREE.BufferGeometry();fG2.setAttribute('position',new THREE.Float32BufferAttribute(fp2,3));
+  WS2.add(new THREE.LineSegments(fG2,new THREE.LineBasicMaterial({color:0xaa22ff,transparent:true,opacity:.25,blending:THREE.AdditiveBlending,depthWrite:false})));
+
+  // ── Vines — same geometry, purple emissive ──
+  const vm2=new THREE.MeshStandardMaterial({color:0x1a0828,roughness:.95,metalness:0,emissive:0x300530,emissiveIntensity:.35});
+  [{sx:-8,sz:-3,ex:3,ez:-10,cp1x:-5,cp1z:-6,cp2x:0,cp2z:-8},{sx:6,sz:4,ex:-4,ez:8,cp1x:4,cp1z:7,cp2x:-1,cp2z:9},{sx:-5,sz:7,ex:5,ez:2,cp1x:-3,cp1z:5,cp2x:3,cp2z:4},{sx:9,sz:-6,ex:-2,ez:-8,cp1x:6,cp1z:-8,cp2x:2,cp2z:-9}].forEach(cfg=>{
+    const pts3=[];for(let s=0;s<=12;s++){const tt=s/12,mt=1-tt;const x=mt*mt*mt*cfg.sx+3*mt*mt*tt*cfg.cp1x+3*mt*tt*tt*cfg.cp2x+tt*tt*tt*cfg.ex;const z=mt*mt*mt*cfg.sz+3*mt*mt*tt*cfg.cp1z+3*mt*tt*tt*cfg.cp2z+tt*tt*tt*cfg.ez;pts3.push(new THREE.Vector3(x,.04+Math.abs(Math.sin(tt*Math.PI))*.35,z));}
+    WS2.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts3),40,.06,5,false),vm2));
+  });
+
+  // ── Return portal — tall glowing beacon ──
+  // Ground ring (large, flat)
+  const portalRing=new THREE.Mesh(new THREE.TorusGeometry(2.2,.12,20,90),new THREE.MeshStandardMaterial({color:0xff44ff,emissive:0xff44ff,emissiveIntensity:2,roughness:.1,metalness:.9}));
+  portalRing.position.set(0,.12,0);portalRing.rotation.x=Math.PI/2;WS2.add(portalRing);WS2.userData.portalRing=portalRing;
+  // Outer glow ring
+  const portalRing2=new THREE.Mesh(new THREE.TorusGeometry(2.6,.04,12,90),new THREE.MeshBasicMaterial({color:0xff88ff,transparent:true,opacity:.5,blending:THREE.AdditiveBlending,depthWrite:false}));
+  portalRing2.position.set(0,.1,0);portalRing2.rotation.x=Math.PI/2;WS2.add(portalRing2);WS2.userData.portalRing2=portalRing2;
+  // Ground fill
+  const portalInner=new THREE.Mesh(new THREE.CircleGeometry(2.2,64),new THREE.MeshBasicMaterial({color:0xdd22ff,transparent:true,opacity:.15,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+  portalInner.rotation.x=-Math.PI/2;portalInner.position.set(0,.08,0);WS2.add(portalInner);WS2.userData.portalInner=portalInner;
+  // Tall beacon column of light rising from portal
+  const beaconGeo=new THREE.CylinderGeometry(.25,1.2,22,16,1,true);
+  const beaconMat=new THREE.MeshBasicMaterial({color:0xff44ff,transparent:true,opacity:.07,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending});
+  const beacon=new THREE.Mesh(beaconGeo,beaconMat);
+  beacon.position.set(0,11,0);WS2.add(beacon);WS2.userData.portalBeacon=beacon;
+  // Four vertical pillar markers around portal
+  const pillarMat=new THREE.MeshStandardMaterial({color:0xcc22ee,emissive:0xcc22ee,emissiveIntensity:1.2,roughness:.2,metalness:.9});
+  [0,1,2,3].forEach(i=>{
+    const a=i*Math.PI/2+Math.PI/4;
+    const px=Math.cos(a)*2.8,pz=Math.sin(a)*2.8;
+    const pillar=new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,3.5,8),pillarMat);
+    pillar.position.set(px,.08,pz);WS2.add(pillar);
+    // pillar top glow orb
+    const orb=new THREE.Mesh(new THREE.SphereGeometry(.14,12,12),new THREE.MeshStandardMaterial({color:0xff88ff,emissive:0xff88ff,emissiveIntensity:2.5,roughness:.1}));
+    orb.position.set(px,3.6,pz);WS2.add(orb);
+  });
+  // Pulsing lights
+  const plPulse=new THREE.PointLight(0xff44ff,5,16);plPulse.position.set(0,1,0);WS2.add(plPulse);WS2.userData.portalPulse=plPulse;
+  const plPulse2=new THREE.PointLight(0xdd88ff,2,30);plPulse2.position.set(0,8,0);WS2.add(plPulse2);WS2.userData.portalPulse2=plPulse2;
+  // Floating label billboard — high up so visible from distance
+  const lc=document.createElement('canvas');lc.width=900;lc.height=110;const lctx=lc.getContext('2d');
+  lctx.font='bold 52px "Bebas Neue",sans-serif';lctx.textAlign='center';
+  lctx.shadowColor='#ff44ff';lctx.shadowBlur=22;lctx.fillStyle='#ffccff';
+  lctx.fillText('◎  STEP INTO THE PORTAL TO RETURN  ◎',450,72);
+  const lTex=new THREE.CanvasTexture(lc);
+  const lMesh=new THREE.Mesh(new THREE.PlaneGeometry(5.5,.68),new THREE.MeshBasicMaterial({map:lTex,transparent:true,depthWrite:false,fog:false}));
+  lMesh.position.set(0,4.2,0);WS2.add(lMesh);WS2.userData.portalLabel=lMesh;
+
+  WS2built=true;
+}
+
+function triggerSuckup(){
+  if(suckupActive||inSecondWorld)return;
+  if(!WS2built)buildSecondWorld();
+  suckupActive=true;suckupT=0;
+  savedCamPos.copy(camPos);savedCamYaw=camYaw;savedCamPitch=camPitch;
+  autoOrbit=false;
+  document.getElementById('world2-hint').style.opacity='0';
+}
+
+function triggerReturn(){
+  if(returnActive)return;
+  returnActive=true;returnT=0;
+}
+
+// ══════════════════════════════════════════════════════
 // ANIMATION LOOP
 // ══════════════════════════════════════════════════════
 const clk=new THREE.Clock();
@@ -1108,7 +1439,7 @@ function animLoop(now){
     WC.position.lerpVectors(flyFP,flyTP,e);
     THREE.Quaternion.slerp(flyFQ,flyTQ,WC.quaternion,e);
     camPos.copy(WC.position);
-    if(flyT>=1){isFlying=false;if(focusedPanel)setTimeout(()=>openContent(focusedPanel.userData.sec),120);}
+    if(flyT>=1){isFlying=false;if(focusedPanel&&!inSecondWorld)setTimeout(()=>openContent(focusedPanel.userData.sec),120);}
     WR.render(WS,WC);return;
   }
 
@@ -1148,7 +1479,9 @@ function animLoop(now){
   // Decorations
   const {tk,dustPts,dustVel,dustPos,dustCnt,glbModel,
          photoMesh,photoRing,photoRing2,nameMesh,
-         skySphere,fissures,rippleRings}=WS.userData;
+         skySphere,fissures,rippleRings,
+         sporesPts,sporesVel,sporesPos,sporesCnt,
+         voidPlanet,voidHaloMat,stVines}=WS.userData;
 
   // Existing decorations
   if(tk){tk.rotation.x=t*.007;tk.rotation.y=t*.011;tk.rotation.z=t*.004;}
@@ -1183,7 +1516,128 @@ function animLoop(now){
   }
 
 
-  WR.render(WS,WC);
+  // ── Upside Down spores drift upward ──
+  if(sporesPts&&sporesPos&&sporesVel){
+    for(let i=0;i<sporesCnt;i++){
+      sporesPos[i*3]+=sporesVel[i*3];
+      sporesPos[i*3+1]+=sporesVel[i*3+1];
+      sporesPos[i*3+2]+=sporesVel[i*3+2];
+      if(sporesPos[i*3+1]>18){
+        sporesPos[i*3+1]=0;
+        const a=Math.random()*Math.PI*2,r=2+Math.random()*22;
+        sporesPos[i*3]=Math.cos(a)*r;sporesPos[i*3+2]=Math.sin(a)*r;
+      }
+    }
+    sporesPts.geometry.attributes.position.needsUpdate=true;
+  }
+
+  // ── Void planet slow rotation + halo pulse ──
+  if(voidPlanet){
+    voidPlanet.rotation.y=t*.018;// very slow spin
+    voidPlanet.rotation.z=Math.sin(t*.04)*.012;// subtle wobble
+  }
+  if(voidHaloMat){
+    voidHaloMat.opacity=.06+Math.sin(t*.7)*.025+Math.sin(t*1.9)*.01;// breathing glow
+  }
+
+  // ── Scene light flicker (upside down power instability) ──
+  if(WS.children){
+    if(!WS.userData._flickerLight){
+      // grab the central red point light (first PointLight child)
+      WS.userData._flickerLight=WS.children.find(c=>c.isLight&&c.color&&c.color.r>.8&&c.color.g<.1);
+    }
+    const fl=WS.userData._flickerLight;
+    if(fl){
+      const noise=Math.sin(t*7.3)*Math.sin(t*13.1)*Math.sin(t*3.7);
+      fl.intensity=4+noise*.6+(Math.random()<.004?-2:0);// occasional brief dip
+    }
+  }
+
+  // ══ SUCK-UP / PORTAL SYSTEM ═════════════════════════
+  const suckOverlay=document.getElementById('suck-overlay');
+  const helmetPos=new THREE.Vector3(0,2.6,0);
+
+  if(!inSecondWorld&&!suckupActive&&!returnActive){
+    // Proximity hint
+    const dist=camPos.distanceTo(helmetPos);
+    const hint=document.getElementById('world2-hint');
+    if(dist<6&&hint)hint.style.opacity='1';
+    else if(hint)hint.style.opacity='0';
+    // Trigger suck-up when very close
+    if(dist<3.2)triggerSuckup();
+  }
+
+  if(suckupActive){
+    suckupT+=dt;
+    const ov=suckOverlay;
+    if(suckupT<2.0){
+      // Phase 1: spiral camera upward + spin + overlay brightens
+      const prog=suckupT/2.0;
+      const spiral=prog*Math.PI*5;
+      const sr=(1-prog)*2.5;
+      camPos.x+=(Math.sin(spiral)*sr-camPos.x)*.1;
+      camPos.z+=(Math.cos(spiral)*sr-camPos.z)*.1;
+      camPos.y+=(1.8+prog*40-camPos.y)*.07;
+      camYaw+=dt*3.5;
+      camPitch=Math.min(Math.PI/2.1,camPitch+dt*.8);
+      if(ov)ov.style.opacity=(prog*.9).toString();
+    } else if(suckupT<2.6){
+      // Phase 2: full bright flash — switch scenes
+      if(ov)ov.style.opacity='1';
+      if(!inSecondWorld){
+        inSecondWorld=true;
+        camPos.set(8,1.8,8);camYaw=Math.PI+Math.PI/4;camPitch=.06;
+        const rh=document.getElementById('return-hint');if(rh)rh.style.opacity='1';
+      }
+    } else {
+      // Phase 3: fade into second world
+      const prog=(suckupT-2.6)/1.0;
+      if(ov)ov.style.opacity=Math.max(0,1-prog).toString();
+      if(suckupT>3.6){suckupActive=false;if(ov)ov.style.opacity='0';}
+    }
+    WC.position.copy(camPos);WC.rotation.set(camPitch,camYaw,0,'YXZ');
+  }
+
+  if(returnActive){
+    returnT+=dt;
+    const ov=suckOverlay;
+    if(returnT<1.2){
+      if(ov)ov.style.opacity=(returnT/1.2).toString();
+    } else if(returnT<1.8){
+      if(ov)ov.style.opacity='1';
+      if(inSecondWorld){
+        inSecondWorld=false;
+        camPos.set(-14,1.8,0);camYaw=0;camPitch=.06;
+        const rh=document.getElementById('return-hint');if(rh)rh.style.opacity='0';
+      }
+    } else {
+      const prog=(returnT-1.8)/1.0;
+      if(ov)ov.style.opacity=Math.max(0,1-prog).toString();
+      if(returnT>2.8){returnActive=false;if(ov)ov.style.opacity='0';}
+    }
+    WC.position.copy(camPos);WC.rotation.set(camPitch,camYaw,0,'YXZ');
+  }
+
+  // ── Render correct scene ──
+  if(inSecondWorld&&WS2){
+    // Animate second world
+    const {sky2,sp2Pts,sp2Vel,sp2Pos,sp2Cnt,portalRing,portalRing2,portalInner,portalBeacon,portalPulse,portalPulse2,portalLabel,_w2FlickerLight}=WS2.userData;
+    if(sky2)sky2.rotation.y=t*.003;
+    if(sp2Pts&&sp2Pos&&sp2Vel){for(let i=0;i<sp2Cnt;i++){sp2Pos[i*3]+=sp2Vel[i*3];sp2Pos[i*3+1]+=sp2Vel[i*3+1];sp2Pos[i*3+2]+=sp2Vel[i*3+2];if(sp2Pos[i*3+1]>16){sp2Pos[i*3+1]=0;const a=Math.random()*Math.PI*2,r=2+Math.random()*22;sp2Pos[i*3]=Math.cos(a)*r;sp2Pos[i*3+2]=Math.sin(a)*r;}}sp2Pts.geometry.attributes.position.needsUpdate=true;}
+    if(portalRing){portalRing.rotation.z=t*.5;portalRing.material.emissiveIntensity=1.6+Math.sin(t*2.2)*.5;}
+    if(portalRing2)portalRing2.rotation.z=-t*.35;
+    if(portalInner)portalInner.material.opacity=.1+Math.abs(Math.sin(t*1.8))*.12;
+    if(portalBeacon)portalBeacon.material.opacity=.05+Math.abs(Math.sin(t*1.1))*.05;
+    if(portalPulse)portalPulse.intensity=4+Math.sin(t*2.5)*1.8;
+    if(portalPulse2)portalPulse2.intensity=1.5+Math.sin(t*1.3)*.8;
+    if(portalLabel)portalLabel.lookAt(WC.position);
+    if(_w2FlickerLight){const n=Math.sin(t*6.8)*Math.sin(t*11.3)*Math.sin(t*3.2);_w2FlickerLight.intensity=3.5+n*.7+(Math.random()<.005?-1.8:0);}
+    // Return portal proximity
+    if(!returnActive&&!suckupActive&&camPos.distanceTo(new THREE.Vector3(0,1.8,0))<2.8)triggerReturn();
+    WR.render(WS2,WC);
+  } else {
+    WR.render(WS,WC);
+  }
 }
 
 // ══════════════════════════════════════════════════════
