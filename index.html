@@ -341,14 +341,14 @@ window.addEventListener('load',()=>{
 // SECTIONS METADATA
 // ══════════════════════════════════════════════════════
 const SECTIONS=[
-  {id:'hero',      title:'ROHAN IYER',    icon:'🎬',sub:'Portfolio 2026',   angle:0,   h:1.9, dist:9},
-  {id:'about',     title:'ABOUT ME',       icon:'📌',sub:'Personal Info',    angle:40,  h:1.3, dist:9},
-  {id:'education', title:'EDUCATION',      icon:'📚',sub:'NMIMS · 9.575',    angle:80,  h:2.1, dist:9},
-  {id:'skills',    title:'TECH SKILLS',    icon:'🧠',sub:'AI · ML · Cloud',  angle:130, h:1.6, dist:9},
-  {id:'experience',title:'EXPERIENCE',     icon:'💼',sub:'3 Roles',          angle:180, h:1.9, dist:9},
-  {id:'projects',  title:'PROJECTS',       icon:'💡',sub:'9+ Projects',      angle:220, h:2.0, dist:9},
-  {id:'work',      title:'WORK & PRESS',   icon:'🎥',sub:'Reels & Papers',   angle:270, h:1.5, dist:9},
-  {id:'contact',   title:'CONTACT',        icon:'🤝',sub:'Awards & Connect', angle:320, h:1.8, dist:9},
+  {id:'hero',      title:'ROHAN IYER',    icon:'🎬',sub:'Portfolio 2026',   angle:0,   h:1.9, dist:12},
+  {id:'about',     title:'ABOUT ME',       icon:'📌',sub:'Personal Info',    angle:40,  h:1.3, dist:12},
+  {id:'education', title:'EDUCATION',      icon:'📚',sub:'NMIMS · 9.575',    angle:80,  h:2.1, dist:12},
+  {id:'skills',    title:'TECH SKILLS',    icon:'🧠',sub:'AI · ML · Cloud',  angle:130, h:1.6, dist:12},
+  {id:'experience',title:'EXPERIENCE',     icon:'💼',sub:'3 Roles',          angle:180, h:1.9, dist:12},
+  {id:'projects',  title:'PROJECTS',       icon:'💡',sub:'9+ Projects',      angle:220, h:2.0, dist:12},
+  {id:'work',      title:'WORK & PRESS',   icon:'🎥',sub:'Reels & Papers',   angle:270, h:1.5, dist:12},
+  {id:'contact',   title:'CONTACT',        icon:'🤝',sub:'Awards & Connect', angle:320, h:1.8, dist:12},
 ];
 
 // ══════════════════════════════════════════════════════
@@ -527,25 +527,45 @@ function makePanelTex(sec){
   [[36,36,80],[W-36,36,-80],[36,H-36,80],[W-36,H-36,-80]].forEach(([x,y,d])=>{
     ctx.beginPath();ctx.moveTo(x+d,y);ctx.lineTo(x,y);ctx.lineTo(x,y+d);ctx.stroke();
   });
-  // Icon
-  ctx.shadowColor='rgba(229,9,20,.85)';ctx.shadowBlur=55;
+  // Helper — draw text with layered white outer glow then fill
+  function glowText(text,x,y,font,fillCol,glowRadius,glowPasses){
+    ctx.save();
+    ctx.font=font;ctx.textAlign='center';ctx.textBaseline='top';
+    // Build up glow in multiple passes at decreasing opacity for smooth halo
+    for(let p=glowPasses;p>0;p--){
+      ctx.shadowColor='rgba(255,255,255,'+(0.08+(glowPasses-p)*0.03)+')';
+      ctx.shadowBlur=glowRadius*(p/glowPasses);
+      ctx.fillStyle='rgba(255,255,255,0)'; // transparent fill — only shadow counts
+      ctx.fillText(text,x,y);
+    }
+    // Final crisp fill on top
+    ctx.shadowColor='rgba(255,255,255,.55)';
+    ctx.shadowBlur=glowRadius*.35;
+    ctx.fillStyle=fillCol;
+    ctx.fillText(text,x,y);
+    ctx.shadowBlur=0;ctx.restore();
+  }
+
+  // Icon — white glow halo around emoji
+  ctx.save();
   ctx.font='200px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.shadowColor='rgba(255,255,255,.45)';ctx.shadowBlur=60;
   ctx.fillStyle='#fff';ctx.fillText(sec.icon,W/2,H*.36);
-  ctx.shadowBlur=0;
-  // Section title — large, crisp Bebas Neue
-  ctx.shadowColor='rgba(229,9,20,.5)';ctx.shadowBlur=22;
-  ctx.font='bold 128px "Bebas Neue",Impact,sans-serif';
-  ctx.fillStyle='#ffffff';ctx.textBaseline='top';
-  ctx.fillText(sec.title,W/2,H*.57);
-  ctx.shadowBlur=0;
-  // Subtitle
-  ctx.font='500 38px "Outfit",Arial,sans-serif';
-  ctx.fillStyle='rgba(210,210,210,.85)';
-  ctx.fillText(sec.sub,W/2,H*.755);
-  // CTA hint
-  ctx.font='300 26px "Outfit",Arial,sans-serif';
-  ctx.fillStyle='rgba(229,9,20,.7)';
+  ctx.shadowBlur=0;ctx.restore();
+
+  // Section title — large white glow outer bloom
+  glowText(sec.title,W/2,H*.57,'bold 128px "Bebas Neue",Impact,sans-serif','#ffffff',80,6);
+
+  // Subtitle — softer white glow
+  glowText(sec.sub,W/2,H*.755,'500 38px "Outfit",Arial,sans-serif','rgba(230,230,230,.95)',40,4);
+
+  // CTA hint — red tint with white glow
+  ctx.save();
+  ctx.font='300 26px "Outfit",Arial,sans-serif';ctx.textAlign='center';ctx.textBaseline='top';
+  ctx.shadowColor='rgba(255,255,255,.4)';ctx.shadowBlur=18;
+  ctx.fillStyle='rgba(255,120,120,.9)';
   ctx.fillText('— CLICK TO EXPLORE —',W/2,H*.875);
+  ctx.shadowBlur=0;ctx.restore();
   return new THREE.CanvasTexture(cv);
 }
 
@@ -561,7 +581,7 @@ const flyFQ=new THREE.Quaternion(),flyTQ=new THREE.Quaternion();
 let autoOrbit=true,autoAngle=Math.PI;
 let isDragging=false,dLastX=0,dLastY=0;
 let camYaw=Math.PI,camPitch=0.06;
-const camPos=new THREE.Vector3(0,1.8,-13);
+const camPos=new THREE.Vector3(0,1.8,-16);
 const keys={w:false,a:false,s:false,d:false};
 const isMobile='ontouchstart' in window;
 // Joystick
@@ -591,6 +611,8 @@ function initWorld(){
   buildDust();
   buildPanels();
   buildDecorations();
+  buildRipples();
+  buildGrassAndCrystals();
   buildProfileAvatar();
   loadGLBModel();
   buildMobileMenu();
@@ -614,12 +636,17 @@ function buildLights(){
 }
 
 function buildFloor(){
-  // ── Rocky exoplanet terrain (Poly Haven PBR rock_surface) ──
-  const DIFF_URL ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_surface/rock_surface_diff_2k.jpg';
-  const NOR_URL  ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_surface/rock_surface_nor_gl_2k.jpg';
-  const ROUGH_URL='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_surface/rock_surface_rough_2k.jpg';
+  // ── Rocky exoplanet terrain — layered PBR (Poly Haven CC0) ──
+  // Primary: rock_ground_rough — natural ground-level rocky surface
+  // Fallback: aerial_rocks_02 — mossy cracked rock (confirmed working)
+  const PRIM_DIFF ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_ground_rough/rock_ground_rough_diff_2k.jpg';
+  const PRIM_NOR  ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_ground_rough/rock_ground_rough_nor_gl_2k.jpg';
+  const PRIM_ROUGH='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_ground_rough/rock_ground_rough_rough_2k.jpg';
+  const FALL_DIFF ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_rocks_02/aerial_rocks_02_diff_2k.jpg';
+  const FALL_NOR  ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_rocks_02/aerial_rocks_02_nor_gl_2k.jpg';
+  const FALL_ROUGH='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_rocks_02/aerial_rocks_02_rough_2k.jpg';
 
-  const segs=isMobile?80:160;
+  const segs=isMobile?100:200;
   const geo=new THREE.PlaneGeometry(260,260,segs,segs);
   geo.rotateX(-Math.PI/2);
   const pos=geo.attributes.position;
@@ -627,28 +654,45 @@ function buildFloor(){
     const x=pos.getX(i),z=pos.getZ(i);
     const r=Math.sqrt(x*x+z*z);
     let h=0;
-    h+=Math.sin(x*.13)*Math.cos(z*.11)*.9;
-    h+=Math.sin(x*.27+z*.19)*Math.cos(z*.31-x*.09)*.45;
-    h+=Math.sin(x*.58+1.3)*Math.cos(z*.52+.7)*.22;
-    h+=Math.sin(x*1.1+z*1.3)*.08;
-    h+=(Math.random()-.5)*.28;
-    const flat=Math.min(1,Math.max(0,(r-7)/9));
+    // Large undulation layers
+    h+=Math.sin(x*.10)*Math.cos(z*.09)*1.4;
+    h+=Math.sin(x*.23+z*.17)*Math.cos(z*.28-x*.08)*.75;
+    h+=Math.sin(x*.51+1.3)*Math.cos(z*.47+.7)*.35;
+    // Medium rock pockmarks
+    h+=Math.sin(x*1.1+z*1.3)*.16;
+    h+=Math.sin(x*2.2-z*1.9)*.07;
+    // Fine surface roughness
+    h+=(Math.random()-.5)*.22;
+    // Keep centre (camera area) flat
+    const flat=Math.min(1,Math.max(0,(r-8)/10));
     h*=flat;
-    if(r>18)h+=Math.abs(Math.sin(x*.18)*Math.cos(z*.22))*2.2*Math.min(1,(r-18)/15);
+    // Rim ridges rising at distance
+    if(r>20)h+=Math.abs(Math.sin(x*.16)*Math.cos(z*.19))*3.0*Math.min(1,(r-20)/14);
     pos.setY(i,h-.02);
   }
   geo.computeVertexNormals();
 
-  // Alien tint: dark crimson-purple multiplied over the real rock texture
-  const terrMat=new THREE.MeshStandardMaterial({color:0x3a0a12,roughness:.97,metalness:.04});
+  // Dark alien tint — will be multiplied on top of the real rock diffuse
+  const terrMat=new THREE.MeshStandardMaterial({color:0x2a0809,roughness:.96,metalness:.03});
   WS.add(new THREE.Mesh(geo,terrMat));
 
-  // Load PBR maps async — apply as they arrive; site stays functional without them
+  // Load PBR maps — try primary first; fall back gracefully
   const txLoader=new THREE.TextureLoader();
-  function tile(t){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(18,18);return t;}
-  txLoader.load(DIFF_URL, t=>{terrMat.map=tile(t);terrMat.needsUpdate=true;},undefined,()=>{});
-  txLoader.load(NOR_URL,  t=>{terrMat.normalMap=tile(t);terrMat.normalScale.set(.6,.6);terrMat.needsUpdate=true;},undefined,()=>{});
-  txLoader.load(ROUGH_URL,t=>{terrMat.roughnessMap=tile(t);terrMat.needsUpdate=true;},undefined,()=>{});
+  // Finer tiling (28×) = visibly sharper surface at walk distance
+  function tile(t,rep){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep||28,rep||28);t.anisotropy=Math.min(16,WR.capabilities.getMaxAnisotropy());return t;}
+  // Strong normal scale = much more surface depth & rock bumps
+  const NRM_SCALE=1.6;
+  function loadSet(diff,nor,rough){
+    txLoader.load(diff, t=>{terrMat.map=tile(t,28);terrMat.needsUpdate=true;},undefined,()=>{});
+    txLoader.load(nor,  t=>{terrMat.normalMap=tile(t,28);terrMat.normalScale.set(NRM_SCALE,NRM_SCALE);terrMat.needsUpdate=true;},undefined,()=>{});
+    txLoader.load(rough,t=>{terrMat.roughnessMap=tile(t,28);terrMat.needsUpdate=true;},undefined,()=>{});
+  }
+  // Attempt primary; if diff fails, switch to confirmed fallback
+  txLoader.load(PRIM_DIFF,
+    t=>{terrMat.map=tile(t,28);terrMat.needsUpdate=true;loadSet(PRIM_DIFF,PRIM_NOR,PRIM_ROUGH);},
+    undefined,
+    ()=>{loadSet(FALL_DIFF,FALL_NOR,FALL_ROUGH);}
+  );
 
 
   // ── Glowing lava fissures ────────────────────────────
@@ -661,7 +705,8 @@ function buildFloor(){
   }
   const fGeo=new THREE.BufferGeometry();
   fGeo.setAttribute('position',new THREE.Float32BufferAttribute(fPts,3));
-  WS.add(new THREE.LineSegments(fGeo,new THREE.LineBasicMaterial({color:0xff2008,transparent:true,opacity:.22,blending:THREE.AdditiveBlending,depthWrite:false})));
+  const fissure1=new THREE.LineSegments(fGeo,new THREE.LineBasicMaterial({color:0xff2008,transparent:true,opacity:.22,blending:THREE.AdditiveBlending,depthWrite:false}));
+  WS.add(fissure1);
 
   // ── Secondary fissure layer ───────────────────────────
   const f2Pts=[];
@@ -671,40 +716,43 @@ function buildFloor(){
   }
   const f2Geo=new THREE.BufferGeometry();
   f2Geo.setAttribute('position',new THREE.Float32BufferAttribute(f2Pts,3));
-  WS.add(new THREE.LineSegments(f2Geo,new THREE.LineBasicMaterial({color:0xff6030,transparent:true,opacity:.10,blending:THREE.AdditiveBlending,depthWrite:false})));
+  const fissure2=new THREE.LineSegments(f2Geo,new THREE.LineBasicMaterial({color:0xff6030,transparent:true,opacity:.10,blending:THREE.AdditiveBlending,depthWrite:false}));
+  WS.add(fissure2);
+  WS.userData.fissures=[fissure1,fissure2];
 }
 
 function buildStars(){
   // ── NASA real Milky Way equirectangular sky sphere ──
   const skyGeo=new THREE.SphereGeometry(280,48,24);
-  const skyMat=new THREE.MeshBasicMaterial({side:THREE.BackSide,depthWrite:false,fog:false});
+  // color acts as a brightness multiplier on the texture: 0x333333 = ~20% brightness = very dark night sky
+  const skyMat=new THREE.MeshBasicMaterial({color:0x333333,side:THREE.BackSide,depthWrite:false,fog:false});
   const skySphere=new THREE.Mesh(skyGeo,skyMat);
-  WS.add(skySphere);
+  WS.add(skySphere);WS.userData.skySphere=skySphere;
 
   function buildCanvasGalaxy(){
     // Procedural fallback – deep space with colour-varied stars + milky band
     const W=2048,H=1024;
     const c=document.createElement('canvas');c.width=W;c.height=H;
     const ctx=c.getContext('2d');
-    ctx.fillStyle='#00000a';ctx.fillRect(0,0,W,H);
-    // Milky way diffuse band
-    const band=ctx.createLinearGradient(0,280,0,H-280);
-    band.addColorStop(0,'rgba(0,0,0,0)');band.addColorStop(.35,'rgba(80,50,30,.1)');
-    band.addColorStop(.5,'rgba(150,90,50,.15)');band.addColorStop(.65,'rgba(80,50,30,.1)');band.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle='#000005';ctx.fillRect(0,0,W,H);
+    // Milky way diffuse band — brighter since sky multiplier is dark
+    const band=ctx.createLinearGradient(0,260,0,H-260);
+    band.addColorStop(0,'rgba(0,0,0,0)');band.addColorStop(.35,'rgba(180,120,70,.18)');
+    band.addColorStop(.5,'rgba(255,160,80,.25)');band.addColorStop(.65,'rgba(180,120,70,.18)');band.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=band;ctx.fillRect(0,0,W,H);
-    // Stars
-    for(let i=0;i<12000;i++){
-      const x=Math.random()*W,y=Math.random()*H,r=Math.random()*1.4+.1;
+    // Stars — brighter since multiplier dims them
+    for(let i=0;i<16000;i++){
+      const x=Math.random()*W,y=Math.random()*H,r=Math.random()*1.8+.15;
       const v=Math.random();
       let col;
-      if(v<.08)col=`rgba(255,120,100,${.6+Math.random()*.4})`;
-      else if(v<.16)col=`rgba(150,170,255,${.6+Math.random()*.4})`;
-      else if(v<.22)col=`rgba(255,220,130,${.5+Math.random()*.5})`;
-      else col=`rgba(255,255,255,${.25+Math.random()*.75})`;
+      if(v<.08)col=`rgba(255,140,120,${.85+Math.random()*.15})`;
+      else if(v<.16)col=`rgba(180,200,255,${.85+Math.random()*.15})`;
+      else if(v<.22)col=`rgba(255,235,150,${.75+Math.random()*.25})`;
+      else col=`rgba(255,255,255,${.55+Math.random()*.45})`;
       ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
     }
     // Nebula glows
-    [[400,350,180,180,'rgba(120,20,40,.07)'],[1200,500,220,140,'rgba(20,40,120,.06)'],[1700,300,160,120,'rgba(80,10,50,.06)']].forEach(([cx,cy,rx,ry,col])=>{
+    [[400,350,200,200,'rgba(200,30,60,.18)'],[1200,500,260,160,'rgba(30,60,200,.14)'],[1700,300,180,140,'rgba(120,15,80,.14)'],[900,700,150,120,'rgba(80,180,255,.08)']].forEach(([cx,cy,rx,ry,col])=>{
       const g=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(rx,ry));
       g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');
       ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.fill();
@@ -736,7 +784,7 @@ function buildPanels(){
   SECTIONS.forEach((sec,i)=>{
     const ang=sec.angle*Math.PI/180;
     const x=Math.sin(ang)*sec.dist,z=-Math.cos(ang)*sec.dist;
-    const geo=new THREE.PlaneGeometry(4.8,3);
+    const geo=new THREE.PlaneGeometry(6,3.8);
     const panel=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({map:makePanelTex(sec),transparent:true,opacity:.94,side:THREE.DoubleSide,roughness:.8,metalness:.1}));
     panel.position.set(x,sec.h,z);panel.lookAt(0,sec.h,0);panel.rotateY(Math.PI);
     panel.userData={sec,idx:i,baseY:sec.h,fp:Math.random()*Math.PI*2};
@@ -745,40 +793,185 @@ function buildPanels(){
     const frame=new THREE.LineSegments(new THREE.EdgesGeometry(geo),new THREE.LineBasicMaterial({color:0xe50914,transparent:true,opacity:.4}));
     panel.add(frame);
     // Glow
-    const glow=new THREE.Mesh(new THREE.PlaneGeometry(6,4),new THREE.MeshBasicMaterial({color:0xe50914,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+    const glow=new THREE.Mesh(new THREE.PlaneGeometry(7.5,5),new THREE.MeshBasicMaterial({color:0xe50914,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
     glow.position.z=-.12;panel.add(glow);glowMeshes.push(glow);
     // Light
-    const pl=new THREE.PointLight(0xe50914,.7,10);pl.position.set(x,sec.h,z*.95);WS.add(pl);panelLights.push(pl);
+    const pl=new THREE.PointLight(0xe50914,.7,14);pl.position.set(x,sec.h,z*.95);WS.add(pl);panelLights.push(pl);
   });
 }
 
 function buildDecorations(){
-  // Torus knot centerpiece
-  const tk=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.TorusKnotGeometry(4.5,.07,100,14)),new THREE.LineBasicMaterial({color:0x3a0010,transparent:true,opacity:.4}));
+  // ── Shared PBR texture loader ──────────────────────────────────────────
+  const txLoader=new THREE.TextureLoader();
+  // metal_plate: dark industrial diamond plate (Poly Haven CC0)
+  const MP_DIFF ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate/metal_plate_diff_2k.jpg';
+  const MP_NOR  ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate/metal_plate_nor_gl_2k.jpg';
+  const MP_ROUGH='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate/metal_plate_rough_2k.jpg';
+  // rock_surface for floating debris
+  const RK_DIFF ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_surface/rock_surface_diff_2k.jpg';
+  const RK_NOR  ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_surface/rock_surface_nor_gl_2k.jpg';
+  const RK_ROUGH='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_surface/rock_surface_rough_2k.jpg';
+
+  // Helper: load a set of PBR maps into a material
+  function applyPBR(mat,diff,nor,rough,repeat){
+    const r=repeat||1;
+    function tile(t){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(r,r);return t;}
+    txLoader.load(diff, t=>{mat.map=tile(t);mat.needsUpdate=true;},undefined,()=>{});
+    txLoader.load(nor,  t=>{mat.normalMap=tile(t);mat.normalScale.set(.8,.8);mat.needsUpdate=true;},undefined,()=>{});
+    txLoader.load(rough,t=>{mat.roughnessMap=tile(t);mat.needsUpdate=true;},undefined,()=>{});
+  }
+
+  // ── Torus knot — solid metal centerpiece ───────────────────────────────
+  const tkMat=new THREE.MeshStandardMaterial({color:0xcc3322,emissive:0x1a0008,emissiveIntensity:.25,roughness:.35,metalness:.85});
+  applyPBR(tkMat,MP_DIFF,MP_NOR,MP_ROUGH,3);
+  const tk=new THREE.Mesh(new THREE.TorusKnotGeometry(4.5,.12,160,18),tkMat);
   tk.position.y=3.5;WS.add(tk);WS.userData.tk=tk;
-  // Outer icosahedron shell
-  const icoOuter=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(17,1)),new THREE.LineBasicMaterial({color:0xe50914,transparent:true,opacity:.025}));
+
+  // ── Translucent icosahedron shells (keep as thin wireframe atmosphere) ─
+  const icoOuter=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(17,1)),new THREE.LineBasicMaterial({color:0xe50914,transparent:true,opacity:.02}));
   WS.add(icoOuter);WS.userData.icoOuter=icoOuter;
-  // Inner icosahedron
-  const icoInner=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(8,1)),new THREE.LineBasicMaterial({color:0xe50914,transparent:true,opacity:.05}));
+  const icoInner=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(8,1)),new THREE.LineBasicMaterial({color:0xe50914,transparent:true,opacity:.04}));
   icoInner.position.y=2;WS.add(icoInner);WS.userData.icoInner=icoInner;
-  // Floating debris
+
+  // ── Floating rock debris — solid PBR ───────────────────────────────────
   const debris=[];
-  const debrisCnt=isMobile?12:22;
+  const debrisCnt=isMobile?10:20;
+  // Shared rock material (one material, multiple meshes for perf)
+  const rkMat=new THREE.MeshStandardMaterial({color:0x5a1a10,roughness:.92,metalness:.05});
+  applyPBR(rkMat,RK_DIFF,RK_NOR,RK_ROUGH,1);
   for(let i=0;i<debrisCnt;i++){
-    const s=.15+Math.random()*.55;
-    const d=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.TetrahedronGeometry(s,0)),new THREE.LineBasicMaterial({color:0xe50914,transparent:true,opacity:.06+Math.random()*.2}));
+    const s=.18+Math.random()*.55;
+    // Alternate between tetra and dodecahedron for variety
+    const geo=i%3===0?new THREE.DodecahedronGeometry(s,0):new THREE.TetrahedronGeometry(s,0);
+    const d=new THREE.Mesh(geo,rkMat);
     d.position.set((Math.random()-.5)*32,(Math.random()-.5)*9+2,(Math.random()-.5)*32);
     d.userData={rx:(Math.random()-.5)*.013,ry:(Math.random()-.5)*.018,rz:(Math.random()-.5)*.01,fy:Math.random()*Math.PI*2,fs:.005+Math.random()*.011,by:d.position.y};
     WS.add(d);debris.push(d);
   }
   WS.userData.debris=debris;
-  // Ring pillars
+
+  // ── Ring pillars — solid metal hoops ───────────────────────────────────
+  const ringMat=new THREE.MeshStandardMaterial({color:0xdd2211,emissive:0xe50914,emissiveIntensity:.35,roughness:.3,metalness:.9});
+  applyPBR(ringMat,MP_DIFF,MP_NOR,MP_ROUGH,1);
   for(let i=0;i<8;i++){
     const a=i*Math.PI/4;
-    const ring=new THREE.Mesh(new THREE.TorusGeometry(.28,.018,8,22),new THREE.MeshStandardMaterial({color:0xe50914,emissive:0xe50914,emissiveIntensity:.4,roughness:.5,metalness:.8,transparent:true,opacity:.3}));
-    ring.position.set(Math.sin(a)*9,.2+Math.random()*5,-Math.cos(a)*9);ring.rotation.x=Math.PI/2;WS.add(ring);
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(.35,.035,16,40),ringMat);
+    ring.position.set(Math.sin(a)*12,.2+Math.random()*5,-Math.cos(a)*12);ring.rotation.x=Math.PI/2;WS.add(ring);
   }
+}
+
+function buildRipples(){
+  // ── Expanding lava ripple rings from ground centre ──
+  const rings=[];const maxR=24;
+  for(let i=0;i<5;i++){
+    const geo=new THREE.RingGeometry(.85,1,.0,Math.PI*2,48);
+    geo.rotateX(-Math.PI/2);
+    const mat=new THREE.MeshBasicMaterial({color:0xff2808,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
+    const mesh=new THREE.Mesh(geo,mat);
+    mesh.position.y=.06;
+    mesh.userData.r=(i/5)*maxR; // stagger phases
+    WS.add(mesh);rings.push(mesh);
+  }
+  WS.userData.rippleRings=rings;
+}
+
+function buildGrassAndCrystals(){
+  if(!THREE.GLTFLoader)return;
+  const loader=new THREE.GLTFLoader();
+  const grassArr=[],crystalArr=[];
+  WS.userData.grassInstances=grassArr;
+  WS.userData.crystalInstances=crystalArr;
+
+  function det(seed){let s=seed;return()=>{s=Math.sin(s*127.1+311.7)*43758.5453;return s-Math.floor(s);};}
+
+  // ── Alien flowers (Three.js Flower.glb) — keep original PBR textures ──
+  const FLOWER='https://raw.githubusercontent.com/mrdoob/three.js/r128/examples/models/gltf/Flower/Flower.glb';
+  loader.load(FLOWER,gltf=>{
+    const tmpl=gltf.scene;
+    // Preserve original material colours/textures — only add a tiny emissive warmth
+    tmpl.traverse(n=>{if(n.isMesh&&n.material){
+      n.material=n.material.clone();
+      // Keep n.material.color exactly as baked in the GLB
+      if(n.material.emissive){n.material.emissive.setHex(0x110004);}
+      n.material.emissiveIntensity=.12;   // very subtle, just to make it glow at night
+    }});
+    const cnt=isMobile?22:44;
+    for(let i=0;i<cnt;i++){
+      const r=det(i*251.3+13);
+      // Placed OUTSIDE the camera orbit (radius 16) — behind the viewer's perspective
+      const ang=r()*Math.PI*2,dist=17+r()*22,sc=0.7+r()*1.1;
+      const inst=tmpl.clone(true);
+      inst.scale.set(sc,sc*(.8+r()*.5),sc);
+      inst.position.set(Math.sin(ang)*dist,0,Math.cos(ang)*dist);
+      inst.rotation.y=r()*Math.PI*2;
+      inst.userData={swayOff:r()*Math.PI*2,swaySpd:.35+r()*.3,swayAmp:.06+r()*.09};
+      WS.add(inst);grassArr.push(inst);
+    }
+  },undefined,()=>{
+    // Fallback: realistic grass blade stand-ins (earthy green-brown tones)
+    const cnt=isMobile?22:44;
+    for(let i=0;i<cnt;i++){
+      const r=det(i*251.3+13);
+      const ang=r()*Math.PI*2,dist=17+r()*22,h=0.5+r()*.8;
+      const col=new THREE.Color().setHSL(.28+r()*.06,.45+r()*.25,.22+r()*.12);
+      const g=new THREE.Mesh(new THREE.CylinderGeometry(.015,.03,h,5),new THREE.MeshStandardMaterial({color:col,roughness:.95,metalness:.02}));
+      g.position.set(Math.sin(ang)*dist,h/2,Math.cos(ang)*dist);
+      g.userData={swayOff:r()*Math.PI*2,swaySpd:.35+r()*.3,swayAmp:.08+r()*.1};
+      WS.add(g);grassArr.push(g);
+    }
+  });
+
+  // ── Crystal clusters (CC0 from ToxSam/cc0-models-Polygonal-Mind) ──
+  const CRYSTAL='https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/crystal-crossroads/Crystal_Cluster.glb';
+  const CRYSTAL2='https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/crystal-crossroads/Crystal_Small_01.glb';
+
+  function placeCrystal(tmpl,cnt,rngSeed,distMin,distMax,scMin,scMax){
+    for(let i=0;i<cnt;i++){
+      const r=det(rngSeed+i*317.5);
+      const ang=r()*Math.PI*2,dist=distMin+r()*distMax,sc=scMin+r()*(scMax-scMin);
+      const inst=tmpl.clone(true);
+      inst.scale.set(sc,sc*(.7+r()*.6),sc);
+      inst.position.set(Math.sin(ang)*dist,0,Math.cos(ang)*dist);
+      inst.rotation.y=r()*Math.PI*2;
+      inst.userData={spinSpd:(r()-.5)*.006,glowOff:r()*Math.PI*2};
+      WS.add(inst);crystalArr.push(inst);
+    }
+  }
+
+  // Preserve original GLB crystal textures/colours — only overlay a gentle emissive glow
+  function applyAlienCrystalMat(tmpl){
+    tmpl.traverse(n=>{if(n.isMesh&&n.material){
+      n.material=n.material.clone();
+      // DO NOT override color, roughness, metalness, or texture maps
+      // Only add a very mild emissive so they glow in the dark environment
+      if(!n.material.emissive) n.material.emissive=new THREE.Color(0);
+      n.material.emissive.setScalar(0.04);  // near-black warmth — barely visible tint
+      n.material.emissiveIntensity=.55;     // pulsed per-frame in animLoop
+    }});
+  }
+
+  loader.load(CRYSTAL,gltf=>{
+    applyAlienCrystalMat(gltf.scene);
+    // Large clusters scattered OUTSIDE the camera ring (17–38m) — visible as backdrop
+    placeCrystal(gltf.scene,isMobile?8:16,77,17,22,.45,1.1);
+  },undefined,()=>{
+    // Fallback emissive octahedra — neutral tones, placed behind camera
+    const cnt=isMobile?8:16;
+    for(let i=0;i<cnt;i++){
+      const r=det(77+i*317.5);
+      const ang=r()*Math.PI*2,dist=17+r()*22,sc=.4+r()*.65;
+      const m=new THREE.Mesh(new THREE.OctahedronGeometry(sc,0),new THREE.MeshStandardMaterial({color:0xaaaacc,emissive:0x333366,emissiveIntensity:.55,roughness:.12,metalness:.7,transparent:true,opacity:.9}));
+      m.position.set(Math.sin(ang)*dist,sc*.5,Math.cos(ang)*dist);
+      m.userData={spinSpd:(r()-.5)*.006,glowOff:r()*Math.PI*2};
+      WS.add(m);crystalArr.push(m);
+    }
+  });
+
+  loader.load(CRYSTAL2,gltf=>{
+    applyAlienCrystalMat(gltf.scene);
+    // Small crystals — mix of mid-field (near panels) and background
+    placeCrystal(gltf.scene,isMobile?12:24,199,14,26,.2,.55);
+  },undefined,()=>{});
 }
 
 function buildProfileAvatar(){
@@ -963,7 +1156,7 @@ function flyToPanel(panel){
   focusedPanel=panel;autoOrbit=false;
   const pPos=panel.position.clone();
   const dir=new THREE.Vector3(0,0,-1).applyQuaternion(panel.quaternion);
-  const target=pPos.clone().addScaledVector(dir,4.8);target.y=Math.max(target.y,1.2);
+  const target=pPos.clone().addScaledVector(dir,5.8);target.y=Math.max(target.y,1.2);
   flyFP.copy(WC.position);flyTP.copy(target);
   const tc=WC.clone();tc.position.copy(target);tc.lookAt(pPos);
   flyFQ.copy(WC.quaternion);flyTQ.copy(tc.quaternion);
@@ -996,7 +1189,7 @@ function animLoop(now){
   }
 
   // Auto orbit
-  if(autoOrbit){autoAngle+=dt*.08;const orbitR=13;camPos.set(Math.sin(autoAngle)*orbitR,1.8,Math.cos(autoAngle)*orbitR);camYaw=autoAngle;camPitch=.07+Math.sin(autoAngle*.18)*.035;}
+  if(autoOrbit){autoAngle+=dt*.08;const orbitR=16;camPos.set(Math.sin(autoAngle)*orbitR,1.8,Math.cos(autoAngle)*orbitR);camYaw=autoAngle;camPitch=.07+Math.sin(autoAngle*.18)*.035;}
 
   // WASD
   if(!autoOrbit){
@@ -1029,7 +1222,11 @@ function animLoop(now){
   });
 
   // Decorations
-  const {tk,icoOuter,icoInner,debris,dustPts,dustVel,dustPos,dustCnt,glbModel,photoMesh,photoRing,photoRing2,nameMesh}=WS.userData;
+  const {tk,icoOuter,icoInner,debris,dustPts,dustVel,dustPos,dustCnt,glbModel,
+         photoMesh,photoRing,photoRing2,nameMesh,
+         skySphere,fissures,rippleRings,grassInstances,crystalInstances}=WS.userData;
+
+  // Existing decorations
   if(tk){tk.rotation.x=t*.007;tk.rotation.y=t*.011;tk.rotation.z=t*.004;}
   if(icoOuter){icoOuter.rotation.x=t*.002;icoOuter.rotation.y=t*.004;}
   if(icoInner){icoInner.rotation.x=-t*.004;icoInner.rotation.y=t*.006;}
@@ -1040,6 +1237,44 @@ function animLoop(now){
   if(photoRing){photoRing.rotation.z=t*.4;photoRing.lookAt(WC.position);}
   if(photoRing2){photoRing2.rotation.z=-t*.3;photoRing2.lookAt(WC.position);}
   if(nameMesh){nameMesh.lookAt(WC.position);}
+
+  // ── New animations ────────────────────────────────────
+  // Sky dome very slow drift
+  if(skySphere)skySphere.rotation.y=t*.0025;
+
+  // Lava fissure heartbeat pulse
+  if(fissures&&fissures.length){
+    const pulse=.13+Math.sin(t*.9)*.08+Math.sin(t*2.3)*.03;
+    fissures[0].material.opacity=pulse;
+    if(fissures[1])fissures[1].material.opacity=pulse*.48;
+  }
+
+  // Expanding lava ripple rings from ground
+  if(rippleRings){
+    const maxR=24,spd=6;
+    rippleRings.forEach(ring=>{
+      ring.userData.r=(ring.userData.r||0)+spd*dt;
+      if(ring.userData.r>maxR)ring.userData.r=0;
+      const r=Math.max(.1,ring.userData.r);
+      ring.scale.set(r,1,r);
+      ring.material.opacity=Math.max(0,(1-r/maxR)*.22);
+    });
+  }
+
+  // Alien grass / flower sway
+  if(grassInstances)grassInstances.forEach(g=>{
+    if(!g.userData.swayOff&&g.userData.swayOff!==0)return;
+    g.rotation.z=Math.sin(t*g.userData.swaySpd+g.userData.swayOff)*g.userData.swayAmp;
+    g.rotation.x=Math.sin(t*g.userData.swaySpd*.65+g.userData.swayOff+1.2)*g.userData.swayAmp*.4;
+  });
+
+  // Crystal slow spin + emissive glow breathe
+  if(crystalInstances)crystalInstances.forEach(c=>{
+    c.rotation.y+=c.userData.spinSpd;
+    c.traverse(n=>{if(n.isMesh&&n.material&&n.material.emissiveIntensity!==undefined){
+      n.material.emissiveIntensity=.55+Math.sin(t*.7+c.userData.glowOff)*.25;
+    }});
+  });
 
   WR.render(WS,WC);
 }
