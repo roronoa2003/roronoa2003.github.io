@@ -593,7 +593,7 @@ function initWorld(){
   flyFQ.copy(WC.quaternion);flyTQ.copy(tc.quaternion);
   flyT=0;isFlying=true;
 
-  animLoop();
+  requestAnimationFrame(animLoop);
 }
 
 function buildLights(){
@@ -605,38 +605,41 @@ function buildLights(){
 }
 
 function buildFloor(){
-  // ── Rocky exoplanet terrain ──────────────────────────
+  // ── Rocky exoplanet terrain (Poly Haven PBR rock_surface) ──
+  const DIFF_URL ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_surface/rock_surface_diff_2k.jpg';
+  const NOR_URL  ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_surface/rock_surface_nor_gl_2k.jpg';
+  const ROUGH_URL='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_surface/rock_surface_rough_2k.jpg';
+
   const segs=isMobile?80:160;
   const geo=new THREE.PlaneGeometry(260,260,segs,segs);
   geo.rotateX(-Math.PI/2);
   const pos=geo.attributes.position;
-  const colArr=new Float32Array(pos.count*3);
-  const palette=[[0.10,0.02,0.06],[0.14,0.04,0.08],[0.07,0.01,0.04],[0.18,0.06,0.10],[0.22,0.03,0.09]];
   for(let i=0;i<pos.count;i++){
     const x=pos.getX(i),z=pos.getZ(i);
     const r=Math.sqrt(x*x+z*z);
-    // Layered pseudo-noise displacement
     let h=0;
     h+=Math.sin(x*.13)*Math.cos(z*.11)*.9;
     h+=Math.sin(x*.27+z*.19)*Math.cos(z*.31-x*.09)*.45;
     h+=Math.sin(x*.58+1.3)*Math.cos(z*.52+.7)*.22;
     h+=Math.sin(x*1.1+z*1.3)*.08;
     h+=(Math.random()-.5)*.28;
-    // Flat walkable centre
     const flat=Math.min(1,Math.max(0,(r-7)/9));
     h*=flat;
-    // Tall ridges at distance
     if(r>18)h+=Math.abs(Math.sin(x*.18)*Math.cos(z*.22))*2.2*Math.min(1,(r-18)/15);
     pos.setY(i,h-.02);
-    // Vertex colour – dark purple-rust, brighter on peaks
-    const bright=Math.max(0,h*.18);
-    const c=palette[Math.floor(Math.random()*palette.length)];
-    colArr[i*3]=c[0]+bright*1.2;colArr[i*3+1]=c[1]+bright*.3;colArr[i*3+2]=c[2]+bright*.6;
   }
-  geo.setAttribute('color',new THREE.BufferAttribute(colArr,3));
   geo.computeVertexNormals();
-  const terrMat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.97,metalness:.04});
+
+  // Alien tint: dark crimson-purple multiplied over the real rock texture
+  const terrMat=new THREE.MeshStandardMaterial({color:0x3a0a12,roughness:.97,metalness:.04});
   WS.add(new THREE.Mesh(geo,terrMat));
+
+  // Load PBR maps async — apply as they arrive; site stays functional without them
+  const txLoader=new THREE.TextureLoader();
+  function tile(t){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(18,18);return t;}
+  txLoader.load(DIFF_URL, t=>{terrMat.map=tile(t);terrMat.needsUpdate=true;},undefined,()=>{});
+  txLoader.load(NOR_URL,  t=>{terrMat.normalMap=tile(t);terrMat.normalScale.set(.6,.6);terrMat.needsUpdate=true;},undefined,()=>{});
+  txLoader.load(ROUGH_URL,t=>{terrMat.roughnessMap=tile(t);terrMat.needsUpdate=true;},undefined,()=>{});
 
   // ── Scattered low-poly boulders ──────────────────────
   const bCols=[0x1e0814,0x2b0d1c,0x130410,0x3c1028,0x240a16];
@@ -661,15 +664,13 @@ function buildFloor(){
   }
   const fGeo=new THREE.BufferGeometry();
   fGeo.setAttribute('position',new THREE.Float32BufferAttribute(fPts,3));
-  const fMat=new THREE.LineBasicMaterial({color:0xff2008,transparent:true,opacity:.22,blending:THREE.AdditiveBlending,depthWrite:false});
-  WS.add(new THREE.LineSegments(fGeo,fMat));
+  WS.add(new THREE.LineSegments(fGeo,new THREE.LineBasicMaterial({color:0xff2008,transparent:true,opacity:.22,blending:THREE.AdditiveBlending,depthWrite:false})));
 
-  // ── Secondary dimmer fissure layer ───────────────────
+  // ── Secondary fissure layer ───────────────────────────
   const f2Pts=[];
   for(let i=0;i<35;i++){
     const a=Math.random()*Math.PI*2+.3,r1=6+Math.random()*20,r2=r1+.8+Math.random()*5;
-    f2Pts.push(Math.sin(a)*r1,.04,Math.cos(a)*r1);
-    f2Pts.push(Math.sin(a)*r2,.04,Math.cos(a)*r2);
+    f2Pts.push(Math.sin(a)*r1,.04,Math.cos(a)*r1,Math.sin(a)*r2,.04,Math.cos(a)*r2);
   }
   const f2Geo=new THREE.BufferGeometry();
   f2Geo.setAttribute('position',new THREE.Float32BufferAttribute(f2Pts,3));
@@ -915,8 +916,14 @@ function flyToPanel(panel){
 // ANIMATION LOOP
 // ══════════════════════════════════════════════════════
 const clk=new THREE.Clock();
-function animLoop(){
+const FPS_CAP=60,FRAME_MS=1000/FPS_CAP;
+let _lastFrameNow=0;
+function animLoop(now){
   requestAnimationFrame(animLoop);
+  // Hard 60 FPS cap — skip frame if too soon (saves GPU on 120/144 Hz displays)
+  const _delta=now-_lastFrameNow;
+  if(_delta<FRAME_MS-0.5)return;
+  _lastFrameNow=now-(_delta%FRAME_MS);
   const dt=Math.min(clk.getDelta(),.05),t=clk.getElapsedTime();
 
   // Flying
