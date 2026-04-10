@@ -5,10 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
 <title>Rohan Iyer — Portfolio</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@200;300;400;500;600;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.cdnfonts.com/css/itc-benguiat-std" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <style>
-:root{--red:#E50914;--red2:#ff3d3d;--black:#03000a;--surf:#0d000f;--text:#e5e5e5;--muted:#666;--gold:#f5c842;}
+:root{--red:#E50914;--red2:#ff3d3d;--black:#03000a;--surf:#0d000f;--text:#e5e5e5;--muted:#666;--gold:#f5c842;
+  --font-st:'ITC Benguiat Std',Georgia,'Times New Roman',serif;}
+@keyframes stFlicker{
+  0%,18%,20%,52%,54%,100%{opacity:1;}
+  19%,53%{opacity:.82;}
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{width:100%;height:100%;overflow:hidden;-webkit-tap-highlight-color:transparent;}
 body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;cursor:none;}
@@ -70,7 +76,7 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 
 /* HUD */
 #world-hud{position:absolute;inset:0;pointer-events:none;z-index:10;}
-#hud-logo{position:absolute;top:1.2rem;left:1.8rem;font-family:'Bebas Neue',sans-serif;font-size:1.7rem;color:var(--red);letter-spacing:.06em;text-shadow:0 0 20px rgba(229,9,20,.5);pointer-events:all;}
+#hud-logo{position:absolute;top:1.2rem;left:1.8rem;font-family:'Bebas Neue',sans-serif;font-size:1.7rem;color:var(--red);letter-spacing:.06em;text-shadow:0 0 20px rgba(229,9,20,.6),0 0 40px rgba(229,9,20,.25);pointer-events:all;}
 #hud-back{position:absolute;top:1.1rem;right:1.8rem;background:transparent;border:1px solid rgba(229,9,20,.35);color:rgba(229,9,20,.75);font-family:'Outfit',sans-serif;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;padding:.32rem .9rem;border-radius:3px;cursor:none;transition:all .25s;pointer-events:all;}
 #hud-back:hover{background:rgba(229,9,20,.15);border-color:var(--red);color:#fff;}
 @media(pointer:coarse){#hud-back{cursor:pointer;}}
@@ -548,9 +554,9 @@ function makePanelTex(sec){
   ctx.fillStyle='#fff';ctx.fillText(sec.icon,W/2,ICON_Y);
   ctx.restore();
 
-  // ── 6. Title — crisp Bebas Neue, red drop-shadow for depth ───────────
+  // ── 6. Title — ITC Benguiat Std (Stranger Things font), red drop-shadow ─
   ctx.save();
-  ctx.font='bold 112px "Bebas Neue",Impact,sans-serif';
+  ctx.font='bold 112px "Bebas Neue",sans-serif';
   ctx.textAlign='center';ctx.textBaseline='top';
   ctx.shadowColor='rgba(229,9,20,.7)';ctx.shadowBlur=22;ctx.shadowOffsetY=3;
   ctx.fillStyle='#ffffff';
@@ -643,7 +649,6 @@ function initWorld(){
   buildPanels();
   buildDecorations();
   buildRipples();
-  buildGrassAndCrystals();
   buildProfileAvatar();
   loadGLBModel();
   buildMobileMenu();
@@ -890,135 +895,6 @@ function buildRipples(){
   WS.userData.rippleRings=rings;
 }
 
-function buildGrassAndCrystals(){
-  if(!THREE.GLTFLoader)return;
-  const loader=new THREE.GLTFLoader();
-  const grassArr=[],crystalArr=[];
-  WS.userData.grassInstances=grassArr;
-  WS.userData.crystalInstances=crystalArr;
-
-  function det(seed){let s=seed;return()=>{s=Math.sin(s*127.1+311.7)*43758.5453;return s-Math.floor(s);};}
-
-  // ── Shared bark PBR for fallback shrubs ──────────────────────────────
-  // bark_brown_02: realistic tree bark (Poly Haven CC0)
-  const barkMat=new THREE.MeshStandardMaterial({color:0x3a200c,roughness:.97,metalness:.01});
-  {
-    const txL=new THREE.TextureLoader();
-    const BD='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/bark_brown_02/bark_brown_02_diff_2k.jpg';
-    const BN='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/bark_brown_02/bark_brown_02_nor_gl_2k.jpg';
-    function tb(t){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(2,4);return t;}
-    txL.load(BD,t=>{barkMat.map=tb(t);barkMat.needsUpdate=true;},undefined,()=>{});
-    txL.load(BN,t=>{barkMat.normalMap=tb(t);barkMat.normalScale.set(1.2,1.2);barkMat.needsUpdate=true;},undefined,()=>{});
-  }
-
-  function buildFallbackBushes(){
-    const cnt=isMobile?22:44;
-    for(let i=0;i<cnt;i++){
-      const r=det(i*251.3+13);
-      const ang=r()*Math.PI*2,dist=17+r()*22;
-      const h=0.9+r()*.8;   // trunk height 0.9–1.7 m
-      const grp=new THREE.Group();
-      grp.position.set(Math.sin(ang)*dist,0,Math.cos(ang)*dist);
-      grp.rotation.y=r()*Math.PI*2;
-      // Bark trunk
-      const trunk=new THREE.Mesh(
-        new THREE.CylinderGeometry(.03+r()*.03,.06+r()*.04,h,8),barkMat);
-      trunk.position.y=h/2;
-      grp.add(trunk);
-      // Leaf canopy — 3–5 overlapping spheres with earthy-green PBR
-      const clusterCnt=3+Math.floor(r()*3);
-      for(let j=0;j<clusterCnt;j++){
-        const lr=0.22+r()*.2;
-        const leafCol=new THREE.Color().setHSL(.26+r()*.08,.52+r()*.22,.16+r()*.14);
-        const leaf=new THREE.Mesh(
-          new THREE.SphereGeometry(lr,9,7),
-          new THREE.MeshStandardMaterial({color:leafCol,roughness:.94,metalness:.01,
-            // Approximate subsurface: slight emissive so leaves catch ambient light
-            emissive:new THREE.Color().setHSL(.27+r()*.06,.5,.04),emissiveIntensity:.35})
-        );
-        leaf.position.set((r()-.5)*.4,h*.65+r()*.55,(r()-.5)*.4);
-        grp.add(leaf);
-      }
-      grp.userData={swayOff:r()*Math.PI*2,swaySpd:.3+r()*.25,swayAmp:.04+r()*.06};
-      WS.add(grp);grassArr.push(grp);
-    }
-  }
-
-  // ── Alien flowers (Three.js Flower.glb) — keep original PBR textures ──
-  const FLOWER='https://raw.githubusercontent.com/mrdoob/three.js/r128/examples/models/gltf/Flower/Flower.glb';
-  loader.load(FLOWER,gltf=>{
-    const tmpl=gltf.scene;
-    // Only boost emissive slightly so petals are visible at night — never override color/maps
-    tmpl.traverse(n=>{if(n.isMesh&&n.material){
-      n.material=n.material.clone();
-      if(n.material.emissive)n.material.emissive.setHex(0x0a0302);
-      n.material.emissiveIntensity=.18;
-    }});
-    const cnt=isMobile?22:44;
-    for(let i=0;i<cnt;i++){
-      const r=det(i*251.3+13);
-      const ang=r()*Math.PI*2,dist=17+r()*22,sc=1.0+r()*1.4;  // 1–2.4m tall
-      const inst=tmpl.clone(true);
-      inst.scale.set(sc,sc*(.85+r()*.3),sc);
-      inst.position.set(Math.sin(ang)*dist,0,Math.cos(ang)*dist);
-      inst.rotation.y=r()*Math.PI*2;
-      inst.userData={swayOff:r()*Math.PI*2,swaySpd:.3+r()*.25,swayAmp:.04+r()*.06};
-      WS.add(inst);grassArr.push(inst);
-    }
-  },undefined,buildFallbackBushes);
-
-  // ── Crystal clusters (CC0 from ToxSam/cc0-models-Polygonal-Mind) ──
-  const CRYSTAL='https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/crystal-crossroads/Crystal_Cluster.glb';
-  const CRYSTAL2='https://raw.githubusercontent.com/ToxSam/cc0-models-Polygonal-Mind/main/projects/crystal-crossroads/Crystal_Small_01.glb';
-
-  function placeCrystal(tmpl,cnt,rngSeed,distMin,distMax,scMin,scMax){
-    for(let i=0;i<cnt;i++){
-      const r=det(rngSeed+i*317.5);
-      const ang=r()*Math.PI*2,dist=distMin+r()*distMax,sc=scMin+r()*(scMax-scMin);
-      const inst=tmpl.clone(true);
-      inst.scale.set(sc,sc*(.7+r()*.6),sc);
-      inst.position.set(Math.sin(ang)*dist,0,Math.cos(ang)*dist);
-      inst.rotation.y=r()*Math.PI*2;
-      inst.userData={spinSpd:(r()-.5)*.006,glowOff:r()*Math.PI*2};
-      WS.add(inst);crystalArr.push(inst);
-    }
-  }
-
-  // Preserve original GLB crystal textures/colours — only overlay a gentle emissive glow
-  function applyAlienCrystalMat(tmpl){
-    tmpl.traverse(n=>{if(n.isMesh&&n.material){
-      n.material=n.material.clone();
-      // DO NOT override color, roughness, metalness, or texture maps
-      // Only add a very mild emissive so they glow in the dark environment
-      if(!n.material.emissive) n.material.emissive=new THREE.Color(0);
-      n.material.emissive.setScalar(0.04);  // near-black warmth — barely visible tint
-      n.material.emissiveIntensity=.55;     // pulsed per-frame in animLoop
-    }});
-  }
-
-  loader.load(CRYSTAL,gltf=>{
-    applyAlienCrystalMat(gltf.scene);
-    // Large clusters scattered OUTSIDE the camera ring (17–38m) — visible as backdrop
-    placeCrystal(gltf.scene,isMobile?8:16,77,17,22,.45,1.1);
-  },undefined,()=>{
-    // Fallback emissive octahedra — neutral tones, placed behind camera
-    const cnt=isMobile?8:16;
-    for(let i=0;i<cnt;i++){
-      const r=det(77+i*317.5);
-      const ang=r()*Math.PI*2,dist=17+r()*22,sc=.4+r()*.65;
-      const m=new THREE.Mesh(new THREE.OctahedronGeometry(sc,0),new THREE.MeshStandardMaterial({color:0xaaaacc,emissive:0x333366,emissiveIntensity:.55,roughness:.12,metalness:.7,transparent:true,opacity:.9}));
-      m.position.set(Math.sin(ang)*dist,sc*.5,Math.cos(ang)*dist);
-      m.userData={spinSpd:(r()-.5)*.006,glowOff:r()*Math.PI*2};
-      WS.add(m);crystalArr.push(m);
-    }
-  });
-
-  loader.load(CRYSTAL2,gltf=>{
-    applyAlienCrystalMat(gltf.scene);
-    // Small crystals — mix of mid-field (near panels) and background
-    placeCrystal(gltf.scene,isMobile?12:24,199,14,26,.2,.55);
-  },undefined,()=>{});
-}
 
 function buildProfileAvatar(){
   const S=1024; // high-res canvas for crisp display
@@ -1066,7 +942,7 @@ function buildProfileAvatar(){
     const nc=document.createElement('canvas');nc.width=1024;nc.height=128;
     const nctx=nc.getContext('2d');
     nctx.clearRect(0,0,1024,128);
-    nctx.font='bold 88px "Bebas Neue",Impact,sans-serif';
+    nctx.font='bold 88px "ITC Benguiat Std","ITC Benguiat",Georgia,serif';
     nctx.textAlign='center';nctx.fillStyle='#ffffff';
     nctx.shadowColor='rgba(229,9,20,.7)';nctx.shadowBlur=20;
     nctx.fillText('ROHAN IYER',512,82);
@@ -1270,7 +1146,7 @@ function animLoop(now){
   // Decorations
   const {tk,dustPts,dustVel,dustPos,dustCnt,glbModel,
          photoMesh,photoRing,photoRing2,nameMesh,
-         skySphere,fissures,rippleRings,grassInstances,crystalInstances}=WS.userData;
+         skySphere,fissures,rippleRings}=WS.userData;
 
   // Existing decorations
   if(tk){tk.rotation.x=t*.007;tk.rotation.y=t*.011;tk.rotation.z=t*.004;}
@@ -1304,20 +1180,6 @@ function animLoop(now){
     });
   }
 
-  // Alien grass / flower sway
-  if(grassInstances)grassInstances.forEach(g=>{
-    if(!g.userData.swayOff&&g.userData.swayOff!==0)return;
-    g.rotation.z=Math.sin(t*g.userData.swaySpd+g.userData.swayOff)*g.userData.swayAmp;
-    g.rotation.x=Math.sin(t*g.userData.swaySpd*.65+g.userData.swayOff+1.2)*g.userData.swayAmp*.4;
-  });
-
-  // Crystal slow spin + emissive glow breathe
-  if(crystalInstances)crystalInstances.forEach(c=>{
-    c.rotation.y+=c.userData.spinSpd;
-    c.traverse(n=>{if(n.isMesh&&n.material&&n.material.emissiveIntensity!==undefined){
-      n.material.emissiveIntensity=.55+Math.sin(t*.7+c.userData.glowOff)*.25;
-    }});
-  });
 
   WR.render(WS,WC);
 }
@@ -1374,7 +1236,8 @@ function enterWorld(){
   setTimeout(()=>{
     ps.classList.remove('show');ps.style.display='none';
     document.getElementById('world-screen').classList.add('show');
-    initWorld();autoOrbit=true;
+    // Wait for ITC Benguiat Std to load before drawing canvas panel textures
+    document.fonts.ready.then(()=>{initWorld();autoOrbit=true;});
   },400);
 }
 
