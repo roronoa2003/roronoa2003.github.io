@@ -812,6 +812,11 @@ const playerPos=new THREE.Vector3(8,0,8);// char world position
 let playerFacingYaw=Math.PI;// direction char faces
 let playerCharMesh=null,playerCharMixer=null,playerCharBaseY=0;
 let playerWalkBobT=0,playerCharScene=null;
+// Velocity-based smooth motion
+const playerVel=new THREE.Vector3();
+// Smooth TPP follow-cam (separate from camPos so lerp doesn't bleed into FPP)
+const tppCamLerped=new THREE.Vector3();
+let tppCamReady=false;
 const isMobile='ontouchstart' in window;
 // Joystick
 let jActive=false,jX=0,jY=0;
@@ -1687,78 +1692,138 @@ function toggleViewMode(){
   const btn=document.getElementById('hud-view-toggle');
   if(btn){btn.textContent=isTPP?'TPP':'FPP';btn.classList.toggle('tpp-active',isTPP);}
   if(isTPP){
-    // Load char into current active scene
-    const scene=inSecondWorld&&WS2?WS2:WS;
+    // FPP→TPP: place player exactly where camera is, preserve yaw
     playerPos.set(camPos.x,0,camPos.z);
+    playerVel.set(0,0,0);// clear momentum so no drift on spawn
+    playerFacingYaw=camYaw;
+    // Prime the smooth-cam so no sudden lurch on first frame
+    const CAM_DIST=5.5,CAM_H=3.0;
+    tppCamLerped.set(playerPos.x+Math.sin(camYaw)*CAM_DIST,playerPos.y+CAM_H,playerPos.z+Math.cos(camYaw)*CAM_DIST);
+    tppCamReady=true;
+    const scene=inSecondWorld&&WS2?WS2:WS;
     loadPlayerChar(scene);
   } else {
-    // Remove char, restore FPP cam position
+    // TPP→FPP: put camera exactly at player feet level, same yaw
     if(playerCharMesh&&playerCharScene){playerCharScene.remove(playerCharMesh);playerCharMesh=null;playerCharMixer=null;}
-    // Bring FPP cam to where player was
     camPos.set(playerPos.x,1.8,playerPos.z);
+    targetYaw=camYaw;targetPitch=camPitch;// sync inertia targets
+    tppCamReady=false;
   }
 }
 
-// Called every frame in TPP mode to move player char + update camera
+// Called every frame in TPP mode — velocity-based smooth movement
 function _tppUpdate(dt,t){
   if(!isTPP)return;
-  const spd=4.2*dt;
+
+  // ── Input to desired velocity ────────────────────────────
+  const MAX_SPD=5.8;
+  const ACCEL=20;// units/s² to reach max speed
   const fw=new THREE.Vector3(-Math.sin(camYaw),0,-Math.cos(camYaw));
   const rt=new THREE.Vector3(-Math.cos(camYaw),0,Math.sin(camYaw));
-  const moveVec=new THREE.Vector3();
+  const inputVec=new THREE.Vector3();
   if(!autoOrbit){
-    if(keys.w){playerPos.addScaledVector(fw,spd);moveVec.addScaledVector(fw,1);}
-    if(keys.s){playerPos.addScaledVector(fw,-spd);moveVec.addScaledVector(fw,-1);}
-    if(keys.a){playerPos.addScaledVector(rt,-spd);moveVec.addScaledVector(rt,-1);}
-    if(keys.d){playerPos.addScaledVector(rt,spd);moveVec.addScaledVector(rt,1);}
-    if(jActive){
-      playerPos.x+=(-Math.sin(camYaw)*(-jY)+Math.cos(camYaw)*jX)*spd;
-      playerPos.z+=(-Math.cos(camYaw)*(-jY)-Math.sin(camYaw)*jX)*spd;
-      moveVec.set(-jY*Math.sin(camYaw),-jY*Math.cos(camYaw),0);// approx
-    }
+    if(keys.w)inputVec.addScaledVector(fw,1);
+    if(keys.s)inputVec.addScaledVector(fw,-1);
+    if(keys.a)inputVec.addScaledVector(rt,-1);
+    if(keys.d)inputVec.addScaledVector(rt,1);
+    if(jActive){inputVec.addScaledVector(fw,-jY);inputVec.addScaledVector(rt,jX);}
   }
+  const inputLen=inputVec.length();
+  if(inputLen>1)inputVec.divideScalar(inputLen);// normalize diagonal
+
+  const desiredVelX=inputVec.x*MAX_SPD;
+  const desiredVelZ=inputVec.z*MAX_SPD;
+
+  // Accelerate toward desired — use different lerp for accel vs decel
+  const hasInput=inputLen>0.01;
+  const lerpRate=hasInput?Math.min(1,ACCEL*dt):Math.min(1,26*dt);// decel slightly faster for snappy stops
+  playerVel.x+=(desiredVelX-playerVel.x)*lerpRate;
+  playerVel.z+=(desiredVelZ-playerVel.z)*lerpRate;
+
+  // Hard-cap to max speed (handles diagonal bursts)
+  const curSpd=Math.sqrt(playerVel.x*playerVel.x+playerVel.z*playerVel.z);
+  if(curSpd>MAX_SPD){playerVel.x*=MAX_SPD/curSpd;playerVel.z*=MAX_SPD/curSpd;}
+
+  // Apply to position
+  playerPos.x+=playerVel.x*dt;
+  playerPos.z+=playerVel.z*dt;
+
   // Clamp to world boundary
   const pr=Math.sqrt(playerPos.x*playerPos.x+playerPos.z*playerPos.z);
   const maxR=inSecondWorld?20:21;
-  if(pr>maxR){playerPos.x*=maxR/pr;playerPos.z*=maxR/pr;}
-  playerPos.y=0;// keep on ground
+  if(pr>maxR){playerPos.x*=maxR/pr;playerPos.z*=maxR/pr;playerVel.x*=0.2;playerVel.z*=0.2;}
+  playerPos.y=0;
 
-  // ── Camera follow (arc-ball, behind and above) ──
+  // Speed fraction 0→1
+  const speedFrac=Math.min(curSpd/MAX_SPD,1);
+  const isMoving=curSpd>0.18;
+
+  // ── Smooth follow camera ─────────────────────────────────
   const CAM_DIST=5.5,CAM_H=3.0;
-  camPos.x=playerPos.x+Math.sin(camYaw)*CAM_DIST;
-  camPos.y=playerPos.y+CAM_H;
-  camPos.z=playerPos.z+Math.cos(camYaw)*CAM_DIST;
+  const tgtCX=playerPos.x+Math.sin(camYaw)*CAM_DIST;
+  const tgtCY=playerPos.y+CAM_H;
+  const tgtCZ=playerPos.z+Math.cos(camYaw)*CAM_DIST;
+  if(!tppCamReady){tppCamLerped.set(tgtCX,tgtCY,tgtCZ);tppCamReady=true;}
+  const camLerpRate=Math.min(1,dt*16);// fast enough to feel tight
+  tppCamLerped.x+=(tgtCX-tppCamLerped.x)*camLerpRate;
+  tppCamLerped.y+=(tgtCY-tppCamLerped.y)*camLerpRate;
+  tppCamLerped.z+=(tgtCZ-tppCamLerped.z)*camLerpRate;
+  camPos.copy(tppCamLerped);
   WC.position.copy(camPos);
   WC.lookAt(playerPos.x,playerPos.y+1.1,playerPos.z);
 
-  // ── Player mesh ──
+  // ── Player mesh ──────────────────────────────────────────
   if(playerCharMesh){
     playerCharMesh.position.x=playerPos.x;
     playerCharMesh.position.z=playerPos.z;
-    // Rotate character to face movement direction
-    if(moveVec.lengthSq()>0.01){
-      moveVec.normalize();
-      const ty=Math.atan2(moveVec.x,moveVec.z);
+
+    // Smooth yaw toward velocity direction (faster when moving fast)
+    if(curSpd>0.3){
+      const ty=Math.atan2(playerVel.x,playerVel.z);
       let dy=ty-playerFacingYaw;
       while(dy>Math.PI)dy-=2*Math.PI;
       while(dy<-Math.PI)dy+=2*Math.PI;
-      playerFacingYaw+=dy*0.14;
+      const rotRate=Math.min(1,(0.10+speedFrac*0.12)*60*dt);// frame-rate independent
+      playerFacingYaw+=dy*rotRate;
       playerCharMesh.rotation.y=playerFacingYaw;
     }
-    // Update animation mixer OR procedural run bob
-    const isMoving=moveVec.lengthSq()>0.001;
+
+    // Animation mixer (GLB clips) OR procedural fallback
     if(playerCharMixer){
-      // Scale animation speed with movement
-      playerCharMixer.timeScale=isMoving?1.4:0.5;
+      // Smooth timeScale: 0 idle → 1.8 full sprint
+      const tgtTS=isMoving?0.55+speedFrac*1.25:0;
+      playerCharMixer.timeScale+=(tgtTS-playerCharMixer.timeScale)*Math.min(1,dt*9);
       playerCharMixer.update(dt);
       playerCharMesh.position.y=playerCharBaseY;
+
+      // Procedural forward lean on top of animation
+      const leanTarget=speedFrac*0.09;
+      playerCharMesh.rotation.x+=(leanTarget-playerCharMesh.rotation.x)*Math.min(1,dt*7);
+
+      // Subtle side sway (arm-swing feel even when clip handles body)
+      const swayTarget=isMoving?Math.sin(t*7.5*speedFrac)*0.028*speedFrac:0;
+      playerCharMesh.rotation.z+=(swayTarget-playerCharMesh.rotation.z)*Math.min(1,dt*6);
     } else {
-      if(isMoving)playerWalkBobT+=dt*6.8;
-      const by=isMoving?Math.abs(Math.sin(playerWalkBobT))*0.07:0;
-      playerCharMesh.position.y=playerCharBaseY+by;
-      // Slight tilt forward while running
-      playerCharMesh.rotation.x=isMoving?.12:0;
-      playerCharMesh.rotation.z=isMoving?Math.sin(playerWalkBobT)*0.04:0;
+      // Pure procedural: bob + arm swing
+      if(isMoving)playerWalkBobT+=dt*(5+speedFrac*5.5);
+      const bobH=isMoving?Math.abs(Math.sin(playerWalkBobT))*0.09*speedFrac:0;
+      const curBob=playerCharMesh.position.y-playerCharBaseY;
+      playerCharMesh.position.y=playerCharBaseY+curBob+(bobH-curBob)*Math.min(1,dt*14);
+
+      // Forward lean
+      const leanTgt=speedFrac*0.15;
+      playerCharMesh.rotation.x+=(leanTgt-playerCharMesh.rotation.x)*Math.min(1,dt*6);
+
+      // Arm/body sway (mimics arm swing of running)
+      const swayTgt=isMoving?Math.sin(playerWalkBobT*0.5)*0.07*speedFrac:0;
+      playerCharMesh.rotation.z+=(swayTgt-playerCharMesh.rotation.z)*Math.min(1,dt*7);
+
+      // Subtle squash-stretch: compress Y on impact, stretch on lift
+      const sqScale=isMoving?1-Math.abs(Math.sin(playerWalkBobT))*0.035*speedFrac:1;
+      const stretchXZ=isMoving?1+Math.abs(Math.sin(playerWalkBobT))*0.018*speedFrac:1;
+      const baseScale=playerCharMesh.userData._baseScale||playerCharMesh.scale.x;
+      if(!playerCharMesh.userData._baseScale)playerCharMesh.userData._baseScale=playerCharMesh.scale.x;
+      playerCharMesh.scale.set(baseScale*stretchXZ,baseScale*sqScale,baseScale*stretchXZ);
     }
   }
 }
@@ -2003,6 +2068,9 @@ function animLoop(now){
         const rh=document.getElementById('return-hint');if(rh)rh.style.opacity='1';
         // Switch to TPP and spawn player character
         isTPP=true;playerPos.set(8,0,8);playerFacingYaw=camYaw;
+        playerVel.set(0,0,0);// reset momentum on world entry
+        // Prime smooth-cam at spawn so no lurch on first frame
+        {const CAM_DIST=5.5,CAM_H=3.0;tppCamLerped.set(8+Math.sin(camYaw)*CAM_DIST,CAM_H,8+Math.cos(camYaw)*CAM_DIST);tppCamReady=true;}
         {const btn=document.getElementById('hud-view-toggle');if(btn){btn.textContent='TPP';btn.classList.add('tpp-active');}}
         if(WS2)loadPlayerChar(WS2);
         // ── Welcome to the Void ──
@@ -2042,7 +2110,8 @@ function animLoop(now){
       if(inSecondWorld){
         inSecondWorld=false;
         // Restore FPP for world 1
-        isTPP=false;
+        isTPP=false;tppCamReady=false;
+        playerVel.set(0,0,0);// clear TPP velocity so no bleed-through
         {const btn=document.getElementById('hud-view-toggle');if(btn){btn.textContent='FPP';btn.classList.remove('tpp-active');}}
         if(playerCharMesh&&playerCharScene){playerCharScene.remove(playerCharMesh);playerCharMesh=null;playerCharMixer=null;}
         camPos.set(-14,1.8,0);camYaw=0;targetYaw=0;camPitch=.06;targetPitch=.06;
