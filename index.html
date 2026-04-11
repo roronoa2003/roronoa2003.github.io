@@ -397,7 +397,7 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     <ul class="profiles-list">
       <li>
         <div class="profile-item" onclick="enterWorld()">
-          <img src="./profilephoto.png" alt="Rohan" class="profile-avatar"
+          <img src="./profilephoto.jpg" alt="Rohan" class="profile-avatar"
                onerror="this.outerHTML='<div class=\'profile-avatar\'>🧑‍💻</div>'"/>
           <span class="profile-name">Rohan</span>
         </div>
@@ -541,7 +541,7 @@ function getContent(id){
   switch(id){
   case 'hero':return`
   <div class="c-hero">
-    <img src="./profilephoto.png" class="c-hero-photo" alt="Rohan Iyer"
+    <img src="./profilephoto.jpg" class="c-hero-photo" alt="Rohan Iyer"
          onerror="this.style.display='none'"/>
     <div class="c-hero-name">Rohan <span>Iyer</span></div>
     <div class="c-hero-title">B.Tech IT · NMIMS University · Mumbai, India</div>
@@ -1294,7 +1294,7 @@ function buildProfileAvatar(){
   const img=new Image(); // no crossOrigin — local file is same-origin
   img.onload=()=>buildAvatar(img);
   img.onerror=()=>buildAvatar(null);
-  img.src='./profilephoto.png';
+  img.src='./profilephoto.jpg';
 }
 
 function loadGLBModel(){
