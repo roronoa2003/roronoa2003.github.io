@@ -198,6 +198,57 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   100%{opacity:0;  letter-spacing:.26em; filter:blur(10px)  brightness(.3);}
 }
 
+/* ── CHASE GAME UI ── */
+#game-alert{
+  position:absolute;top:8rem;left:50%;transform:translateX(-50%);
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(.85rem,2.2vw,1.1rem);
+  letter-spacing:.22em;color:#fff;
+  text-shadow:0 0 18px rgba(229,9,20,1),0 0 40px rgba(229,9,20,.6);
+  pointer-events:none;z-index:190;white-space:nowrap;text-align:center;
+  opacity:0;
+}
+@keyframes gameAlertIn{
+  0%  {opacity:0;transform:translateX(-50%) scaleX(.7);filter:blur(8px);}
+  12% {opacity:1;transform:translateX(-50%) scaleX(1.04);filter:blur(0);}
+  18% {opacity:.9;transform:translateX(-50%) scaleX(1);}
+  /* rapid flicker like Hawkins power */
+  22% {opacity:.3;}23%{opacity:1;}25%{opacity:.2;}26%{opacity:1;}
+  80% {opacity:.85;}
+  100%{opacity:0;transform:translateX(-50%);}
+}
+/* Game Over full-screen */
+#game-over-screen{
+  display:none;position:absolute;inset:0;z-index:300;
+  background:rgba(0,0,0,0);
+  flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;
+  pointer-events:none;
+}
+#game-over-screen.visible{
+  display:flex;
+  animation:goFadeIn 1.6s ease forwards;
+  pointer-events:all;
+}
+@keyframes goFadeIn{from{background:rgba(0,0,0,0);}to{background:rgba(0,0,0,.88);}}
+#go-caught{
+  font-family:'ITC Benguiat Std','ITC Benguiat',Georgia,serif;
+  font-size:clamp(3.5rem,12vw,8rem);letter-spacing:.14em;color:#fff;
+  opacity:0;animation:goWord 1s ease .6s forwards;
+  text-shadow:0 0 60px rgba(229,9,20,1),0 0 120px rgba(229,9,20,.5);
+}
+#go-body{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(.9rem,2.5vw,1.3rem);
+  letter-spacing:.18em;color:rgba(255,255,255,.8);text-align:center;line-height:1.7;
+  opacity:0;animation:goWord .8s ease 1.3s forwards;
+  text-shadow:0 0 20px rgba(229,9,20,.6);
+}
+#go-hint{
+  font-family:'Outfit',sans-serif;font-size:.72rem;letter-spacing:.14em;
+  text-transform:uppercase;color:rgba(255,255,255,.4);
+  opacity:0;animation:goWord .7s ease 2.1s forwards;
+}
+#go-hint span{color:rgba(229,9,20,.8);}
+@keyframes goWord{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
 /* MOBILE SECTIONS BUTTON */
 #mob-sections-btn{display:block;position:absolute;bottom:1.4rem;left:1.8rem;background:rgba(229,9,20,.15);border:1px solid rgba(229,9,20,.4);color:rgba(229,9,20,.9);font-family:'Outfit',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:.35rem 1rem;border-radius:3px;pointer-events:all;cursor:none;}
 @media(pointer:coarse){#mob-sections-btn{cursor:pointer;}}
@@ -408,6 +459,12 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   <div id="world2-hint">⚠ APPROACH THE DEMOGORGON TO ENTER THE UPSIDE DOWN</div>
   <div id="return-hint">◎ STEP INTO THE PORTAL TO RETURN</div>
   <div id="void-welcome">WELCOME TO THE VOID</div>
+  <div id="game-alert">⚠ THE DEMOGORGON IS HUNTING YOU — RUN TO THE PORTAL ⚠</div>
+  <div id="game-over-screen">
+    <div id="go-caught">CAUGHT.</div>
+    <div id="go-body">THE PORTAL HAS CLOSED<br>YOU ARE TRAPPED IN THE VOID FOREVER</div>
+    <div id="go-hint">↻ <span>REFRESH</span> TO INTERACT AGAIN</div>
+  </div>
 
   <!-- Content Overlay -->
   <div id="content-overlay">
@@ -730,6 +787,7 @@ function makePanelTex(sec){
 let WR,WS,WC; // renderer, scene, camera
 let WS2=null,WS2built=false; // second world (Upside Down portal)
 let inSecondWorld=false,suckupActive=false,suckupT=0,returnActive=false,returnT=0;
+let chaseActive=false,portalClosed=false,portalCloseT=0;
 let savedCamPos=new THREE.Vector3(),savedCamYaw=0,savedCamPitch=0;
 let panelMeshes=[],glowMeshes=[],panelLights=[];
 let hoveredPanel=null,focusedPanel=null;
@@ -1538,12 +1596,77 @@ function buildSecondWorld(){
   const lMesh=new THREE.Mesh(new THREE.PlaneGeometry(5.5,.68),new THREE.MeshBasicMaterial({map:lTex,transparent:true,depthWrite:false,fog:false}));
   lMesh.position.set(0,6.5,0);WS2.add(lMesh);WS2.userData.portalLabel=lMesh;
 
+  // ── Chaser Demogorgon ────────────────────────────────
+  if(THREE.GLTFLoader){
+    const cLoader=new THREE.GLTFLoader();
+    cLoader.load('./demogorgon_stranger_things.glb',gltf=>{
+      const cm=gltf.scene;
+      // Size slightly smaller than world-1 one for gameplay feel
+      const cb=new THREE.Box3().setFromObject(cm);const cs=new THREE.Vector3();cb.getSize(cs);
+      const cScale=3.2/Math.max(cs.x,cs.y,cs.z);
+      cm.scale.set(cScale,cScale,cScale);
+      const cb2=new THREE.Box3().setFromObject(cm);
+      const cBaseY=-cb2.min.y+0.05;
+      cm.position.set(18,cBaseY,18);// start far from player spawn (8,1.8,8)
+      cm.traverse(n=>{
+        if(n.isMesh&&n.material){
+          n.material.emissive=new THREE.Color(0x300005);
+          n.material.emissiveIntensity=0.22;
+          n.material.needsUpdate=true;
+        }
+      });
+      WS2.add(cm);
+      WS2.userData.demoChaser=cm;
+      WS2.userData.demoChaserBaseY=cBaseY;
+      WS2.userData.demoChaserBobT=0;
+      // Try to play built-in run animation if available
+      if(gltf.animations&&gltf.animations.length>0){
+        const mx=new THREE.AnimationMixer(cm);
+        mx.clipAction(gltf.animations[0]).play();
+        WS2.userData.demoMixer=mx;
+      }
+    },undefined,()=>{
+      // Fallback box stand-in so AI still runs
+      const fb=new THREE.Mesh(new THREE.BoxGeometry(.6,2,.6),
+        new THREE.MeshStandardMaterial({color:0x1a0005,emissive:0x550010,emissiveIntensity:.8}));
+      fb.position.set(18,1,18);WS2.add(fb);
+      WS2.userData.demoChaser=fb;WS2.userData.demoChaserBaseY=1;WS2.userData.demoChaserBobT=0;
+    });
+  }
+
   WS2built=true;
+}
+
+// ── Chase game ──────────────────────────────────────────
+function startChase(){
+  if(portalClosed||!inSecondWorld)return;
+  // Blinking alert banner
+  const ga=document.getElementById('game-alert');
+  if(ga)ga.style.animation='gameAlertIn 5.5s ease forwards';
+  // Activate AI movement after the banner appears (2s)
+  setTimeout(()=>{if(!portalClosed)chaseActive=true;},2000);
+}
+
+function triggerGameOver(){
+  if(portalClosed)return;
+  portalClosed=true;chaseActive=false;portalCloseT=0;
+  // Hide return hint
+  const rh=document.getElementById('return-hint');if(rh)rh.style.opacity='0';
+  const ga=document.getElementById('game-alert');if(ga)ga.style.opacity='0';
+  // Show game-over screen after portal close animation (~2s)
+  setTimeout(()=>{
+    const gs=document.getElementById('game-over-screen');
+    if(gs){gs.style.display='flex';requestAnimationFrame(()=>gs.classList.add('visible'));}
+  },2200);
 }
 
 function triggerSuckup(){
   if(suckupActive||inSecondWorld)return;
   if(!WS2built)buildSecondWorld();
+  // Reset game state for fresh run
+  chaseActive=false;portalClosed=false;portalCloseT=0;
+  const gs=document.getElementById('game-over-screen');if(gs){gs.classList.remove('visible');gs.style.display='none';}
+  const ga=document.getElementById('game-alert');if(ga){ga.style.animation='none';ga.style.opacity='0';}
   suckupActive=true;suckupT=0;
   savedCamPos.copy(camPos);savedCamYaw=camYaw;savedCamPitch=camPitch;
   autoOrbit=false;
@@ -1552,6 +1675,7 @@ function triggerSuckup(){
 
 function triggerReturn(){
   if(returnActive)return;
+  chaseActive=false;// escaped — stop the demogorgon
   returnActive=true;returnT=0;
 }
 
@@ -1752,6 +1876,8 @@ function animLoop(now){
           setTimeout(()=>{
             vw.style.animation='voidWelcome 5.2s cubic-bezier(.4,0,.2,1) forwards';
           },320);
+          // Show chase alert at 3s, activate AI at 5s
+          setTimeout(startChase,3000);
         })();
       }
     } else {
@@ -1805,12 +1931,54 @@ function animLoop(now){
     // Point light pulse
     if(portalPulse)portalPulse.intensity=5+Math.sin(t*2.5)*2.2;
     if(portalPulse2)portalPulse2.intensity=2+Math.sin(t*1.3)*.9;
-    // Stranger Things portal GLB — slow breathing rotation + subtle hover float
-    if(portalGLB){portalGLB.rotation.y=Math.sin(t*.18)*.12;portalGLB.position.y=(portalGLBBaseY||0)+Math.sin(t*.55)*.08;}
+    // Stranger Things portal GLB — animate unless portal is closing
+    if(portalGLB&&!portalClosed){portalGLB.rotation.y=Math.sin(t*.18)*.12;portalGLB.position.y=(portalGLBBaseY||0)+Math.sin(t*.55)*.08;}
     if(portalLabel)portalLabel.lookAt(WC.position);
     if(_w2FlickerLight){const n=Math.sin(t*6.8)*Math.sin(t*11.3)*Math.sin(t*3.2);_w2FlickerLight.intensity=3.5+n*.7+(Math.random()<.005?-1.8:0);}
-    // Return portal proximity
-    if(!returnActive&&!suckupActive&&camPos.distanceTo(new THREE.Vector3(0,1.8,0))<2.8)triggerReturn();
+
+    // ── Demogorgon chase AI ──────────────────────────────
+    const {demoChaser,demoChaserBaseY,demoMixer}=WS2.userData;
+    if(demoMixer)demoMixer.update(dt);
+    if(chaseActive&&demoChaser){
+      const SPEED=2.65;// units/sec — player is 4.5, so escapable but threatening
+      const dx=camPos.x-demoChaser.position.x;
+      const dz=camPos.z-demoChaser.position.z;
+      const dist2D=Math.sqrt(dx*dx+dz*dz);
+      if(dist2D>0.05){
+        demoChaser.position.x+=(dx/dist2D)*SPEED*dt;
+        demoChaser.position.z+=(dz/dist2D)*SPEED*dt;
+        // Face toward player
+        demoChaser.rotation.y=Math.atan2(dx,dz);
+      }
+      // Procedural running bob (always applied for extra life even with animation)
+      WS2.userData.demoChaserBobT=(WS2.userData.demoChaserBobT||0)+dt*6.5;
+      const bob=Math.abs(Math.sin(WS2.userData.demoChaserBobT))*0.28;
+      demoChaser.position.y=(demoChaserBaseY||0)+bob;
+      // Slight forward lean
+      demoChaser.rotation.x=0.18+Math.sin(WS2.userData.demoChaserBobT*0.5)*0.05;
+      // Side sway matching stride
+      demoChaser.rotation.z=Math.sin(WS2.userData.demoChaserBobT)*0.06;
+      // Caught check — 2-unit radius
+      if(dist2D<2.0)triggerGameOver();
+    }
+
+    // ── Portal closing animation ──────────────────────────
+    if(portalClosed&&portalGLB){
+      portalCloseT+=dt;
+      const closeSpeed=dt*1.4;
+      // Spin and shrink
+      portalGLB.rotation.y+=dt*4*(1+portalCloseT*2);
+      const ns=Math.max(0.001,portalGLB.scale.x-closeSpeed);
+      portalGLB.scale.set(ns,ns,ns);
+      // Kill lights
+      if(portalPulse)portalPulse.intensity=Math.max(0,portalPulse.intensity-dt*5);
+      if(portalPulse2)portalPulse2.intensity=Math.max(0,portalPulse2.intensity-dt*3);
+      if(portalInner)portalInner.material.opacity=Math.max(0,portalInner.material.opacity-dt*.8);
+      if(portalBeacon)portalBeacon.material.opacity=Math.max(0,portalBeacon.material.opacity-dt*.5);
+    }
+
+    // Return portal proximity (only if portal is still open)
+    if(!returnActive&&!suckupActive&&!portalClosed&&camPos.distanceTo(new THREE.Vector3(0,1.8,0))<2.8)triggerReturn();
     WR.render(WS2,WC);
   } else {
     WR.render(WS,WC);
