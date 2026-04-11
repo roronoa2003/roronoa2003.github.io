@@ -88,6 +88,10 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 #hud-hint span{color:rgba(229,9,20,.6);}
 #hud-tooltip{position:absolute;bottom:3.8rem;left:50%;transform:translateX(-50%);font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.14em;color:#fff;text-shadow:0 0 18px rgba(229,9,20,.7);opacity:0;transition:opacity .28s;pointer-events:none;white-space:nowrap;}
 #hud-cv{position:absolute;bottom:1.4rem;right:1.8rem;pointer-events:all;}
+#hud-view-toggle{position:absolute;bottom:1.4rem;right:9.6rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.7);font-family:'Bebas Neue',sans-serif;font-size:.7rem;letter-spacing:.1em;padding:.28rem .65rem;border-radius:3px;cursor:none;pointer-events:all;transition:all .22s;}
+#hud-view-toggle:hover{background:rgba(255,255,255,.15);color:#fff;}
+#hud-view-toggle.tpp-active{background:rgba(200,80,255,.18);border-color:rgba(200,80,255,.6);color:rgba(220,140,255,.95);}
+@media(pointer:coarse){#hud-view-toggle{cursor:pointer;}}
 #hud-mute{position:absolute;bottom:1.4rem;right:6.5rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.7);font-size:.85rem;width:2rem;height:2rem;border-radius:50%;cursor:none;display:flex;align-items:center;justify-content:center;pointer-events:all;transition:all .22s;line-height:1;padding:0;}
 #hud-mute:hover{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.5);color:#fff;}
 #hud-mute.muted{color:rgba(255,255,255,.3);border-color:rgba(255,255,255,.1);text-decoration:line-through;}
@@ -397,7 +401,7 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     <ul class="profiles-list">
       <li>
         <div class="profile-item" onclick="enterWorld()">
-          <img src="./profilephoto.jpg" alt="Rohan" class="profile-avatar"
+          <img src="./profilephoto.png" alt="Rohan" class="profile-avatar"
                onerror="this.outerHTML='<div class=\'profile-avatar\'>🧑‍💻</div>'"/>
           <span class="profile-name">Rohan</span>
         </div>
@@ -432,6 +436,7 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     <div id="hud-crosshair"></div>
     <div id="hud-hawkins">📍 HAWKINS, IN &nbsp;·&nbsp; 1983</div>
     <div id="hud-cv"><a href="https://drive.google.com/file/d/1PWbHZNDVtJUMyn4qVDJni3VnzaItRSyj/view?usp=sharing" target="_blank">↓ CV</a></div>
+    <button id="hud-view-toggle" onclick="toggleViewMode()" title="Toggle FPP / TPP">FPP</button>
     <button id="hud-mute" onclick="toggleThemeMute()" title="Toggle music">♫</button>
   </div>
 
@@ -541,7 +546,7 @@ function getContent(id){
   switch(id){
   case 'hero':return`
   <div class="c-hero">
-    <img src="./profilephoto.jpg" class="c-hero-photo" alt="Rohan Iyer"
+    <img src="./profilephoto.png" class="c-hero-photo" alt="Rohan Iyer"
          onerror="this.style.display='none'"/>
     <div class="c-hero-name">Rohan <span>Iyer</span></div>
     <div class="c-hero-title">B.Tech IT · NMIMS University · Mumbai, India</div>
@@ -801,6 +806,12 @@ let targetYaw=Math.PI,targetPitch=0.06;// smooth look inertia targets
 let camBobT=0,camBobAmp=0;// walking bob timer + smoothed amplitude
 const camPos=new THREE.Vector3(0,1.8,-16);
 const keys={w:false,a:false,s:false,d:false};
+// ── TPP system ──────────────────────────────────────
+let isTPP=false;
+const playerPos=new THREE.Vector3(8,0,8);// char world position
+let playerFacingYaw=Math.PI;// direction char faces
+let playerCharMesh=null,playerCharMixer=null,playerCharBaseY=0;
+let playerWalkBobT=0,playerCharScene=null;
 const isMobile='ontouchstart' in window;
 // Joystick
 let jActive=false,jX=0,jY=0;
@@ -1294,7 +1305,7 @@ function buildProfileAvatar(){
   const img=new Image(); // no crossOrigin — local file is same-origin
   img.onload=()=>buildAvatar(img);
   img.onerror=()=>buildAvatar(null);
-  img.src='./profilephoto.jpg';
+  img.src='./profilephoto.png';
 }
 
 function loadGLBModel(){
@@ -1579,7 +1590,7 @@ function buildSecondWorld(){
           }
         }
       });
-      WS2.add(pm);WS2.userData.portalGLB=pm;WS2.userData.portalGLBBaseY=pm.position.y;
+      WS2.add(pm);WS2.userData.portalGLB=pm;WS2.userData.portalGLBBaseY=pm.position.y;WS2.userData._portalGLBOrigScale=pm.scale.x;
     },undefined,()=>{
       // Fallback: simple glowing torus if load fails
       const ft=new THREE.Mesh(new THREE.TorusGeometry(2,.18,20,90),new THREE.MeshStandardMaterial({color:0xff44ff,emissive:0xff44ff,emissiveIntensity:2.2,roughness:.1,metalness:.9}));
@@ -1637,6 +1648,121 @@ function buildSecondWorld(){
   WS2built=true;
 }
 
+// ── TPP player character ─────────────────────────────────
+function loadPlayerChar(scene,onReady){
+  if(!THREE.GLTFLoader)return;
+  // Remove previous mesh from its scene
+  if(playerCharMesh&&playerCharScene){playerCharScene.remove(playerCharMesh);playerCharMesh=null;playerCharMixer=null;}
+  const pcl=new THREE.GLTFLoader();
+  pcl.load('./3d_character_young_boy.glb',gltf=>{
+    const pm=gltf.scene;
+    const pb=new THREE.Box3().setFromObject(pm);
+    const ps=new THREE.Vector3();pb.getSize(ps);
+    const psc=1.8/Math.max(ps.x,ps.y,ps.z);// human height ~1.8 units
+    pm.scale.set(psc,psc,psc);
+    const pb2=new THREE.Box3().setFromObject(pm);
+    playerCharBaseY=-pb2.min.y+0.02;
+    pm.position.set(playerPos.x,playerCharBaseY,playerPos.z);
+    pm.traverse(n=>{if(n.isMesh&&n.material){n.material.envMapIntensity=1.2;n.material.needsUpdate=true;}});
+    scene.add(pm);
+    playerCharMesh=pm;playerCharScene=scene;
+    playerFacingYaw=camYaw;pm.rotation.y=playerFacingYaw;
+    if(gltf.animations&&gltf.animations.length>0){
+      playerCharMixer=new THREE.AnimationMixer(pm);
+      playerCharMixer.clipAction(gltf.animations[0]).play();
+    }
+    if(onReady)onReady(pm);
+  },undefined,()=>{
+    // Fallback capsule if GLB fails
+    const fb=new THREE.Mesh(new THREE.CylinderGeometry(.25,.25,1.7,10),
+      new THREE.MeshStandardMaterial({color:0x334466,emissive:0x001133,emissiveIntensity:.3}));
+    fb.position.set(playerPos.x,.85+0.02,playerPos.z);
+    scene.add(fb);playerCharMesh=fb;playerCharScene=scene;playerCharBaseY=.85;
+    if(onReady)onReady(fb);
+  });
+}
+
+function toggleViewMode(){
+  isTPP=!isTPP;
+  const btn=document.getElementById('hud-view-toggle');
+  if(btn){btn.textContent=isTPP?'TPP':'FPP';btn.classList.toggle('tpp-active',isTPP);}
+  if(isTPP){
+    // Load char into current active scene
+    const scene=inSecondWorld&&WS2?WS2:WS;
+    playerPos.set(camPos.x,0,camPos.z);
+    loadPlayerChar(scene);
+  } else {
+    // Remove char, restore FPP cam position
+    if(playerCharMesh&&playerCharScene){playerCharScene.remove(playerCharMesh);playerCharMesh=null;playerCharMixer=null;}
+    // Bring FPP cam to where player was
+    camPos.set(playerPos.x,1.8,playerPos.z);
+  }
+}
+
+// Called every frame in TPP mode to move player char + update camera
+function _tppUpdate(dt,t){
+  if(!isTPP)return;
+  const spd=4.2*dt;
+  const fw=new THREE.Vector3(-Math.sin(camYaw),0,-Math.cos(camYaw));
+  const rt=new THREE.Vector3(-Math.cos(camYaw),0,Math.sin(camYaw));
+  const moveVec=new THREE.Vector3();
+  if(!autoOrbit){
+    if(keys.w){playerPos.addScaledVector(fw,spd);moveVec.addScaledVector(fw,1);}
+    if(keys.s){playerPos.addScaledVector(fw,-spd);moveVec.addScaledVector(fw,-1);}
+    if(keys.a){playerPos.addScaledVector(rt,-spd);moveVec.addScaledVector(rt,-1);}
+    if(keys.d){playerPos.addScaledVector(rt,spd);moveVec.addScaledVector(rt,1);}
+    if(jActive){
+      playerPos.x+=(-Math.sin(camYaw)*(-jY)+Math.cos(camYaw)*jX)*spd;
+      playerPos.z+=(-Math.cos(camYaw)*(-jY)-Math.sin(camYaw)*jX)*spd;
+      moveVec.set(-jY*Math.sin(camYaw),-jY*Math.cos(camYaw),0);// approx
+    }
+  }
+  // Clamp to world boundary
+  const pr=Math.sqrt(playerPos.x*playerPos.x+playerPos.z*playerPos.z);
+  const maxR=inSecondWorld?20:21;
+  if(pr>maxR){playerPos.x*=maxR/pr;playerPos.z*=maxR/pr;}
+  playerPos.y=0;// keep on ground
+
+  // ── Camera follow (arc-ball, behind and above) ──
+  const CAM_DIST=5.5,CAM_H=3.0;
+  camPos.x=playerPos.x+Math.sin(camYaw)*CAM_DIST;
+  camPos.y=playerPos.y+CAM_H;
+  camPos.z=playerPos.z+Math.cos(camYaw)*CAM_DIST;
+  WC.position.copy(camPos);
+  WC.lookAt(playerPos.x,playerPos.y+1.1,playerPos.z);
+
+  // ── Player mesh ──
+  if(playerCharMesh){
+    playerCharMesh.position.x=playerPos.x;
+    playerCharMesh.position.z=playerPos.z;
+    // Rotate character to face movement direction
+    if(moveVec.lengthSq()>0.01){
+      moveVec.normalize();
+      const ty=Math.atan2(moveVec.x,moveVec.z);
+      let dy=ty-playerFacingYaw;
+      while(dy>Math.PI)dy-=2*Math.PI;
+      while(dy<-Math.PI)dy+=2*Math.PI;
+      playerFacingYaw+=dy*0.14;
+      playerCharMesh.rotation.y=playerFacingYaw;
+    }
+    // Update animation mixer OR procedural run bob
+    const isMoving=moveVec.lengthSq()>0.001;
+    if(playerCharMixer){
+      // Scale animation speed with movement
+      playerCharMixer.timeScale=isMoving?1.4:0.5;
+      playerCharMixer.update(dt);
+      playerCharMesh.position.y=playerCharBaseY;
+    } else {
+      if(isMoving)playerWalkBobT+=dt*6.8;
+      const by=isMoving?Math.abs(Math.sin(playerWalkBobT))*0.07:0;
+      playerCharMesh.position.y=playerCharBaseY+by;
+      // Slight tilt forward while running
+      playerCharMesh.rotation.x=isMoving?.12:0;
+      playerCharMesh.rotation.z=isMoving?Math.sin(playerWalkBobT)*0.04:0;
+    }
+  }
+}
+
 // ── Chase game ──────────────────────────────────────────
 function startChase(){
   if(portalClosed||!inSecondWorld)return;
@@ -1667,6 +1793,10 @@ function triggerSuckup(){
   chaseActive=false;portalClosed=false;portalCloseT=0;
   const gs=document.getElementById('game-over-screen');if(gs){gs.classList.remove('visible');gs.style.display='none';}
   const ga=document.getElementById('game-alert');if(ga){ga.style.animation='none';ga.style.opacity='0';}
+  // Reset portal GLB scale in case it was closed last run
+  if(WS2&&WS2.userData.portalGLB){const pg=WS2.userData.portalGLB;const psc=WS2.userData._portalGLBOrigScale||1;pg.scale.set(psc,psc,psc);}
+  // Remove previous player char so it gets reloaded fresh
+  if(playerCharMesh&&playerCharScene){playerCharScene.remove(playerCharMesh);playerCharMesh=null;playerCharMixer=null;}
   suckupActive=true;suckupT=0;
   savedCamPos.copy(camPos);savedCamYaw=camYaw;savedCamPitch=camPitch;
   autoOrbit=false;
@@ -1707,37 +1837,41 @@ function animLoop(now){
   // Auto orbit
   if(autoOrbit){autoAngle+=dt*.08;const orbitR=16;camPos.set(Math.sin(autoAngle)*orbitR,1.8,Math.cos(autoAngle)*orbitR);camYaw=autoAngle;targetYaw=autoAngle;camPitch=.07+Math.sin(autoAngle*.18)*.035;targetPitch=camPitch;}
 
-  // WASD
-  if(!autoOrbit){
-    const spd=4.5*dt;
-    const fw=new THREE.Vector3(-Math.sin(camYaw),0,-Math.cos(camYaw));
-    const rt=new THREE.Vector3(-Math.cos(camYaw),0,Math.sin(camYaw));
-    if(keys.w)camPos.addScaledVector(fw,spd);if(keys.s)camPos.addScaledVector(fw,-spd);
-    if(keys.a)camPos.addScaledVector(rt,-spd);if(keys.d)camPos.addScaledVector(rt,spd);
-    const hr=Math.sqrt(camPos.x*camPos.x+camPos.z*camPos.z);
-    if(hr>22){camPos.x*=22/hr;camPos.z*=22/hr;}
-    camPos.y=Math.max(1,Math.min(7,camPos.y));
-  }
-  // Joystick
-  if(jActive&&!autoOrbit){
-    const spd=4*dt;
-    camPos.x+=(-Math.sin(camYaw)*(-jY)+Math.cos(camYaw)*jX)*spd;
-    camPos.z+=(-Math.cos(camYaw)*(-jY)-Math.sin(camYaw)*jX)*spd;
-  }
-
-  // ── Smooth look inertia ──
+  // ── Smooth look inertia (always) ──
   if(!suckupActive&&!returnActive){
-    const ll=1-Math.pow(.002,dt);// exponential decay ~12 frames to settle
+    const ll=1-Math.pow(.002,dt);
     camYaw+=(targetYaw-camYaw)*ll;
     camPitch+=(targetPitch-camPitch)*ll;
   }
-  // ── Walking camera bob (smooth amplitude fade in/out) ──
-  const _isWalking=(keys.w||keys.s||keys.a||keys.d||jActive)&&!autoOrbit&&!suckupActive&&!returnActive;
-  camBobAmp+=((_isWalking?1:0)-camBobAmp)*Math.min(1,dt*5);// lerp amplitude
-  if(_isWalking)camBobT+=dt*5.8;
-  const _bob=Math.sin(camBobT)*.052*camBobAmp;
-  WC.position.copy(camPos);WC.position.y+=_bob;
-  WC.rotation.set(camPitch,camYaw,0,'YXZ');
+
+  if(isTPP&&!suckupActive&&!returnActive){
+    // ── TPP: player char handles movement + follow-cam ──
+    _tppUpdate(dt,t);
+  } else if(!isTPP){
+    // ── FPP: move camera directly ──
+    if(!autoOrbit){
+      const spd=4.5*dt;
+      const fw=new THREE.Vector3(-Math.sin(camYaw),0,-Math.cos(camYaw));
+      const rt=new THREE.Vector3(-Math.cos(camYaw),0,Math.sin(camYaw));
+      if(keys.w)camPos.addScaledVector(fw,spd);if(keys.s)camPos.addScaledVector(fw,-spd);
+      if(keys.a)camPos.addScaledVector(rt,-spd);if(keys.d)camPos.addScaledVector(rt,spd);
+      const hr=Math.sqrt(camPos.x*camPos.x+camPos.z*camPos.z);
+      if(hr>22){camPos.x*=22/hr;camPos.z*=22/hr;}
+      camPos.y=Math.max(1,Math.min(7,camPos.y));
+    }
+    if(jActive&&!autoOrbit){
+      const spd=4*dt;
+      camPos.x+=(-Math.sin(camYaw)*(-jY)+Math.cos(camYaw)*jX)*spd;
+      camPos.z+=(-Math.cos(camYaw)*(-jY)-Math.sin(camYaw)*jX)*spd;
+    }
+    // Walking bob
+    const _isWalking=(keys.w||keys.s||keys.a||keys.d||jActive)&&!autoOrbit&&!suckupActive&&!returnActive;
+    camBobAmp+=((_isWalking?1:0)-camBobAmp)*Math.min(1,dt*5);
+    if(_isWalking)camBobT+=dt*5.8;
+    const _bob=Math.sin(camBobT)*.052*camBobAmp;
+    WC.position.copy(camPos);WC.position.y+=_bob;
+    WC.rotation.set(camPitch,camYaw,0,'YXZ');
+  }
 
   // Panels
   panelMeshes.forEach((p,i)=>{
@@ -1832,12 +1966,12 @@ function animLoop(now){
   const helmetPos=new THREE.Vector3(0,_cy,0);
 
   if(!inSecondWorld&&!suckupActive&&!returnActive){
-    // Proximity hint
-    const dist=camPos.distanceTo(helmetPos);
+    // Use player position in TPP, camera position in FPP
+    const _checkPos=isTPP?playerPos:camPos;
+    const dist=_checkPos.distanceTo(helmetPos);
     const hint=document.getElementById('world2-hint');
     if(dist<6&&hint)hint.style.opacity='1';
     else if(hint)hint.style.opacity='0';
-    // Trigger suck-up when very close
     if(dist<3.2)triggerSuckup();
   }
 
@@ -1867,6 +2001,10 @@ function animLoop(now){
         camPos.set(8,1.8,8);camYaw=Math.PI+Math.PI/4;targetYaw=camYaw;camPitch=.06;targetPitch=.06;
         hoveredPanel=null;const tt=document.getElementById('hud-tooltip');if(tt){tt.textContent='';tt.style.opacity='0';}
         const rh=document.getElementById('return-hint');if(rh)rh.style.opacity='1';
+        // Switch to TPP and spawn player character
+        isTPP=true;playerPos.set(8,0,8);playerFacingYaw=camYaw;
+        {const btn=document.getElementById('hud-view-toggle');if(btn){btn.textContent='TPP';btn.classList.add('tpp-active');}}
+        if(WS2)loadPlayerChar(WS2);
         // ── Welcome to the Void ──
         (function(){
           const vw=document.getElementById('void-welcome');
@@ -1903,6 +2041,10 @@ function animLoop(now){
       if(ov)ov.style.opacity='1';
       if(inSecondWorld){
         inSecondWorld=false;
+        // Restore FPP for world 1
+        isTPP=false;
+        {const btn=document.getElementById('hud-view-toggle');if(btn){btn.textContent='FPP';btn.classList.remove('tpp-active');}}
+        if(playerCharMesh&&playerCharScene){playerCharScene.remove(playerCharMesh);playerCharMesh=null;playerCharMixer=null;}
         camPos.set(-14,1.8,0);camYaw=0;targetYaw=0;camPitch=.06;targetPitch=.06;
         const rh=document.getElementById('return-hint');if(rh)rh.style.opacity='0';
       }
@@ -1940,9 +2082,11 @@ function animLoop(now){
     const {demoChaser,demoChaserBaseY,demoMixer}=WS2.userData;
     if(demoMixer)demoMixer.update(dt);
     if(chaseActive&&demoChaser){
-      const SPEED=2.65;// units/sec — player is 4.5, so escapable but threatening
-      const dx=camPos.x-demoChaser.position.x;
-      const dz=camPos.z-demoChaser.position.z;
+      const SPEED=2.65;
+      // Chase the player character position in TPP, camera in FPP
+      const _cp=isTPP?playerPos:camPos;
+      const dx=_cp.x-demoChaser.position.x;
+      const dz=_cp.z-demoChaser.position.z;
       const dist2D=Math.sqrt(dx*dx+dz*dz);
       if(dist2D>0.05){
         demoChaser.position.x+=(dx/dist2D)*SPEED*dt;
@@ -1978,7 +2122,7 @@ function animLoop(now){
     }
 
     // Return portal proximity (only if portal is still open)
-    if(!returnActive&&!suckupActive&&!portalClosed&&camPos.distanceTo(new THREE.Vector3(0,1.8,0))<2.8)triggerReturn();
+    {const _rp=isTPP?playerPos:camPos;if(!returnActive&&!suckupActive&&!portalClosed&&_rp.distanceTo(new THREE.Vector3(0,1.8,0))<2.8)triggerReturn();}
     WR.render(WS2,WC);
   } else {
     WR.render(WS,WC);
