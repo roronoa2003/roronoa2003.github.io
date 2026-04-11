@@ -88,6 +88,10 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 #hud-hint span{color:rgba(229,9,20,.6);}
 #hud-tooltip{position:absolute;bottom:3.8rem;left:50%;transform:translateX(-50%);font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.14em;color:#fff;text-shadow:0 0 18px rgba(229,9,20,.7);opacity:0;transition:opacity .28s;pointer-events:none;white-space:nowrap;}
 #hud-cv{position:absolute;bottom:1.4rem;right:1.8rem;pointer-events:all;}
+#hud-mute{position:absolute;bottom:1.4rem;right:6.5rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.7);font-size:.85rem;width:2rem;height:2rem;border-radius:50%;cursor:none;display:flex;align-items:center;justify-content:center;pointer-events:all;transition:all .22s;line-height:1;padding:0;}
+#hud-mute:hover{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.5);color:#fff;}
+#hud-mute.muted{color:rgba(255,255,255,.3);border-color:rgba(255,255,255,.1);text-decoration:line-through;}
+@media(pointer:coarse){#hud-mute{cursor:pointer;}}
 #hud-cv a{background:var(--red);color:#fff;font-family:'Outfit',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;padding:.35rem 1rem;border-radius:3px;text-decoration:none;box-shadow:0 0 18px rgba(229,9,20,.4);transition:all .25s;display:block;}
 #hud-cv a:hover{box-shadow:0 0 32px rgba(229,9,20,.75);transform:translateY(-2px);}
 #hud-crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:18px;height:18px;pointer-events:none;}
@@ -377,7 +381,11 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     <div id="hud-crosshair"></div>
     <div id="hud-hawkins">📍 HAWKINS, IN &nbsp;·&nbsp; 1983</div>
     <div id="hud-cv"><a href="https://drive.google.com/file/d/1PWbHZNDVtJUMyn4qVDJni3VnzaItRSyj/view?usp=sharing" target="_blank">↓ CV</a></div>
+    <button id="hud-mute" onclick="toggleThemeMute()" title="Toggle music">♫</button>
   </div>
+
+  <!-- Theme audio — loops across both worlds -->
+  <audio id="theme-audio" src="./stranger_things.mp3" loop preload="auto"></audio>
 
   <!-- Mobile controls -->
   <button id="mob-sections-btn" onclick="toggleMobMenu()">≡ SECTIONS</button>
@@ -1854,6 +1862,35 @@ function toggleMobMenu(){const m=document.getElementById('mob-menu');if(m)m.clas
 // ══════════════════════════════════════════════════════
 // TRANSITIONS
 // ══════════════════════════════════════════════════════
+// ── Theme audio helpers ──────────────────────────────
+function startTheme(){
+  const a=document.getElementById('theme-audio');
+  if(!a)return;
+  a.currentTime=0;
+  a.volume=0;
+  a.play().then(()=>{
+    // Fade in over 2 seconds
+    let v=0;
+    const step=()=>{v=Math.min(1,v+0.02);a.volume=v;if(v<1)requestAnimationFrame(step);};
+    requestAnimationFrame(step);
+  }).catch(()=>{});// Autoplay blocked — user gesture will un-block on next interaction
+}
+function stopTheme(){
+  const a=document.getElementById('theme-audio');
+  if(!a||a.paused)return;
+  // Fade out over 1.2 seconds then pause
+  let v=a.volume;
+  const step=()=>{v=Math.max(0,v-0.025);a.volume=v;if(v>0)requestAnimationFrame(step);else{a.pause();a.currentTime=0;}};
+  requestAnimationFrame(step);
+}
+function toggleThemeMute(){
+  const a=document.getElementById('theme-audio');
+  const btn=document.getElementById('hud-mute');
+  if(!a)return;
+  if(a.muted){a.muted=false;if(btn)btn.classList.remove('muted');}
+  else{a.muted=true;if(btn)btn.classList.add('muted');}
+}
+
 function enterWorld(){
   const audio=new Audio('./mixkit-mouse-click-close-1113.mp3');audio.play().catch(()=>{});
   const ps=document.getElementById('profiles-screen');
@@ -1861,12 +1898,14 @@ function enterWorld(){
   setTimeout(()=>{
     ps.classList.remove('show');ps.style.display='none';
     document.getElementById('world-screen').classList.add('show');
+    startTheme();// begin music when world appears
     // Wait for ITC Benguiat Std to load before drawing canvas panel textures
     document.fonts.ready.then(()=>{initWorld();autoOrbit=true;});
   },400);
 }
 
 function backToProfiles(){
+  stopTheme();// fade out music before leaving world
   const ws=document.getElementById('world-screen');
   ws.style.transition='opacity .4s';ws.style.opacity='0';
   setTimeout(()=>{
