@@ -887,6 +887,23 @@ function buildLights(){
   const outer=new THREE.PointLight(0xffe0cc,.6,60);outer.position.set(0,4,0);WS.add(outer);
 }
 
+// ── Analytical terrain height sampler ───────────────────────────────────────
+// Must mirror buildFloor / buildSecondWorld geometry exactly (excl. random noise).
+// Used every frame to keep player character on the surface ridges.
+function getTerrainHeight(x,z){
+  const r=Math.sqrt(x*x+z*z);
+  let h=0;
+  h+=Math.sin(x*.10)*Math.cos(z*.09)*1.4;
+  h+=Math.sin(x*.23+z*.17)*Math.cos(z*.28-x*.08)*.75;
+  h+=Math.sin(x*.51+1.3)*Math.cos(z*.47+.7)*.35;
+  h+=Math.sin(x*1.1+z*1.3)*.16;
+  h+=Math.sin(x*2.2-z*1.9)*.07;
+  // skip Math.random() noise — it's per-vertex and tiny (.22 amp); omitting keeps sampling stable
+  h*=Math.min(1,Math.max(0,(r-8)/10));
+  if(r>20)h+=Math.abs(Math.sin(x*.16)*Math.cos(z*.19))*3.0*Math.min(1,(r-20)/14);
+  return h-.02;
+}
+
 function buildFloor(){
   // ── Rocky exoplanet terrain — layered PBR (Poly Haven CC0) ──
   // Primary: rock_ground_rough — natural ground-level rocky surface
@@ -1715,6 +1732,24 @@ function toggleViewMode(){
 function _tppUpdate(dt,t){
   if(!isTPP)return;
 
+  // ── Freeze all movement when caught (game over) ─────────
+  if(portalClosed){
+    // Keep camera locked on frozen player — still look nice
+    if(playerCharMesh){
+      const CAM_DIST=5.5,CAM_H=3.0;
+      const tgtCX=playerPos.x+Math.sin(camYaw)*CAM_DIST;
+      const tgtCY=playerPos.y+CAM_H;
+      const tgtCZ=playerPos.z+Math.cos(camYaw)*CAM_DIST;
+      tppCamLerped.x+=(tgtCX-tppCamLerped.x)*Math.min(1,dt*8);
+      tppCamLerped.y+=(tgtCY-tppCamLerped.y)*Math.min(1,dt*8);
+      tppCamLerped.z+=(tgtCZ-tppCamLerped.z)*Math.min(1,dt*8);
+      camPos.copy(tppCamLerped);
+      WC.position.copy(camPos);
+      WC.lookAt(playerPos.x,playerPos.y+1.1,playerPos.z);
+    }
+    return;// input fully frozen
+  }
+
   // ── Input to desired velocity ────────────────────────────
   const MAX_SPD=5.8;
   const ACCEL=20;// units/s² to reach max speed
@@ -1752,7 +1787,11 @@ function _tppUpdate(dt,t){
   const pr=Math.sqrt(playerPos.x*playerPos.x+playerPos.z*playerPos.z);
   const maxR=inSecondWorld?20:21;
   if(pr>maxR){playerPos.x*=maxR/pr;playerPos.z*=maxR/pr;playerVel.x*=0.2;playerVel.z*=0.2;}
-  playerPos.y=0;
+
+  // ── Terrain-following Y (ride the ridges!) ───────────────
+  const terrY=getTerrainHeight(playerPos.x,playerPos.z);
+  // Smooth vertical track — fast enough to feel solid, not snappy
+  playerPos.y+=(terrY-playerPos.y)*Math.min(1,dt*22);
 
   // Speed fraction 0→1
   const speedFrac=Math.min(curSpd/MAX_SPD,1);
@@ -1788,13 +1827,17 @@ function _tppUpdate(dt,t){
       playerCharMesh.rotation.y=playerFacingYaw;
     }
 
+    // Character floor Y = terrain height + foot offset
+    const charFloorY=playerPos.y+playerCharBaseY;
+
     // Animation mixer (GLB clips) OR procedural fallback
     if(playerCharMixer){
       // Smooth timeScale: 0 idle → 1.8 full sprint
       const tgtTS=isMoving?0.55+speedFrac*1.25:0;
       playerCharMixer.timeScale+=(tgtTS-playerCharMixer.timeScale)*Math.min(1,dt*9);
       playerCharMixer.update(dt);
-      playerCharMesh.position.y=playerCharBaseY;
+      // Snap Y to terrain surface (smooth via playerPos.y lerp above)
+      playerCharMesh.position.y=charFloorY;
 
       // Procedural forward lean on top of animation
       const leanTarget=speedFrac*0.09;
@@ -1807,8 +1850,8 @@ function _tppUpdate(dt,t){
       // Pure procedural: bob + arm swing
       if(isMoving)playerWalkBobT+=dt*(5+speedFrac*5.5);
       const bobH=isMoving?Math.abs(Math.sin(playerWalkBobT))*0.09*speedFrac:0;
-      const curBob=playerCharMesh.position.y-playerCharBaseY;
-      playerCharMesh.position.y=playerCharBaseY+curBob+(bobH-curBob)*Math.min(1,dt*14);
+      const curBob=playerCharMesh.position.y-charFloorY;
+      playerCharMesh.position.y=charFloorY+curBob+(bobH-curBob)*Math.min(1,dt*14);
 
       // Forward lean
       const leanTgt=speedFrac*0.15;
