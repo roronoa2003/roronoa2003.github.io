@@ -147,6 +147,59 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 
 @media(max-width:640px){#hud-stats-row{display:none;}#hud-hint{display:none;}#hud-crosshair{display:none;}#hud-speed-bar{display:none;}}
 
+/* ══ PANEL PROXIMITY SYSTEM ══════════════════════════════ */
+/* Desktop keyboard prompt */
+#panel-enter-prompt{
+  position:absolute;bottom:6.8rem;left:50%;transform:translateX(-50%);
+  background:rgba(3,0,10,.88);border:1px solid rgba(229,9,20,.55);border-radius:5px;
+  padding:.45rem 1.5rem;font-family:'Bebas Neue',sans-serif;font-size:.88rem;letter-spacing:.18em;
+  color:#fff;pointer-events:none;opacity:0;transition:opacity .28s,transform .28s;
+  white-space:nowrap;box-shadow:0 0 22px rgba(229,9,20,.25);z-index:20;
+  transform:translateX(-50%) translateY(6px);}
+#panel-enter-prompt.visible{opacity:1;transform:translateX(-50%) translateY(0);}
+#panel-enter-prompt kbd{
+  display:inline-block;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);
+  border-radius:3px;padding:.04rem .38rem;font-size:.62rem;vertical-align:middle;margin-right:.3rem;
+  font-family:'Outfit',sans-serif;letter-spacing:.05em;}
+@media(pointer:coarse){#panel-enter-prompt{display:none;}}
+
+/* Mobile explore button */
+#panel-explore-btn{
+  position:absolute;bottom:6.8rem;left:50%;transform:translateX(-50%) translateY(6px);
+  background:var(--red);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:.85rem;
+  letter-spacing:.18em;padding:.6rem 2rem;border:none;border-radius:5px;
+  box-shadow:0 0 24px rgba(229,9,20,.5);display:none;opacity:0;
+  transition:opacity .28s,transform .28s;z-index:20;cursor:pointer;pointer-events:all;}
+#panel-explore-btn.visible{display:block;opacity:1;transform:translateX(-50%) translateY(0);}
+@media(pointer:fine){#panel-explore-btn{display:none!important;}}
+
+/* ══ CHARACTER SPEECH BUBBLE ═════════════════════════════ */
+#char-speech{
+  position:absolute;transform:translate(-50%,-100%);max-width:220px;
+  background:rgba(3,0,10,.90);border:1px solid rgba(229,9,20,.4);border-radius:7px;
+  padding:.55rem .9rem;font-family:'Outfit',sans-serif;font-size:.67rem;line-height:1.55;
+  color:rgba(255,255,255,.92);letter-spacing:.02em;pointer-events:none;
+  opacity:0;transition:opacity .4s;z-index:22;white-space:pre-wrap;
+  box-shadow:0 6px 28px rgba(0,0,0,.75),0 0 18px rgba(229,9,20,.12);}
+#char-speech.visible{opacity:1;}
+#char-speech::after{content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);
+  border:6px solid transparent;border-top-color:rgba(229,9,20,.4);border-bottom:none;}
+.cs-cursor{display:inline-block;width:1.5px;height:.72em;background:var(--red);
+  vertical-align:middle;margin-left:1px;animation:csBlink .55s step-end infinite;}
+@keyframes csBlink{50%{opacity:0;}}
+/* Mobile: pin speech bubble to bottom-center instead of following head */
+@media(pointer:coarse){
+  #char-speech{
+    position:fixed!important;left:50%!important;
+    bottom:calc(10.5rem + env(safe-area-inset-bottom,0px))!important;
+    top:auto!important;transform:translateX(-50%)!important;
+    max-width:calc(100vw - 2.8rem);font-size:.73rem;}
+  #char-speech::after{display:none;}
+}
+
+/* ══ ZONE DISC INDICATOR (above ground circle) ════════════ */
+/* purely 3D — no extra CSS needed; handled in Three.js */
+
 /* ── STRANGER THINGS OVERLAYS ── */
 /* CRT scanlines */
 #st-scanlines{position:absolute;inset:0;pointer-events:none;z-index:11;
@@ -311,11 +364,48 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 #mob-menu-close{background:transparent;border:1px solid #333;color:#666;font-family:'Outfit',sans-serif;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;padding:.35rem 1.2rem;border-radius:3px;cursor:none;margin-top:.5rem;}
 @media(pointer:coarse){#mob-menu-close{cursor:pointer;}}
 
-/* VIRTUAL JOYSTICK */
-#joystick-zone{display:none;position:absolute;bottom:5rem;left:1.8rem;width:100px;height:100px;pointer-events:all;z-index:20;}
+/* ══ VIRTUAL JOYSTICK — larger & more tactile ══════════ */
+#joystick-zone{display:none;position:absolute;bottom:env(safe-area-inset-bottom,0px);bottom:calc(5.5rem + env(safe-area-inset-bottom,0px));left:1.5rem;width:140px;height:140px;pointer-events:all;z-index:20;touch-action:none;}
 @media(pointer:coarse){#joystick-zone{display:block;}}
-#joystick-base{width:90px;height:90px;border-radius:50%;border:2px solid rgba(229,9,20,.25);background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
-#joystick-thumb{width:36px;height:36px;border-radius:50%;background:rgba(229,9,20,.4);border:1.5px solid rgba(229,9,20,.7);transition:transform .05s;will-change:transform;}
+#joystick-base{width:128px;height:128px;border-radius:50%;border:1.5px solid rgba(229,9,20,.20);background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:inset 0 0 20px rgba(229,9,20,.06);}
+#joystick-thumb{width:48px;height:48px;border-radius:50%;background:radial-gradient(circle at 38% 38%,rgba(255,80,60,.75),rgba(229,9,20,.5));border:1.5px solid rgba(255,100,80,.7);box-shadow:0 0 16px rgba(229,9,20,.4);transition:transform .04s;will-change:transform;}
+
+/* ── Right-side look zone (mobile camera swipe area) ── */
+#look-zone{display:none;position:absolute;right:0;top:0;width:55%;height:100%;z-index:15;pointer-events:all;touch-action:none;}
+@media(pointer:coarse){#look-zone{display:block;}}
+
+/* ── Mobile sections button — larger tap target ── */
+@media(pointer:coarse){
+  #mob-sections-btn{font-size:.72rem;padding:.5rem 1.3rem;bottom:calc(1.4rem + env(safe-area-inset-bottom,0px));left:1.5rem;}
+  #hud-back{font-size:.75rem;padding:.45rem 1.1rem;top:.9rem;right:.9rem;}
+  #hud-view-toggle{font-size:.78rem;padding:.38rem .85rem;bottom:calc(1.4rem + env(safe-area-inset-bottom,0px));right:9rem;}
+  #hud-mute{bottom:calc(1.4rem + env(safe-area-inset-bottom,0px));right:6rem;}
+  #hud-cv{bottom:calc(1.4rem + env(safe-area-inset-bottom,0px));right:.9rem;}
+}
+
+/* ── Mobile explore button — bottom of screen, full-width feel ── */
+@media(pointer:coarse){
+  #panel-explore-btn{
+    bottom:calc(5rem + env(safe-area-inset-bottom,0px));
+    font-size:.95rem;padding:.7rem 2.5rem;
+    border-radius:28px;
+    box-shadow:0 4px 28px rgba(229,9,20,.55),0 0 0 1px rgba(229,9,20,.3);
+  }
+}
+
+/* ══ SPEECH BUBBLE — fixed bottom on mobile, projected on desktop ═ */
+@media(pointer:coarse),(max-width:768px){
+  #char-speech{
+    position:fixed!important;
+    top:auto!important;
+    bottom:calc(12rem + env(safe-area-inset-bottom,0px))!important;
+    left:50%!important;
+    transform:translateX(-50%)!important;
+    max-width:min(88vw,340px);
+    font-size:.72rem;
+    line-height:1.6;
+  }
+}
 
 /* CONTENT OVERLAY */
 #content-overlay{position:absolute;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:1rem;}
@@ -486,6 +576,11 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     <div id="hud-mode-badge">THIRD PERSON</div>
     <!-- Footstep ground pulse -->
     <div id="hud-footpulse"></div>
+    <!-- Panel proximity: desktop prompt + mobile button -->
+    <div id="panel-enter-prompt"></div>
+    <button id="panel-explore-btn" onclick="tppNearPanel&&openContent(tppNearPanel.userData.sec)">👁 EXPLORE</button>
+    <!-- Character speech bubble (positioned dynamically) -->
+    <div id="char-speech"></div>
     <div id="hud-hawkins">📍 HAWKINS, IN &nbsp;·&nbsp; 1983</div>
     <div id="hud-cv"><a href="https://drive.google.com/file/d/1PWbHZNDVtJUMyn4qVDJni3VnzaItRSyj/view?usp=sharing" target="_blank">↓ CV</a></div>
     <button id="hud-view-toggle" onclick="toggleViewMode()" title="Toggle FPP / TPP">FPP</button>
@@ -503,10 +598,12 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     <button id="mob-menu-close" onclick="toggleMobMenu()">✕ CLOSE</button>
   </div>
 
-  <!-- Virtual Joystick -->
+  <!-- Virtual Joystick (bottom-left) -->
   <div id="joystick-zone">
     <div id="joystick-base"><div id="joystick-thumb"></div></div>
   </div>
+  <!-- Right-side look zone (camera drag on mobile) -->
+  <div id="look-zone"></div>
 
   <!-- Stranger Things overlays -->
   <div id="st-scanlines"></div>
@@ -590,6 +687,82 @@ const SECTIONS=[
   {id:'work',      title:'WORK & PRESS',   icon:'🎥',sub:'Reels & Papers',   angle:270, h:PANEL_H, dist:12},
   {id:'contact',   title:'CONTACT',        icon:'🤝',sub:'Awards & Connect', angle:320, h:PANEL_H, dist:12},
 ];
+
+// ══════════════════════════════════════════════════════
+// DIALOGUE DATA — all spoken lines for the character
+// ══════════════════════════════════════════════════════
+
+// Wave 1 — fired once per panel on FIRST zone entry
+const PANEL_DIALOGUES={
+  hero:      "Welcome. I'm Rohan Iyer — a builder, a thinker, and apparently someone who made a Stranger Things portfolio.\nStep into the light and press ENTER to start.",
+  about:     "This one's personal. Beyond the GPA and the tech stack — this is the real me.\nAI enthusiast. Tennis player. Circular economy advocate.",
+  education: "NMIMS University, Mumbai. Four years of relentless learning.\nA 9.575 GPA — and a lot of cold coffee after midnight.",
+  skills:    "AI. Machine Learning. Cloud infrastructure. NLP. Computer Vision.\nEvery tool here was earned through a project that pushed my limits.",
+  experience:"Three roles across consulting, fintech, and product.\nReal clients. Real deliverables. Real impact — press ENTER to read the receipts.",
+  projects:  "Nine projects that shipped.\nFrom AI-powered systems to sustainability apps — each one started with a problem I refused to leave unsolved.",
+  work:      "Press coverage. Research papers. Demo reels.\nWhen the work is good, people notice. This is that chapter.",
+  contact:   "Ready to build something together?\nI'm one message away from being the best decision you make this year."
+};
+
+// Wave 2 — fired if player dwells in a zone 8s+ without opening it
+// (nudge to actually explore, with deeper context)
+const PANEL_DIALOGUES_DWELL={
+  hero:      "Still here? Good.\nI built this entire world from scratch to tell my story — the least I can do is tell it right.",
+  about:     "I grew up believing technology should solve real problems.\nCircular economy, sustainable AI — that's not a trend for me, it's a conviction.",
+  education: "9.575 CGPA across eight semesters. Every decimal point has a story.\nBut what I remember most is the hackathons, not the exams.",
+  skills:    "Seventy-plus technologies catalogued here.\nBut honestly? The skill that matters most is knowing which tool NOT to use.",
+  experience:"My first real client was a fintech startup with a broken data pipeline.\nI fixed it. Then I fixed three more things they didn't know were broken.",
+  projects:  "My favourite project? An AI system that predicted circular economy opportunities.\nIt didn't just work — it changed how the team thought about the problem.",
+  work:      "One of my papers got cited within a week of publishing.\nI wasn't expecting that. I'm still not entirely used to it.",
+  contact:   "Seriously, don't overthink it.\nOne message. That's all. I reply fast."
+};
+
+// Wave 3 — fired after closing a panel (reaction to what was just seen)
+const PANEL_DIALOGUES_POST={
+  hero:      "That's the overview. Now go deeper — every other panel has more.",
+  about:     "Now you know the person behind the portfolio. The rest shows you the work.",
+  education: "Four years. Now go see what I did with them.",
+  skills:    "The tools are listed. The projects are where they come alive — check that panel next.",
+  experience:"Real work, real outcomes. The projects panel shows what I built on top of that.",
+  projects:  "Nine shipped. More in progress. The work never really stops.",
+  work:      "The reception has been good. But I'm more interested in what comes next.",
+  contact:   "Seriously — send me a message. What's the worst that could happen?"
+};
+
+// Ambient World 1 lines — fire every ~30s while in TPP mode
+const AMBIENT_W1=[
+  "The floating particles around you? Upside Down spores. They're harmless... probably.",
+  "See the torus knot at the centre? Its path never crosses itself.\nGood system design works the same way.",
+  "Each glowing circle on the ground marks a chapter of my story.\nWalk into the light to reveal it.",
+  "The lava fissures beneath your feet — cracks between who I was and who I'm becoming.",
+  "Hawkins looked ordinary from the outside.\nMy portfolio is similar. Walk closer.",
+  "The void planet above? That's where I'm headed.\nBig ideas require big orbits.",
+  "Eight panels. Eight chapters. Walk them all before you decide.",
+  "The spores drift upward. Some ideas are like that —\nyou release them and see where they go.",
+  "You're walking through 1983 Hawkins.\nEverything here is intentional — even the fog.",
+  "Notice how the ground glows under the panels?\nThat's not decoration. That's an invitation.",
+];
+
+// Ambient World 2 lines — fire every ~22s while in the Upside Down
+const AMBIENT_W2=[
+  "It's watching you. Keep moving — don't stop for anything.",
+  "This dimension mirrors our world exactly.\nEvery shadow here was something bright up there.",
+  "The portal at the centre is your only way back.\nBut first — did you see everything you needed to?",
+  "The Demogorgon doesn't sleep. It doesn't tire.\nYour only advantage is speed.",
+  "Cold. Wrong. Alive.\nThat's the Upside Down. Don't let it become familiar.",
+  "Can you feel the ground hum? The Mind Flayer's network runs beneath this entire plane.",
+  "Run. The distance between you and it matters more than anything else right now.",
+  "Every step here costs you time.\nWhen you get back — use it.",
+];
+
+// Zone-entry tracking (prevent same dialogue firing twice)
+const _panelDialogueSeen=new Set();
+const _panelDwellSeen=new Set();
+const _panelPostSeen=new Set();
+let _lastDialogueT=0;// elapsed time of last ambient line
+let _ambientIdx={w1:0,w2:0};// round-robin through ambient lines
+let _zoneEntryT=0;// when player entered current zone (for dwell detection)
+let _zoneEntryPanel=null;// which panel zone the dwell timer is for
 
 // ══════════════════════════════════════════════════════
 // CONTENT HTML GENERATORS
@@ -847,8 +1020,10 @@ let WS2=null,WS2built=false; // second world (Upside Down portal)
 let inSecondWorld=false,suckupActive=false,suckupT=0,returnActive=false,returnT=0;
 let chaseActive=false,portalClosed=false,portalCloseT=0;
 let savedCamPos=new THREE.Vector3(),savedCamYaw=0,savedCamPitch=0;
-let panelMeshes=[],glowMeshes=[],panelLights=[];
+let panelMeshes=[],glowMeshes=[],panelLights=[],panelZoneDiscs=[];
 let hoveredPanel=null,focusedPanel=null;
+let tppNearPanel=null;// panel currently in proximity zone (TPP mode)
+let _speechTyper=null,_speechHoldTimer=null;// typewriter handles
 let isFlying=false,flyT=0;
 const flyFP=new THREE.Vector3(),flyTP=new THREE.Vector3();
 const flyFQ=new THREE.Quaternion(),flyTQ=new THREE.Quaternion();
@@ -1189,6 +1364,45 @@ function buildPanels(){
     glow.position.z=-.12;panel.add(glow);glowMeshes.push(glow);
     // Light
     const pl=new THREE.PointLight(0xe50914,.7,14);pl.position.set(x,sec.h,z*.95);WS.add(pl);panelLights.push(pl);
+
+    // ── Ground interaction zone (small, light, elegant) ──
+    // Position: 80% radius toward centre so player walks naturally into it
+    const zx=Math.sin(ang)*sec.dist*.80, zz=-Math.cos(ang)*sec.dist*.80;
+
+    // Core small circle — bright white/cream
+    const zGeo=new THREE.CircleGeometry(0.85,36);zGeo.rotateX(-Math.PI/2);
+    const zMat=new THREE.MeshBasicMaterial({
+      color:0xfff8ee,transparent:true,opacity:.18,
+      blending:THREE.AdditiveBlending,depthWrite:false
+    });
+    const zDisc=new THREE.Mesh(zGeo,zMat);
+    zDisc.position.set(zx,.04,zz);
+    zDisc.userData.panelIdx=i;zDisc.userData.cx=zx;zDisc.userData.cz=zz;
+    WS.add(zDisc);panelZoneDiscs.push(zDisc);
+
+    // Thin ring (steady halo around dot)
+    const ringGeo=new THREE.RingGeometry(.90,1.05,36);ringGeo.rotateX(-Math.PI/2);
+    const ringMat=new THREE.MeshBasicMaterial({color:0xfff0d0,transparent:true,opacity:.12,blending:THREE.AdditiveBlending,depthWrite:false});
+    const ringMesh=new THREE.Mesh(ringGeo,ringMat);
+    ringMesh.position.set(zx,.04,zz);
+    WS.add(ringMesh);zDisc.userData.haloRing=ringMesh;
+
+    // Two animated expanding pulse rings (sonar ping effect)
+    const pulseRings=[];
+    for(let p=0;p<2;p++){
+      const pGeo=new THREE.RingGeometry(.88,1.02,36);pGeo.rotateX(-Math.PI/2);
+      const pMat=new THREE.MeshBasicMaterial({color:0xffe8c0,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
+      const pMesh=new THREE.Mesh(pGeo,pMat);
+      pMesh.position.set(zx,.05,zz);
+      pMesh.userData.phase=p/2;// offset so they alternate
+      WS.add(pMesh);pulseRings.push(pMesh);
+    }
+    zDisc.userData.pulseRings=pulseRings;
+
+    // Soft spotlight from above (intensifies when player enters)
+    const spotUp=new THREE.PointLight(0xffe0b0,0,10);
+    spotUp.position.set(zx,6,zz);
+    WS.add(spotUp);zDisc.userData.spotLight=spotUp;
   });
 }
 
@@ -1555,22 +1769,61 @@ function bindControls(){
   document.addEventListener('keydown',e=>{
     if(e.code==='KeyW')keys.w=true;if(e.code==='KeyA')keys.a=true;
     if(e.code==='KeyS')keys.s=true;if(e.code==='KeyD')keys.d=true;
-    if(e.key==='Escape')closeContent();if(e.code==='Space'){autoOrbit=!autoOrbit;}
+    if(e.key==='Escape'){closeContent();hideCharSpeech();}
+    if(e.code==='Space'){autoOrbit=!autoOrbit;}
     if(e.code==='KeyW'||e.code==='KeyA'||e.code==='KeyS'||e.code==='KeyD')autoOrbit=false;
+    // ── ENTER key: open nearest panel when standing in zone ──
+    if(e.key==='Enter'&&!e.repeat&&isTPP&&tppNearPanel&&!document.getElementById('content-overlay')?.classList.contains('active')){
+      e.preventDefault();
+      openContent(tppNearPanel.userData.sec);
+    }
   });
   document.addEventListener('keyup',e=>{if(e.code==='KeyW')keys.w=false;if(e.code==='KeyA')keys.a=false;if(e.code==='KeyS')keys.s=false;if(e.code==='KeyD')keys.d=false;});
-  // Virtual Joystick
+  // Virtual Joystick — larger deadzone (maxR=46 matches bigger thumb)
   const jz=document.getElementById('joystick-zone'),jt=document.getElementById('joystick-thumb');
   if(jz){
     let startX=0,startY=0;
-    jz.addEventListener('touchstart',e=>{jActive=true;startX=e.touches[0].clientX;startY=e.touches[0].clientY;autoOrbit=false;e.stopPropagation();},{passive:true});
+    const maxR=46;
+    jz.addEventListener('touchstart',e=>{jActive=true;startX=e.touches[0].clientX;startY=e.touches[0].clientY;autoOrbit=false;e.stopPropagation();e.preventDefault();},{passive:false});
     jz.addEventListener('touchmove',e=>{
       const dx=e.touches[0].clientX-startX,dy=e.touches[0].clientY-startY;
-      const dist=Math.sqrt(dx*dx+dy*dy),maxR=32;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      const clampedDist=Math.min(dist,maxR);
+      const angle=Math.atan2(dy,dx);
+      const cx=Math.cos(angle)*clampedDist,cy=Math.sin(angle)*clampedDist;
       jX=Math.max(-1,Math.min(1,dx/maxR));jY=Math.max(-1,Math.min(1,dy/maxR));
-      jt.style.transform=`translate(${jX*maxR}px,${jY*maxR}px)`;e.stopPropagation();
-    },{passive:true});
+      jt.style.transform=`translate(${cx}px,${cy}px)`;
+      e.stopPropagation();e.preventDefault();
+    },{passive:false});
     jz.addEventListener('touchend',()=>{jActive=false;jX=0;jY=0;jt.style.transform='';});
+  }
+  // Right-side look zone (separate from canvas touchmove to avoid conflicts)
+  const lz=document.getElementById('look-zone');
+  if(lz){
+    let lzLastX=0,lzLastY=0,lzActive=false;
+    lz.addEventListener('touchstart',e=>{lzActive=true;lzLastX=e.touches[0].clientX;lzLastY=e.touches[0].clientY;autoOrbit=false;},{passive:true});
+    lz.addEventListener('touchmove',e=>{
+      if(!lzActive)return;
+      const dx=e.touches[0].clientX-lzLastX,dy=e.touches[0].clientY-lzLastY;
+      targetYaw-=dx*.0028;
+      targetPitch-=dy*.0022;
+      targetPitch=Math.max(-Math.PI/2.1,Math.min(Math.PI/2.1,targetPitch));
+      lzLastX=e.touches[0].clientX;lzLastY=e.touches[0].clientY;
+    },{passive:true});
+    lz.addEventListener('touchend',()=>{lzActive=false;});
+    // Tap right side: near panel → open it; otherwise → trigger next ambient line
+    lz.addEventListener('click',()=>{
+      if(isTPP&&tppNearPanel&&!document.getElementById('content-overlay')?.classList.contains('active')){
+        openContent(tppNearPanel.userData.sec);
+      } else if(isTPP&&!document.getElementById('char-speech')?.classList.contains('visible')){
+        // Double-tap anywhere on look zone fires character speech
+        const arr=inSecondWorld?AMBIENT_W2:AMBIENT_W1;
+        const idx=inSecondWorld?_ambientIdx.w2:_ambientIdx.w1;
+        showCharSpeech(arr[idx%arr.length],5500);
+        if(inSecondWorld)_ambientIdx.w2++;else _ambientIdx.w1++;
+        _lastDialogueT=t;
+      }
+    });
   }
   window.addEventListener('resize',()=>{
     WR.setSize(innerWidth,innerHeight);
@@ -1897,6 +2150,37 @@ function _removeGlasses(){
   }
 }
 
+// ══════════════════════════════════════════════════════
+// CHARACTER DIALOGUE — typewriter speech bubble
+// ══════════════════════════════════════════════════════
+function showCharSpeech(text,holdMs){
+  const el=document.getElementById('char-speech');
+  if(!el)return;
+  // Cancel any active typewriter
+  if(_speechTyper){clearInterval(_speechTyper);_speechTyper=null;}
+  if(_speechHoldTimer){clearTimeout(_speechHoldTimer);_speechHoldTimer=null;}
+  el.innerHTML='';el.classList.add('visible');
+  let idx=0;
+  _speechTyper=setInterval(()=>{
+    idx++;
+    // Rebuild: text so far + blinking cursor span
+    el.innerHTML=_escHtml(text.slice(0,idx))+'<span class="cs-cursor"></span>';
+    if(idx>=text.length){
+      clearInterval(_speechTyper);_speechTyper=null;
+      // Remove cursor after a beat
+      setTimeout(()=>{el.innerHTML=_escHtml(text);},600);
+      _speechHoldTimer=setTimeout(()=>{el.classList.remove('visible');},holdMs||6000);
+    }
+  },30);
+}
+function hideCharSpeech(){
+  const el=document.getElementById('char-speech');
+  if(el)el.classList.remove('visible');
+  if(_speechTyper){clearInterval(_speechTyper);_speechTyper=null;}
+  if(_speechHoldTimer){clearTimeout(_speechHoldTimer);_speechHoldTimer=null;}
+}
+function _escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
 // ── Bone name resolver — tries Mixamo, generic humanoid, and camelCase variants ──
 function findCharBones(bMap){
   const keys=Object.keys(bMap);
@@ -2072,6 +2356,12 @@ function toggleViewMode(){
   isTPP=!isTPP;
   const btn=document.getElementById('hud-view-toggle');
   if(btn){btn.textContent=isTPP?'TPP':'FPP';btn.classList.toggle('tpp-active',isTPP);}
+  // Update hint bar for current mode
+  const _hh=document.getElementById('hud-hint');
+  if(_hh){
+    if(isTPP){_hh.innerHTML='<span>WASD</span> move &nbsp;·&nbsp; <span>MOUSE</span> look &nbsp;·&nbsp; <span>ENTER</span> explore panel';}
+    else{_hh.innerHTML='<span>DRAG</span> to orbit &nbsp;·&nbsp; <span>WASD</span> to fly &nbsp;·&nbsp; <span>CLICK</span> panel';}
+  }
   if(isTPP){
     // FPP→TPP: place player exactly where camera is, preserve yaw
     playerPos.set(camPos.x,0,camPos.z);
@@ -2084,16 +2374,26 @@ function toggleViewMode(){
     tppCamReady=true;
     const scene=inSecondWorld&&WS2?WS2:WS;
     loadPlayerChar(scene);
+    // Greet player on entering TPP in World 1 (not world 2 — it has its own dialogue)
+    if(!inSecondWorld){
+      setTimeout(()=>showCharSpeech(
+        "Hawkins, Indiana — 1983.\nWalk toward any glowing panel and stand in the light.\nPress ENTER to explore each chapter of my story.",
+        7500
+      ),1200);
+    }
   } else {
     // TPP→FPP: put camera exactly at player feet level, same yaw
     if(playerCharMesh&&playerCharScene){_removeGlasses();playerCharScene.remove(playerCharMesh);playerCharMesh=null;playerCharMixer=null;}
     camPos.set(playerPos.x,1.8,playerPos.z);
     targetYaw=camYaw;targetPitch=camPitch;// sync inertia targets
     tppCamReady=false;
-    // Hide TPP HUD elements
+    // Hide all TPP HUD elements
     const _cx=document.getElementById('hud-crosshair');if(_cx)_cx.classList.remove('visible');
     const _mb=document.getElementById('hud-mode-badge');if(_mb)_mb.classList.remove('visible');
     const _sb=document.getElementById('hud-speed-bar');if(_sb)_sb.classList.remove('visible');
+    const _pp=document.getElementById('panel-enter-prompt');if(_pp)_pp.classList.remove('visible');
+    const _peb=document.getElementById('panel-explore-btn');if(_peb)_peb.classList.remove('visible');
+    hideCharSpeech();tppNearPanel=null;
   }
 }
 
@@ -2188,6 +2488,135 @@ function _tppUpdate(dt,t){
   const targetFOV=baseFOV+speedFrac*speedFrac*9;// max +9° at full sprint
   WC.fov+=(targetFOV-WC.fov)*Math.min(1,dt*6);
   WC.updateProjectionMatrix();
+
+  // ══ PANEL PROXIMITY ZONE ════════════════════════════════
+  // Only run in World 1 where panels live (panelZoneDiscs is empty in World 2)
+  if(!inSecondWorld&&panelZoneDiscs.length){
+    let _nearPanel=null,_nearDist=Infinity;
+    panelZoneDiscs.forEach((disc,i)=>{
+      const dx=playerPos.x-disc.userData.cx;
+      const dz=playerPos.z-disc.userData.cz;
+      const d=Math.sqrt(dx*dx+dz*dz);
+      const ZONE_R=3.2;
+      const inZone=d<ZONE_R;
+
+      // Core disc: gentle ambient idle, brightens on entry
+      const ambient=0.12+Math.sin(t*1.8+i*1.1)*0.04;
+      disc.material.opacity=inZone?0.65+Math.sin(t*3+i)*0.15:ambient;
+
+      // Dwell tint: shift disc color toward warm gold when dwell timer is active
+      const dwellElapsed=(_zoneEntryPanel&&_zoneEntryPanel===panelMeshes[i]&&_zoneEntryT>0)
+        ?Math.min(1,(t-_zoneEntryT)/9):0;
+      if(dwellElapsed>0.3){
+        // lerp from cream-white 0xfff8ee toward warm gold 0xffd566
+        const lerp=t=>(1-t)*255|0;
+        const gr=Math.round(0xff*(1-dwellElapsed)+0xff*dwellElapsed);
+        const gg=Math.round(0xf8*(1-dwellElapsed)+0xd5*dwellElapsed);
+        const gb=Math.round(0xee*(1-dwellElapsed)+0x66*dwellElapsed);
+        disc.material.color.setRGB(gr/255,gg/255,gb/255);
+      } else {
+        disc.material.color.set(0xfff8ee);
+      }
+
+      // Halo ring brightness
+      const halo=disc.userData.haloRing;
+      if(halo){halo.material.opacity=inZone?0.40:0.09+Math.sin(t*1.5+i)*0.03;}
+
+      // Animated pulse rings: expand outward 1x→3x scale, fade out
+      const pr=disc.userData.pulseRings;
+      if(pr){
+        const pulseSpeed=inZone?1.4:0.65;// faster pulse when player is inside zone
+        pr.forEach(ring=>{
+          ring.userData.phase=(ring.userData.phase+dt*pulseSpeed)%1;
+          const ph=ring.userData.phase;
+          const s=1+ph*2.2;// scale 1 → 3.2
+          ring.scale.set(s,1,s);
+          ring.material.opacity=Math.max(0,(inZone?0.55:0.22)*(1-ph));
+        });
+      }
+
+      // Soft spotlight intensifies on entry
+      const spot=disc.userData.spotLight;
+      if(spot){spot.intensity+=(inZone?3.5:0-spot.intensity)*Math.min(1,dt*7);}
+
+      if(d<_nearDist){_nearDist=d;if(inZone)_nearPanel=panelMeshes[i];}
+    });
+    const _prevNear=tppNearPanel;
+    tppNearPanel=_nearPanel;
+
+    // ── Wave 1: Panel-specific dialogue on FIRST zone entry ──
+    if(tppNearPanel&&tppNearPanel!==_prevNear){
+      const sid=tppNearPanel.userData.sec.id;
+      // Reset dwell timer whenever we enter a new zone
+      _zoneEntryT=t;_zoneEntryPanel=tppNearPanel;
+      if(!_panelDialogueSeen.has(sid)&&PANEL_DIALOGUES[sid]){
+        _panelDialogueSeen.add(sid);
+        showCharSpeech(PANEL_DIALOGUES[sid],6800);
+        _lastDialogueT=t;// reset ambient timer so it doesn't fire on top
+      }
+    }
+    // Reset dwell tracker if player left zone
+    if(!tppNearPanel&&_prevNear){_zoneEntryT=0;_zoneEntryPanel=null;}
+
+    // ── Wave 2: Dwell dialogue — fires 9s after entry if still in zone ──
+    if(tppNearPanel&&_zoneEntryPanel===tppNearPanel&&_zoneEntryT>0&&(t-_zoneEntryT)>9){
+      const sid=tppNearPanel.userData.sec.id;
+      if(!_panelDwellSeen.has(sid)&&PANEL_DIALOGUES_DWELL[sid]&&
+         !document.getElementById('char-speech')?.classList.contains('visible')){
+        _panelDwellSeen.add(sid);
+        _zoneEntryT=0;// prevent re-trigger
+        showCharSpeech(PANEL_DIALOGUES_DWELL[sid],7000);
+        _lastDialogueT=t;
+      }
+    }
+
+    // Show/hide panel prompt
+    const _pp=document.getElementById('panel-enter-prompt');
+    const _peb=document.getElementById('panel-explore-btn');
+    if(tppNearPanel){
+      const title=tppNearPanel.userData.sec.title;
+      if(_pp){_pp.innerHTML='<kbd>↵ ENTER</kbd> — '+title;_pp.classList.add('visible');}
+      if(_peb)_peb.classList.add('visible');
+    } else {
+      if(_pp)_pp.classList.remove('visible');
+      if(_peb)_peb.classList.remove('visible');
+    }
+  }
+
+  // ── World 2 proximity disc zones (same ring animation but no Enter-prompt) ──
+  // (panelZoneDiscs is empty in World 2 so the block above is skipped;
+  //  the only interaction is chase game + portal return)
+
+  // ── Ambient dialogue timer ────────────────────────────
+  const _ambInterval=inSecondWorld?22:30;// W2 more frequent (urgency)
+  if(t-_lastDialogueT>_ambInterval&&!document.getElementById('char-speech')?.classList.contains('visible')){
+    _lastDialogueT=t;
+    if(inSecondWorld){
+      const lines=AMBIENT_W2;
+      showCharSpeech(lines[_ambientIdx.w2%lines.length],5500);
+      _ambientIdx.w2++;
+    } else {
+      const lines=AMBIENT_W1;
+      showCharSpeech(lines[_ambientIdx.w1%lines.length],6000);
+      _ambientIdx.w1++;
+    }
+  }
+
+  // ── Speech bubble: 3D head projection on desktop, fixed bottom on mobile ──
+  const _cs=document.getElementById('char-speech');
+  if(_cs&&_cs.classList.contains('visible')){
+    if(!isMobile&&playerCharMesh){
+      // Project character head to screen space (desktop only)
+      const _sp=new THREE.Vector3(playerPos.x,playerPos.y+2.8,playerPos.z);
+      _sp.project(WC);
+      if(_sp.z<1.0){
+        _cs.style.left=((_sp.x*0.5+0.5)*100).toFixed(2)+'%';
+        _cs.style.top=((1-(_sp.y*0.5+0.5))*100).toFixed(2)+'%';
+        _cs.style.transform='translate(-50%,-100%)';
+      }
+    }
+    // Mobile: CSS handles fixed positioning via media query — no JS override needed
+  }
 
   // ── CHARACTER MESH ───────────────────────────────────────
   if(playerCharMesh){
@@ -2361,6 +2790,8 @@ function startChase(){
 function triggerGameOver(){
   if(portalClosed)return;
   portalClosed=true;chaseActive=false;portalCloseT=0;
+  // Character speaks on being caught
+  showCharSpeech("It got me.\nThe Demogorgon wins this time.\nBut my story? It stays.",4500);
   // Hide return hint
   const rh=document.getElementById('return-hint');if(rh)rh.style.opacity='0';
   const ga=document.getElementById('game-alert');if(ga)ga.style.opacity='0';
@@ -2598,6 +3029,11 @@ function animLoop(now){
           setTimeout(()=>{
             vw.style.animation='voidWelcome 5.2s cubic-bezier(.4,0,.2,1) forwards';
           },320);
+          // Character speaks about the Upside Down on arrival
+          setTimeout(()=>showCharSpeech(
+            "The Upside Down...\nA dark reflection of Hawkins — cold, wrong, alive.\nFind the portal. Don't let it catch you.",
+            7000
+          ),1800);
           // Show chase alert at 3s, activate AI at 5s
           setTimeout(startChase,3000);
         })();
@@ -2707,7 +3143,18 @@ function animLoop(now){
     }
 
     // Return portal proximity (only if portal is still open)
-    {const _rp=isTPP?playerPos:camPos;if(!returnActive&&!suckupActive&&!portalClosed&&_rp.distanceTo(new THREE.Vector3(0,1.8,0))<2.8)triggerReturn();}
+    {
+      const _rp=isTPP?playerPos:camPos;
+      const _pd=_rp.distanceTo(new THREE.Vector3(0,1.8,0));
+      // Near-portal dialogue hint
+      if(!returnActive&&!suckupActive&&!portalClosed&&_pd<6&&_pd>2.8){
+        if(!WS2.userData._portalHintShown){
+          WS2.userData._portalHintShown=true;
+          showCharSpeech("The portal — I can feel it pulling.\nStep in and I'll be back in Hawkins.\nIs it safer there? Debatable.",5000);
+        }
+      }
+      if(!returnActive&&!suckupActive&&!portalClosed&&_pd<2.8)triggerReturn();
+    }
     // Use world-2 composer if built, else WS2 raw render
     if(WComposer2){WComposer2.render();}else{WR.render(WS2,WC);}
   } else {
@@ -2729,7 +3176,20 @@ function openContent(sec){
 }
 
 function closeContent(){
-  document.getElementById('content-overlay').classList.remove('active');
+  const overlay=document.getElementById('content-overlay');
+  // Wave 3: post-panel reaction dialogue (fires 0.8s after close)
+  if(overlay.classList.contains('active')&&isTPP&&tppNearPanel){
+    const sid=tppNearPanel.userData.sec.id;
+    if(!_panelPostSeen.has(sid)&&PANEL_DIALOGUES_POST[sid]){
+      _panelPostSeen.add(sid);
+      setTimeout(()=>{
+        if(!document.getElementById('char-speech')?.classList.contains('visible')){
+          showCharSpeech(PANEL_DIALOGUES_POST[sid],5000);
+        }
+      },800);
+    }
+  }
+  overlay.classList.remove('active');
   focusedPanel=null;
   if(!isFlying){
     flyFP.copy(WC.position);
