@@ -1071,6 +1071,7 @@ const _glassesMat=new THREE.Matrix4();// reusable matrix for glasses
 const isMobile='ontouchstart' in window;
 // Joystick
 let jActive=false,jX=0,jY=0;
+let jXS=0,jYS=0;// smoothed joystick (k=14 gives ~0.07s lag, eliminates thumb jitter)
 
 function initWorld(){
   const canvas=document.getElementById('world-canvas');
@@ -2462,7 +2463,16 @@ function _tppUpdate(dt,t){
     if(keys.a)inputVec.addScaledVector(rt,-1);
     if(keys.d)inputVec.addScaledVector(rt,1);
     // joystick: -jX corrects the sign (jX positive = drag right on screen = strafe right)
-    if(jActive){inputVec.addScaledVector(fw,-jY);inputVec.addScaledVector(rt,-jX);}
+    // Smooth joystick: k=14 → 63% of gap in 71ms, eliminates thumb-twitch jitter
+    if(jActive){
+      const jk=1-Math.exp(-14*dt);
+      jXS+=(jX-jXS)*jk; jYS+=(jY-jYS)*jk;
+      inputVec.addScaledVector(fw,-jYS);inputVec.addScaledVector(rt,-jXS);
+    } else {
+      // Bleed off smoothed values so there's no ghost input after release
+      const jk=1-Math.exp(-22*dt);
+      jXS*=(1-jk); jYS*=(1-jk);
+    }
   }
   const inputLen=inputVec.length();
   if(inputLen>1)inputVec.divideScalar(inputLen);
@@ -2487,7 +2497,7 @@ function _tppUpdate(dt,t){
 
   // ── TERRAIN Y + SLOPE NORMALS ────────────────────────────
   const terrY=getTerrainHeight(playerPos.x,playerPos.z);
-  playerPos.y+=(terrY-playerPos.y)*Math.min(1,dt*24);
+  playerPos.y+=(terrY-playerPos.y)*Math.min(1,dt*13);// 13 ≈ 0.12s settle, no ridge-snap
 
   // Numerical terrain gradient (for slope tilt)
   const eps=0.5;
@@ -2497,17 +2507,21 @@ function _tppUpdate(dt,t){
   const speedFrac=Math.min(curSpd/MAX_SPD,1);
   const isMoving=curSpd>0.15;
 
-  // ── SPRING-DAMPER CAMERA (Unity ThirdPersonCamera feel) ──
+  // ── SPLIT SPRING-DAMPER CAMERA ───────────────────────────
+  // XZ: SPK=95, damping=18 → ~0.18s settle — smooth but responsive
+  // Y:  SPK=42, damping=12 → ~0.28s settle — floats over terrain bumps
+  // (Separate Y tuning is the key trick used in AAA TPC cameras to hide
+  //  terrain micro-jitter without making the camera feel sluggish laterally)
   const CAM_DIST=5.5,CAM_H=3.2;
   const tgtCX=playerPos.x+Math.sin(camYaw)*CAM_DIST;
   const tgtCY=playerPos.y+CAM_H;
   const tgtCZ=playerPos.z+Math.cos(camYaw)*CAM_DIST;
   if(!tppCamReady){tppCamLerped.set(tgtCX,tgtCY,tgtCZ);tppCamVel.set(0,0,0);tppCamReady=true;}
-  // Spring constant 180, damping 24 ≈ critically-damped ~0.12s settle
-  const SPK=180,SPD_C=24;
-  tppCamVel.x+=(-(tppCamLerped.x-tgtCX)*SPK-tppCamVel.x*SPD_C)*dt;
-  tppCamVel.y+=(-(tppCamLerped.y-tgtCY)*SPK-tppCamVel.y*SPD_C)*dt;
-  tppCamVel.z+=(-(tppCamLerped.z-tgtCZ)*SPK-tppCamVel.z*SPD_C)*dt;
+  const SPK_XZ=95,SPD_XZ=18;
+  const SPK_Y =42,SPD_Y =12;
+  tppCamVel.x+=(-(tppCamLerped.x-tgtCX)*SPK_XZ-tppCamVel.x*SPD_XZ)*dt;
+  tppCamVel.y+=(-(tppCamLerped.y-tgtCY)*SPK_Y -tppCamVel.y*SPD_Y )*dt;
+  tppCamVel.z+=(-(tppCamLerped.z-tgtCZ)*SPK_XZ-tppCamVel.z*SPD_XZ)*dt;
   tppCamLerped.addScaledVector(tppCamVel,dt);
   camPos.copy(tppCamLerped);
   WC.position.copy(camPos);
@@ -2515,7 +2529,7 @@ function _tppUpdate(dt,t){
   // Sprint FOV zoom-out (cinematic — Unity-style speed rush feel)
   const baseFOV=isMobile?80:70;
   const targetFOV=baseFOV+speedFrac*speedFrac*9;// max +9° at full sprint
-  WC.fov+=(targetFOV-WC.fov)*Math.min(1,dt*6);
+  WC.fov+=(targetFOV-WC.fov)*Math.min(1,dt*3.5);// slow cinematic FOV ramp
   WC.updateProjectionMatrix();
 
   // ══ PANEL PROXIMITY ZONE ════════════════════════════════
@@ -2660,8 +2674,9 @@ function _tppUpdate(dt,t){
       let dYaw=targetYawChar-playerFacingYaw;
       while(dYaw>Math.PI)dYaw-=2*Math.PI;
       while(dYaw<-Math.PI)dYaw+=2*Math.PI;
-      // Faster turn at higher speed (responsive), slower at low speed (organic)
-      const turnRate=Math.min(1,(0.12+speedFrac*0.15)*60*dt);
+      // Organic turn blend: slow at walk (feels heavy), snappier at sprint
+      // 0.08+speedFrac*0.12 caps max angular velocity → no pirouette snapping
+      const turnRate=Math.min(1,(0.08+speedFrac*0.12)*60*dt);
       playerFacingYaw+=dYaw*turnRate;
       playerCharMesh.rotation.y=playerFacingYaw;
     }
@@ -2705,8 +2720,8 @@ function _tppUpdate(dt,t){
         else if(speedFrac<0.40){const p=(speedFrac-0.04)/0.36;wI=1-p;wW=p;}
         else{const p=(speedFrac-0.40)/0.60;wW=1-p;wR=p;}
 
-        // Smooth weight transitions (6× per second feels like Unity crossFade)
-        const wb=Math.min(1,dt*7);
+        // Smooth weight transitions — dt*4.5 ≈ 0.22s crossfade, silky blend
+        const wb=Math.min(1,dt*4.5);
         idleA.setEffectiveWeight(idleA.getEffectiveWeight()+(wI-idleA.getEffectiveWeight())*wb);
         if(walkA)walkA.setEffectiveWeight(walkA.getEffectiveWeight()+(wW-walkA.getEffectiveWeight())*wb);
         if(runA) runA.setEffectiveWeight(runA.getEffectiveWeight()+(wR-runA.getEffectiveWeight())*wb);
@@ -2728,20 +2743,24 @@ function _tppUpdate(dt,t){
       }
 
       playerCharMixer.update(dt);
-      playerCharMesh.position.y=charFloorY;
+      // Smooth character Y to terrain — dt*10 is slower than playerPos follow (dt*13)
+      // so the mesh glides up/down ridges rather than snapping
+      if(playerCharMesh._smoothY===undefined)playerCharMesh._smoothY=charFloorY;
+      playerCharMesh._smoothY+=(charFloorY-playerCharMesh._smoothY)*Math.min(1,dt*10);
+      playerCharMesh.position.y=playerCharMesh._smoothY;
 
       // ── Body lean (acceleration anticipation + slope) ────
-      const accelBias=hasInput?speedFrac*0.11:speedFrac*(-0.045);
-      playerCharMesh.rotation.x+=(slopePitch+accelBias-playerCharMesh.rotation.x)*Math.min(1,dt*8);
+      const accelBias=hasInput?speedFrac*0.09:speedFrac*(-0.04);
+      playerCharMesh.rotation.x+=(slopePitch+accelBias-playerCharMesh.rotation.x)*Math.min(1,dt*6);
 
       // ── Turn banking: lean into camera rotation like a real runner ──
       const yawDelta=camYaw-prevCamYaw;
       prevCamYaw=camYaw;
       // yawDelta/dt = angular velocity; scale by speed so standing still = no bank
-      const turnBank=Math.max(-0.22,Math.min(0.22,(yawDelta/Math.max(dt,0.001))*0.13*speedFrac));
+      const turnBank=Math.max(-0.18,Math.min(0.18,(yawDelta/Math.max(dt,0.001))*0.10*speedFrac));
 
       // ── Whole-body roll (side-slope + turn bank) ─────────
-      playerCharMesh.rotation.z+=(slopeRoll+turnBank-playerCharMesh.rotation.z)*Math.min(1,dt*8);
+      playerCharMesh.rotation.z+=(slopeRoll+turnBank-playerCharMesh.rotation.z)*Math.min(1,dt*6);
 
       // ── POST-MIXER procedural bone overlay ───────────────
       // Arms, elbows, wrists, spine twist, head — layered on top of the clip
@@ -2756,8 +2775,8 @@ function _tppUpdate(dt,t){
 
       // Vertical bob — two-hump per stride cycle (both feet)
       const bobH=isMoving?Math.abs(Math.sin(stridePh))*0.10*speedFrac:0;
-      const prevBobY=playerCharMesh.position.y-charFloorY;
-      playerCharMesh.position.y=charFloorY+prevBobY+(bobH-prevBobY)*Math.min(1,dt*16);
+      const prevBobY=playerCharMesh.position.y-playerCharMesh._smoothY;
+      playerCharMesh.position.y=playerCharMesh._smoothY+prevBobY+(bobH-prevBobY)*Math.min(1,dt*10);
 
       // Forward lean + slope pitch
       const leanTgt=slopePitch+(hasInput?speedFrac*0.14:speedFrac*-0.04);
@@ -2884,7 +2903,8 @@ function animLoop(now){
 
   // ── Smooth look inertia (always) ──
   if(!suckupActive&&!returnActive){
-    const ll=1-Math.pow(.002,dt);
+    // .005 → τ≈0.19s, responsive with just enough inertia to feel smooth
+    const ll=1-Math.pow(.005,dt);
     camYaw+=(targetYaw-camYaw)*ll;
     camPitch+=(targetPitch-camPitch)*ll;
   }
