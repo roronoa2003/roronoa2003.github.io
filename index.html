@@ -2,12 +2,29 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"/>
+<meta name="theme-color" content="#03000a"/>
+<meta name="description" content="Rohan Iyer — Interactive 3D Portfolio. Explore an immersive Stranger Things-themed world and discover my work in strategy consulting, finance, and product."/>
+<meta property="og:title" content="Rohan Iyer — 3D Portfolio"/>
+<meta property="og:description" content="An immersive Stranger Things-themed interactive portfolio built with Three.js — explore, discover, experience."/>
+<meta property="og:type" content="website"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Rohan Iyer — 3D Portfolio"/>
 <title>Rohan Iyer — Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@200;300;400;500;600;700;900&display=swap" rel="stylesheet"/>
 <link href="https://fonts.cdnfonts.com/css/itc-benguiat-std" rel="stylesheet"/>
+<!-- Three.js r128 core -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<!-- Post-processing: Bloom pipeline -->
+<script src="https://unpkg.com/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <style>
 :root{--red:#E50914;--red2:#ff3d3d;--black:#03000a;--surf:#0d000f;--text:#e5e5e5;--muted:#666;--gold:#f5c842;
   --font-st:'ITC Benguiat Std',Georgia,'Times New Roman',serif;}
@@ -98,11 +115,37 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 @media(pointer:coarse){#hud-mute{cursor:pointer;}}
 #hud-cv a{background:var(--red);color:#fff;font-family:'Outfit',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;padding:.35rem 1rem;border-radius:3px;text-decoration:none;box-shadow:0 0 18px rgba(229,9,20,.4);transition:all .25s;display:block;}
 #hud-cv a:hover{box-shadow:0 0 32px rgba(229,9,20,.75);transform:translateY(-2px);}
-#hud-crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:18px;height:18px;pointer-events:none;}
-#hud-crosshair::before,#hud-crosshair::after{content:'';position:absolute;background:rgba(229,9,20,.4);}
-#hud-crosshair::before{width:1px;height:100%;left:50%;top:0;}
-#hud-crosshair::after{width:100%;height:1px;top:50%;left:0;}
-@media(max-width:640px){#hud-stats-row{display:none;}#hud-hint{display:none;}#hud-crosshair{display:none;}}
+/* ── Production game crosshair ── */
+#hud-crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:24px;height:24px;pointer-events:none;opacity:0;transition:opacity .3s;}
+#hud-crosshair.visible{opacity:1;}
+#hud-crosshair::before,#hud-crosshair::after{content:'';position:absolute;background:rgba(255,255,255,.65);}
+#hud-crosshair::before{width:1px;height:8px;left:calc(50% - .5px);top:0;}
+#hud-crosshair::after{width:8px;height:1px;top:calc(50% - .5px);left:0;}
+/* dot */
+#hud-crosshair .ch-dot{position:absolute;width:3px;height:3px;background:#fff;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 0 6px rgba(229,9,20,.8);}
+/* bottom bar */
+#hud-crosshair::after{box-shadow:none;}
+
+/* ── Speed / stamina bar (bottom centre) ── */
+#hud-speed-bar{position:absolute;bottom:3.8rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.3rem;pointer-events:none;opacity:0;transition:opacity .5s;}
+#hud-speed-bar.visible{opacity:1;}
+#hud-speed-track{width:90px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;}
+#hud-speed-fill{height:100%;width:0%;background:linear-gradient(90deg,rgba(229,9,20,.8),#ff6030);border-radius:2px;transition:width .06s linear;box-shadow:0 0 8px rgba(229,9,20,.6);}
+#hud-speed-label{font-size:.42rem;letter-spacing:.18em;color:rgba(255,255,255,.3);text-transform:uppercase;font-family:'Outfit',sans-serif;}
+
+/* ── Footstep pulse (subtle bottom vignette beat) ── */
+#hud-footpulse{position:absolute;inset:0;pointer-events:none;z-index:9;
+  background:radial-gradient(ellipse 80% 40% at 50% 110%,rgba(229,9,20,.18) 0%,transparent 70%);
+  opacity:0;transition:opacity .04s;}
+#hud-footpulse.beat{opacity:1;}
+
+/* ── TPP mode indicator ── */
+#hud-mode-badge{position:absolute;top:1.2rem;left:50%;transform:translateX(-50%);
+  font-family:'Bebas Neue',sans-serif;font-size:.55rem;letter-spacing:.28em;
+  color:rgba(200,140,255,.6);pointer-events:none;opacity:0;transition:opacity .4s;}
+#hud-mode-badge.visible{opacity:1;}
+
+@media(max-width:640px){#hud-stats-row{display:none;}#hud-hint{display:none;}#hud-crosshair{display:none;}#hud-speed-bar{display:none;}}
 
 /* ── STRANGER THINGS OVERLAYS ── */
 /* CRT scanlines */
@@ -433,7 +476,16 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     </div>
     <div id="hud-hint"><span>DRAG</span> to orbit &nbsp;·&nbsp; <span>WASD</span> to fly &nbsp;·&nbsp; <span>CLICK</span> panel</div>
     <div id="hud-tooltip"></div>
-    <div id="hud-crosshair"></div>
+    <div id="hud-crosshair"><div class="ch-dot"></div></div>
+    <!-- Speed bar (TPP mode) -->
+    <div id="hud-speed-bar">
+      <div id="hud-speed-track"><div id="hud-speed-fill"></div></div>
+      <div id="hud-speed-label">speed</div>
+    </div>
+    <!-- Mode badge -->
+    <div id="hud-mode-badge">THIRD PERSON</div>
+    <!-- Footstep ground pulse -->
+    <div id="hud-footpulse"></div>
     <div id="hud-hawkins">📍 HAWKINS, IN &nbsp;·&nbsp; 1983</div>
     <div id="hud-cv"><a href="https://drive.google.com/file/d/1PWbHZNDVtJUMyn4qVDJni3VnzaItRSyj/view?usp=sharing" target="_blank">↓ CV</a></div>
     <button id="hud-view-toggle" onclick="toggleViewMode()" title="Toggle FPP / TPP">FPP</button>
@@ -790,6 +842,7 @@ function makePanelTex(sec){
 // WORLD ENGINE
 // ══════════════════════════════════════════════════════
 let WR,WS,WC; // renderer, scene, camera
+let WComposer=null,WComposer2=null; // EffectComposer for post-processing (bloom)
 let WS2=null,WS2built=false; // second world (Upside Down portal)
 let inSecondWorld=false,suckupActive=false,suckupT=0,returnActive=false,returnT=0;
 let chaseActive=false,portalClosed=false,portalCloseT=0;
@@ -818,27 +871,47 @@ const playerVel=new THREE.Vector3();
 const tppCamLerped=new THREE.Vector3();
 const tppCamVel=new THREE.Vector3();// spring-damper velocity for follow-cam
 let tppCamReady=false;
+let prevCamYaw=Math.PI;// for turn-banking angular velocity
 const _pbQ=new THREE.Quaternion();// reusable quaternion for procedural bone overlays (avoids GC)
+const _glassesWP=new THREE.Vector3();// reusable world-pos for glasses update
+const _glassesMat=new THREE.Matrix4();// reusable matrix for glasses
 const isMobile='ontouchstart' in window;
 // Joystick
 let jActive=false,jX=0,jY=0;
 
 function initWorld(){
   const canvas=document.getElementById('world-canvas');
-  WR=new THREE.WebGLRenderer({canvas,antialias:!isMobile,alpha:false,powerPreference:'high-performance'});
+  WR=new THREE.WebGLRenderer({canvas,antialias:!isMobile,alpha:false,powerPreference:'high-performance',stencil:false});
   WR.setSize(innerWidth,innerHeight);
   WR.setPixelRatio(Math.min(devicePixelRatio,isMobile?1.5:2));
   WR.setClearColor(0x050001,1);
   WR.physicallyCorrectLights=true;
   WR.outputEncoding=THREE.sRGBEncoding;
   WR.toneMapping=THREE.ACESFilmicToneMapping;
-  WR.toneMappingExposure=1.2;
+  WR.toneMappingExposure=1.35;
+  // ── PCF Soft Shadows (Unity-quality contact shadows) ──
+  WR.shadowMap.enabled=true;
+  WR.shadowMap.type=THREE.PCFSoftShadowMap;
 
   WS=new THREE.Scene();
-  WS.fog=new THREE.FogExp2(0x0d0003,.024);
+  WS.fog=new THREE.FogExp2(0x0a0002,.022);
   WC=new THREE.PerspectiveCamera(isMobile?80:70,innerWidth/innerHeight,.05,500);
   WC.position.set(0,38,4);
   WC.rotation.order='YXZ';
+
+  // ── EffectComposer with Unreal Bloom (main world) ─────
+  if(THREE.EffectComposer){
+    const sz=new THREE.Vector2(innerWidth,innerHeight);
+    WComposer=new THREE.EffectComposer(WR);
+    WComposer.addPass(new THREE.RenderPass(WS,WC));
+    const bloom=new THREE.UnrealBloomPass(sz,
+      isMobile?0.55:0.72,// strength
+      0.38,              // radius
+      0.80               // threshold — only emissive surfaces glow
+    );
+    WComposer.addPass(bloom);
+    WS.userData._bloomPass=bloom;
+  }
 
   buildLights();
   buildFloor();
@@ -875,18 +948,46 @@ function initWorld(){
 }
 
 function buildLights(){
-  // Ambient — raised so distant vegetation is visible without harsh highlights
-  WS.add(new THREE.AmbientLight(0x180a0e,3.2));
-  // Main directional (moonlight from above)
-  const d=new THREE.DirectionalLight(0xdde8ff,2.2);d.position.set(5,18,8);WS.add(d);
-  // Central lava-glow point light
-  const r1=new THREE.PointLight(0xe50914,4,40);r1.position.set(0,8,0);WS.add(r1);
-  // Secondary warm fill
-  const r2=new THREE.PointLight(0xff6030,1.4,28);r2.position.set(-5,3,5);WS.add(r2);
-  // Cool accent from opposite side
-  const b=new THREE.PointLight(0x2040cc,.9,32);b.position.set(5,5,-8);WS.add(b);
-  // Wide low fill light illuminating outer vegetation ring
-  const outer=new THREE.PointLight(0xffe0cc,.6,60);outer.position.set(0,4,0);WS.add(outer);
+  // ── Hemisphere (sky/ground gradient) — replaces flat ambient ──
+  // Sky = cold deep purple, Ground = dark warm terracotta bounce
+  const hemi=new THREE.HemisphereLight(0x1a0a2e,0x3b0a03,2.2);
+  WS.add(hemi);
+
+  // ── Main directional — cold moonlight, casts PCF soft shadows ──
+  const d=new THREE.DirectionalLight(0xc8d8ff,2.6);
+  d.position.set(12,28,10);
+  d.castShadow=true;
+  d.shadow.mapSize.set(isMobile?1024:2048,isMobile?1024:2048);
+  d.shadow.camera.near=0.5;
+  d.shadow.camera.far=120;
+  d.shadow.camera.left=-38;d.shadow.camera.right=38;
+  d.shadow.camera.top=38;d.shadow.camera.bottom=-38;
+  d.shadow.bias=-0.0004;
+  d.shadow.normalBias=0.05;
+  WS.add(d);
+  WS.userData._sunLight=d;// store for day/night access
+
+  // ── Central lava-glow point (main atmosphere) ──
+  const r1=new THREE.PointLight(0xe50914,5.5,45);
+  r1.position.set(0,7,0);r1.castShadow=false;// skip shadow for perf
+  WS.add(r1);
+
+  // ── Secondary warm fill (character illumination) ──
+  const r2=new THREE.PointLight(0xff6030,2.0,32);
+  r2.position.set(-6,4,6);WS.add(r2);
+
+  // ── Cool rim accent (back-lighting for depth) ──
+  const b=new THREE.PointLight(0x2040cc,1.4,36);
+  b.position.set(7,6,-10);WS.add(b);
+
+  // ── Wide low fill (outer zone / vegetation ring) ──
+  const outer=new THREE.PointLight(0xff9060,.8,80);
+  outer.position.set(0,5,0);WS.add(outer);
+
+  // ── Upward bounce from ground (simulates lava fissure radiance) ──
+  const lava=new THREE.PointLight(0xdd2200,1.8,18);
+  lava.position.set(0,.5,0);WS.add(lava);
+  WS.userData._lavaLight=lava;// for flicker animation
 }
 
 // ── Analytical terrain height sampler ───────────────────────────────────────
@@ -917,7 +1018,8 @@ function buildFloor(){
   const FALL_NOR  ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_rocks_02/aerial_rocks_02_nor_gl_2k.jpg';
   const FALL_ROUGH='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_rocks_02/aerial_rocks_02_rough_2k.jpg';
 
-  const segs=isMobile?100:200;
+  // Higher res for desktop = sharper ridges visible at walk distance
+  const segs=isMobile?120:280;
   const geo=new THREE.PlaneGeometry(260,260,segs,segs);
   geo.rotateX(-Math.PI/2);
   const pos=geo.attributes.position;
@@ -925,35 +1027,55 @@ function buildFloor(){
     const x=pos.getX(i),z=pos.getZ(i);
     const r=Math.sqrt(x*x+z*z);
     let h=0;
-    // Large undulation layers
-    h+=Math.sin(x*.10)*Math.cos(z*.09)*1.4;
-    h+=Math.sin(x*.23+z*.17)*Math.cos(z*.28-x*.08)*.75;
-    h+=Math.sin(x*.51+1.3)*Math.cos(z*.47+.7)*.35;
-    // Medium rock pockmarks
-    h+=Math.sin(x*1.1+z*1.3)*.16;
-    h+=Math.sin(x*2.2-z*1.9)*.07;
+    // Primary macro undulation — large rolling hills
+    h+=Math.sin(x*.10)*Math.cos(z*.09)*1.6;
+    h+=Math.sin(x*.23+z*.17)*Math.cos(z*.28-x*.08)*.90;
+    // Secondary ridges — sharper terrain features
+    h+=Math.sin(x*.51+1.3)*Math.cos(z*.47+.7)*.45;
+    h+=Math.sin(x*.80+z*.75)*Math.cos(z*.65-x*.55)*.28;
+    // Tertiary micro ridges — tactile surface detail
+    h+=Math.sin(x*1.1+z*1.3)*.20;
+    h+=Math.sin(x*2.2-z*1.9)*.10;
+    h+=Math.sin(x*3.8+z*2.7)*.05;
     // Fine surface roughness
-    h+=(Math.random()-.5)*.22;
-    // Keep centre (camera area) flat
-    const flat=Math.min(1,Math.max(0,(r-8)/10));
+    h+=(Math.random()-.5)*.18;
+    // Keep centre (camera spawn area) gently flat
+    const flat=Math.min(1,Math.max(0,(r-7)/12));
     h*=flat;
-    // Rim ridges rising at distance
-    if(r>20)h+=Math.abs(Math.sin(x*.16)*Math.cos(z*.19))*3.0*Math.min(1,(r-20)/14);
+    // Rim ridges — dramatic outer geography
+    if(r>18)h+=Math.abs(Math.sin(x*.16)*Math.cos(z*.19))*3.8*Math.min(1,(r-18)/12);
+    // Extra crags at far edge
+    if(r>28)h+=Math.abs(Math.sin(x*.38)*Math.cos(z*.32))*2.0*Math.min(1,(r-28)/8);
     pos.setY(i,h-.02);
   }
   geo.computeVertexNormals();
 
-  // Dark alien tint — will be multiplied on top of the real rock diffuse
-  const terrMat=new THREE.MeshStandardMaterial({color:0x2a0809,roughness:.96,metalness:.03});
-  WS.add(new THREE.Mesh(geo,terrMat));
+  // Dark alien tint — PBR maps applied below
+  const terrMat=new THREE.MeshStandardMaterial({color:0x250607,roughness:.97,metalness:.02});
+  const terrMesh=new THREE.Mesh(geo,terrMat);
+  terrMesh.receiveShadow=true;// terrain receives character shadows
+  WS.add(terrMesh);
   WS.userData.terrMat=terrMat;// store for world 2 texture sharing
+
+  // ── Thin emissive glow plane — sits 2mm above terrain, additive blend ──
+  // Creates the appearance of lava light leaking up from fissures into the ground
+  const glowGeo=new THREE.PlaneGeometry(200,200,1,1);glowGeo.rotateX(-Math.PI/2);
+  const glowMat=new THREE.MeshBasicMaterial({
+    color:0xcc1100,transparent:true,opacity:.022,
+    depthWrite:false,blending:THREE.AdditiveBlending,
+    side:THREE.FrontSide
+  });
+  const glowPlane=new THREE.Mesh(glowGeo,glowMat);
+  glowPlane.position.y=.022;
+  WS.add(glowPlane);
+  WS.userData._terrGlowMat=glowMat;// for lava pulse animation
 
   // Load PBR maps — try primary first; fall back gracefully
   const txLoader=new THREE.TextureLoader();
   // Finer tiling (28×) = visibly sharper surface at walk distance
   function tile(t,rep){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep||28,rep||28);t.anisotropy=Math.min(16,WR.capabilities.getMaxAnisotropy());return t;}
   // Strong normal scale = much more surface depth & rock bumps
-  const NRM_SCALE=1.6;
+  const NRM_SCALE=2.2;
   function loadSet(diff,nor,rough){
     txLoader.load(diff, t=>{terrMat.map=tile(t,28);terrMat.needsUpdate=true;},undefined,()=>{});
     txLoader.load(nor,  t=>{terrMat.normalMap=tile(t,28);terrMat.normalScale.set(NRM_SCALE,NRM_SCALE);terrMat.needsUpdate=true;},undefined,()=>{});
@@ -1230,7 +1352,7 @@ function buildDecorations(){
   const tkMat=new THREE.MeshStandardMaterial({color:0xcc3322,emissive:0x1a0008,emissiveIntensity:.25,roughness:.35,metalness:.85});
   applyPBR(tkMat,MP_DIFF,MP_NOR,MP_ROUGH,3);
   const tk=new THREE.Mesh(new THREE.TorusKnotGeometry(4.5,.12,160,18),tkMat);
-  tk.position.y=3.5;WS.add(tk);WS.userData.tk=tk;
+  tk.position.y=3.5;tk.castShadow=true;WS.add(tk);WS.userData.tk=tk;
 
   // ── Inner ring markers — 8 small upright metal hoops at radius 4.5 ───
   // Placed well inside the panel ring (radius 12) so they never overlap panels.
@@ -1450,7 +1572,13 @@ function bindControls(){
     },{passive:true});
     jz.addEventListener('touchend',()=>{jActive=false;jX=0;jY=0;jt.style.transform='';});
   }
-  window.addEventListener('resize',()=>{WR.setSize(innerWidth,innerHeight);WC.aspect=innerWidth/innerHeight;WC.updateProjectionMatrix();});
+  window.addEventListener('resize',()=>{
+    WR.setSize(innerWidth,innerHeight);
+    WC.aspect=innerWidth/innerHeight;WC.updateProjectionMatrix();
+    // Also resize composers so bloom doesn't render at stale resolution
+    if(WComposer)WComposer.setSize(innerWidth,innerHeight);
+    if(WComposer2)WComposer2.setSize(innerWidth,innerHeight);
+  });
 }
 
 function doRaycast(nmx,nmy){
@@ -1486,39 +1614,62 @@ function flyToPanel(panel){
 // ══════════════════════════════════════════════════════
 function buildSecondWorld(){
   WS2=new THREE.Scene();
-  WS2.fog=new THREE.FogExp2(0x1a0230,.025);
+  WS2.fog=new THREE.FogExp2(0x1a0230,.022);
 
-  // ── Lights — keep ambient neutral so rock texture reads naturally; purple comes from point lights ──
-  WS2.add(new THREE.AmbientLight(0x100810,2.8));// dark neutral — same feel as world 1
-  const d2=new THREE.DirectionalLight(0xd0b8e8,1.6);d2.position.set(-5,18,8);WS2.add(d2);// subtle cool-purple directional
-  const p1=new THREE.PointLight(0xcc44ff,3.5,40);p1.position.set(0,8,0);WS2.add(p1);
-  const p2=new THREE.PointLight(0xff44aa,1.2,28);p2.position.set(-5,3,5);WS2.add(p2);
-  const p3=new THREE.PointLight(0x8822ff,.8,32);p3.position.set(5,5,-8);WS2.add(p3);
+  // ── Lights — hemisphere sky/ground + shadow directional ──
+  WS2.add(new THREE.HemisphereLight(0x200830,0x1a0015,2.0));
+  const d2=new THREE.DirectionalLight(0xd0b8ff,2.0);
+  d2.position.set(-8,22,10);
+  d2.castShadow=true;
+  d2.shadow.mapSize.set(isMobile?1024:2048,isMobile?1024:2048);
+  d2.shadow.camera.left=-35;d2.shadow.camera.right=35;
+  d2.shadow.camera.top=35;d2.shadow.camera.bottom=-35;
+  d2.shadow.camera.near=0.5;d2.shadow.camera.far=100;
+  d2.shadow.bias=-0.0004;
+  WS2.add(d2);
+  const p1=new THREE.PointLight(0xcc44ff,5.0,45);p1.position.set(0,8,0);WS2.add(p1);
+  const p2=new THREE.PointLight(0xff44aa,1.6,32);p2.position.set(-5,3,5);WS2.add(p2);
+  const p3=new THREE.PointLight(0x8822ff,1.2,36);p3.position.set(5,5,-8);WS2.add(p3);
   WS2.userData._w2FlickerLight=p1;
 
-  // ── Ground — same rock texture, purple tint ──
-  const segs=isMobile?100:200;
+  // ── Build EffectComposer for world 2 (same bloom settings) ──
+  if(THREE.EffectComposer){
+    WComposer2=new THREE.EffectComposer(WR);
+    WComposer2.addPass(new THREE.RenderPass(WS2,WC));
+    WComposer2.addPass(new THREE.UnrealBloomPass(
+      new THREE.Vector2(innerWidth,innerHeight),
+      isMobile?0.7:0.9,// slightly stronger bloom in the Upside Down
+      0.42,0.78
+    ));
+  }
+
+  // ── Ground — same heightmap as world 1, purple tint, shadow receive ──
+  const segs=isMobile?120:280;
   const geo2=new THREE.PlaneGeometry(260,260,segs,segs);
   geo2.rotateX(-Math.PI/2);
   const pos2=geo2.attributes.position;
   for(let i=0;i<pos2.count;i++){
     const x=pos2.getX(i),z=pos2.getZ(i);
     const r=Math.sqrt(x*x+z*z);
-    let h=Math.sin(x*.10)*Math.cos(z*.09)*1.4+Math.sin(x*.23+z*.17)*Math.cos(z*.28-x*.08)*.75
-           +Math.sin(x*.51+1.3)*Math.cos(z*.47+.7)*.35+Math.sin(x*1.1+z*1.3)*.16+(Math.random()-.5)*.22;
-    h*=Math.min(1,Math.max(0,(r-8)/10));
-    if(r>20)h+=Math.abs(Math.sin(x*.16)*Math.cos(z*.19))*3.0*Math.min(1,(r-20)/14);
+    let h=Math.sin(x*.10)*Math.cos(z*.09)*1.6+Math.sin(x*.23+z*.17)*Math.cos(z*.28-x*.08)*.90
+           +Math.sin(x*.51+1.3)*Math.cos(z*.47+.7)*.45+Math.sin(x*.80+z*.75)*Math.cos(z*.65-x*.55)*.28
+           +Math.sin(x*1.1+z*1.3)*.20+Math.sin(x*2.2-z*1.9)*.10+(Math.random()-.5)*.18;
+    h*=Math.min(1,Math.max(0,(r-7)/12));
+    if(r>18)h+=Math.abs(Math.sin(x*.16)*Math.cos(z*.19))*3.8*Math.min(1,(r-18)/12);
+    if(r>28)h+=Math.abs(Math.sin(x*.38)*Math.cos(z*.32))*2.0*Math.min(1,(r-28)/8);
     pos2.setY(i,h-.02);
   }
   geo2.computeVertexNormals();
   // Same material tint as world 1 — EXACT match
-  const terrMat2=new THREE.MeshStandardMaterial({color:0x2a0809,roughness:.96,metalness:.03});
-  WS2.add(new THREE.Mesh(geo2,terrMat2));
+  const terrMat2=new THREE.MeshStandardMaterial({color:0x250607,roughness:.97,metalness:.02});
+  const terrMesh2=new THREE.Mesh(geo2,terrMat2);
+  terrMesh2.receiveShadow=true;
+  WS2.add(terrMesh2);
   // ── Instantly share already-loaded textures from world 1 ──
   const _w1m=WS.userData.terrMat;
   if(_w1m){
     if(_w1m.map){terrMat2.map=_w1m.map;}
-    if(_w1m.normalMap){terrMat2.normalMap=_w1m.normalMap;terrMat2.normalScale.set(1.6,1.6);}
+    if(_w1m.normalMap){terrMat2.normalMap=_w1m.normalMap;terrMat2.normalScale.set(2.2,2.2);}
     if(_w1m.roughnessMap){terrMat2.roughnessMap=_w1m.roughnessMap;}
     terrMat2.needsUpdate=true;
   }
@@ -1672,6 +1823,80 @@ function buildSecondWorld(){
   WS2built=true;
 }
 
+// ── Procedural Glasses (Spectacles) ─────────────────────────────────────────────
+// Creates a physically-accurate pair of round wire-frame glasses and attaches them
+// to the character's head bone so they follow every head movement perfectly.
+function createGlassesGroup(scene){
+  const g=new THREE.Group();g.name='playerGlasses';
+
+  // Materials
+  const frameMat=new THREE.MeshStandardMaterial({color:0x1c1c2e,roughness:0.25,metalness:0.90});
+  const lensMat=new THREE.MeshStandardMaterial({color:0xaabbff,transparent:true,opacity:0.18,roughness:0.05,metalness:0.05,side:THREE.DoubleSide,depthWrite:false});
+
+  // ── Lens frames (round circles, tube radius = wire thickness) ──
+  const LENS_R=0.036,TUBE_R=0.0055,SEG=24;
+  const lFrame=new THREE.Mesh(new THREE.TorusGeometry(LENS_R,TUBE_R,8,SEG),frameMat);
+  lFrame.position.set(-0.056,0,0);g.add(lFrame);
+  const rFrame=new THREE.Mesh(new THREE.TorusGeometry(LENS_R,TUBE_R,8,SEG),frameMat);
+  rFrame.position.set( 0.056,0,0);g.add(rFrame);
+
+  // ── Lens fills (transparent tinted circles) ──
+  const lLens=new THREE.Mesh(new THREE.CircleGeometry(LENS_R-0.002,SEG),lensMat);
+  lLens.position.set(-0.056,0,0.001);g.add(lLens);
+  const rLens=new THREE.Mesh(new THREE.CircleGeometry(LENS_R-0.002,SEG),lensMat);
+  rLens.position.set( 0.056,0,0.001);g.add(rLens);
+
+  // ── Nose bridge ──
+  const bridge=new THREE.Mesh(new THREE.CylinderGeometry(0.004,0.004,0.040,6),frameMat);
+  bridge.rotation.z=Math.PI/2;bridge.position.set(0,0.004,0);g.add(bridge);
+
+  // ── Temple arms (left & right) ──
+  const ARM_L=0.11;
+  const lTemple=new THREE.Mesh(new THREE.CylinderGeometry(0.003,0.003,ARM_L,6),frameMat);
+  lTemple.rotation.z=Math.PI/2;lTemple.position.set(-(0.056+ARM_L/2),0,-0.004);g.add(lTemple);
+  const rTemple=new THREE.Mesh(new THREE.CylinderGeometry(0.003,0.003,ARM_L,6),frameMat);
+  rTemple.rotation.z=Math.PI/2;rTemple.position.set( (0.056+ARM_L/2),0,-0.004);g.add(rTemple);
+
+  scene.add(g);
+  return g;
+}
+
+// Called every frame after mixer.update() — tracks glasses to head bone world transform
+function _updateGlassesTransform(){
+  if(!playerCharMesh||!playerCharMesh.userData.glassesGroup)return;
+  const gg=playerCharMesh.userData.glassesGroup;
+  const headBone=playerCharMesh.userData.bones&&playerCharMesh.userData.bones.head;
+  if(!headBone){gg.visible=false;return;}
+  gg.visible=true;
+
+  // Full world matrix of the head bone (propagates parent chain)
+  headBone.updateWorldMatrix(true,false);
+  _glassesMat.copy(headBone.matrixWorld);
+
+  // Position glasses at head bone world pos
+  _glassesWP.setFromMatrixPosition(_glassesMat);
+
+  // Offset forward along character's facing direction (face = +Z of standing mesh)
+  // 0.07 forward from head bone, 0.03 up to eye level
+  const fSin=Math.sin(playerFacingYaw),fCos=Math.cos(playerFacingYaw);
+  _glassesWP.x+=fSin*0.07;
+  _glassesWP.z+=fCos*0.07;
+  _glassesWP.y+=0.03;
+  gg.position.copy(_glassesWP);
+
+  // Inherit head bone rotation so glasses tilt with the head during run lean
+  gg.quaternion.setFromRotationMatrix(_glassesMat).normalize();
+}
+
+// Remove glasses from whatever scene they're in
+function _removeGlasses(){
+  if(playerCharMesh&&playerCharMesh.userData.glassesGroup){
+    const gg=playerCharMesh.userData.glassesGroup;
+    if(gg.parent)gg.parent.remove(gg);
+    playerCharMesh.userData.glassesGroup=null;
+  }
+}
+
 // ── Bone name resolver — tries Mixamo, generic humanoid, and camelCase variants ──
 function findCharBones(bMap){
   const keys=Object.keys(bMap);
@@ -1750,47 +1975,96 @@ function _applyProceduralBones(stridePh,speedFrac,isMoving){
 }
 
 // ── TPP player character ─────────────────────────────────
+// Uses Three.js Soldier.glb — Mixamo-rigged humanoid with Idle/Walk/Run clips.
+// Falls back to local file, then capsule stand-in.
+const _CHAR_URLS=[
+  'https://raw.githubusercontent.com/mrdoob/three.js/r128/examples/models/gltf/Soldier.glb',
+  './3d_character_young_boy.glb'
+];
+
+function _setupCharacter(pm,gltf,scene,onReady){
+  const pb=new THREE.Box3().setFromObject(pm);
+  const ps=new THREE.Vector3();pb.getSize(ps);
+  const psc=1.8/Math.max(ps.x,ps.y,ps.z);
+  pm.scale.set(psc,psc,psc);
+  const pb2=new THREE.Box3().setFromObject(pm);
+  playerCharBaseY=-pb2.min.y+0.02;
+  pm.position.set(playerPos.x,playerCharBaseY,playerPos.z);
+
+  // Enable shadows + emissive tint for character meshes
+  pm.traverse(n=>{
+    if(n.isMesh&&n.material){
+      n.castShadow=true;// character casts shadow on terrain
+      n.receiveShadow=false;// optional — skip self-shadow for perf
+      if(Array.isArray(n.material)){
+        n.material.forEach(m=>{m.envMapIntensity=1.6;m.needsUpdate=true;});
+      } else {
+        n.material.envMapIntensity=1.6;n.material.needsUpdate=true;
+      }
+    }
+  });
+
+  scene.add(pm);
+  playerCharMesh=pm;playerCharScene=scene;
+  playerFacingYaw=camYaw;pm.rotation.y=playerFacingYaw;
+
+  // ── Skeleton bone collection for procedural overlay ────
+  const bMap={};
+  pm.traverse(obj=>{if(obj.isBone)bMap[obj.name]=obj;});
+  pm.userData.boneMap=bMap;
+  pm.userData.bones=findCharBones(bMap);
+  const foundKeys=Object.entries(pm.userData.bones).filter(([,v])=>v).map(([k])=>k);
+  console.log('[TPP] Rig bones found:',foundKeys.length,'→',foundKeys.join(', '));
+
+  // ── Procedural glasses (spectacles) on head bone ───────
+  const gg=createGlassesGroup(scene);
+  pm.userData.glassesGroup=gg;
+
+  // ── 3-clip animation blend tree (Idle / Walk / Run) ───
+  if(gltf&&gltf.animations&&gltf.animations.length>0){
+    playerCharMixer=new THREE.AnimationMixer(pm);
+    // Resolve clips by name (robust to ordering differences)
+    const byName={};
+    gltf.animations.forEach(c=>{byName[c.name.toLowerCase().replace(/\s/g,'')]=c;});
+    console.log('[TPP] Animation clips:',Object.keys(byName).join(', '));
+
+    const idleClip = byName['idle']   || byName['tpose']    || gltf.animations[0];
+    const walkClip = byName['walk']   || byName['walking']  || gltf.animations[3]||gltf.animations[1];
+    const runClip  = byName['run']    || byName['running']  || gltf.animations[1]||gltf.animations[2];
+
+    const idleAct = idleClip ? playerCharMixer.clipAction(idleClip) : null;
+    const walkAct = walkClip ? playerCharMixer.clipAction(walkClip) : null;
+    const runAct  = runClip  ? playerCharMixer.clipAction(runClip)  : null;
+
+    // All clips play simultaneously — blend weights control contribution
+    if(idleAct){idleAct.setEffectiveWeight(1).play();}
+    if(walkAct){walkAct.setEffectiveWeight(0).play();}
+    if(runAct) {runAct.setEffectiveWeight(0).play();}
+
+    pm.userData.actions={idle:idleAct,walk:walkAct,run:runAct};
+  }
+  if(onReady)onReady(pm);
+}
+
 function loadPlayerChar(scene,onReady){
   if(!THREE.GLTFLoader)return;
-  // Remove previous mesh from its scene
-  if(playerCharMesh&&playerCharScene){playerCharScene.remove(playerCharMesh);playerCharMesh=null;playerCharMixer=null;}
+  if(playerCharMesh&&playerCharScene){_removeGlasses();playerCharScene.remove(playerCharMesh);playerCharMesh=null;playerCharMixer=null;}
   const pcl=new THREE.GLTFLoader();
-  pcl.load('./3d_character_young_boy.glb',gltf=>{
-    const pm=gltf.scene;
-    const pb=new THREE.Box3().setFromObject(pm);
-    const ps=new THREE.Vector3();pb.getSize(ps);
-    const psc=1.8/Math.max(ps.x,ps.y,ps.z);// human height ~1.8 units
-    pm.scale.set(psc,psc,psc);
-    const pb2=new THREE.Box3().setFromObject(pm);
-    playerCharBaseY=-pb2.min.y+0.02;
-    pm.position.set(playerPos.x,playerCharBaseY,playerPos.z);
-    pm.traverse(n=>{if(n.isMesh&&n.material){n.material.envMapIntensity=1.2;n.material.needsUpdate=true;}});
-    scene.add(pm);
-    playerCharMesh=pm;playerCharScene=scene;
-    playerFacingYaw=camYaw;pm.rotation.y=playerFacingYaw;
-
-    // ── Collect skeleton bones for procedural overlay ──────
-    const bMap={};
-    pm.traverse(obj=>{if(obj.isBone)bMap[obj.name]=obj;});
-    pm.userData.boneMap=bMap;
-    pm.userData.bones=findCharBones(bMap);
-    // Debug: log found bones so we can see what the rig exposes
-    const foundKeys=Object.entries(pm.userData.bones).filter(([,v])=>v).map(([k])=>k);
-    console.log('[TPP] Bones found:',foundKeys.length,'→',foundKeys.join(', '));
-    if(foundKeys.length===0)console.warn('[TPP] No bones matched — procedural overlay disabled. Rig bone names:',Object.keys(bMap).slice(0,20));
-
-    if(gltf.animations&&gltf.animations.length>0){
-      playerCharMixer=new THREE.AnimationMixer(pm);
-      playerCharMixer.clipAction(gltf.animations[0]).play();
-    }
-    if(onReady)onReady(pm);
+  // Try primary URL, fall back to local, then capsule
+  pcl.load(_CHAR_URLS[0],gltf=>{
+    _setupCharacter(gltf.scene,gltf,scene,onReady);
   },undefined,()=>{
-    // Fallback capsule if GLB fails
-    const fb=new THREE.Mesh(new THREE.CylinderGeometry(.25,.25,1.7,10),
-      new THREE.MeshStandardMaterial({color:0x334466,emissive:0x001133,emissiveIntensity:.3}));
-    fb.position.set(playerPos.x,.85+0.02,playerPos.z);
-    scene.add(fb);playerCharMesh=fb;playerCharScene=scene;playerCharBaseY=.85;
-    if(onReady)onReady(fb);
+    console.warn('[TPP] Primary GLB failed, trying local fallback…');
+    pcl.load(_CHAR_URLS[1],gltf=>{
+      _setupCharacter(gltf.scene,gltf,scene,onReady);
+    },undefined,()=>{
+      // Capsule stand-in
+      const fb=new THREE.Mesh(new THREE.CylinderGeometry(.25,.25,1.7,12),
+        new THREE.MeshStandardMaterial({color:0x334466,emissive:0x112244,emissiveIntensity:.5}));
+      fb.position.set(playerPos.x,.87,playerPos.z);
+      scene.add(fb);playerCharMesh=fb;playerCharScene=scene;playerCharBaseY=.85;
+      if(onReady)onReady(fb);
+    });
   });
 }
 
@@ -1812,10 +2086,14 @@ function toggleViewMode(){
     loadPlayerChar(scene);
   } else {
     // TPP→FPP: put camera exactly at player feet level, same yaw
-    if(playerCharMesh&&playerCharScene){playerCharScene.remove(playerCharMesh);playerCharMesh=null;playerCharMixer=null;}
+    if(playerCharMesh&&playerCharScene){_removeGlasses();playerCharScene.remove(playerCharMesh);playerCharMesh=null;playerCharMixer=null;}
     camPos.set(playerPos.x,1.8,playerPos.z);
     targetYaw=camYaw;targetPitch=camPitch;// sync inertia targets
     tppCamReady=false;
+    // Hide TPP HUD elements
+    const _cx=document.getElementById('hud-crosshair');if(_cx)_cx.classList.remove('visible');
+    const _mb=document.getElementById('hud-mode-badge');if(_mb)_mb.classList.remove('visible');
+    const _sb=document.getElementById('hud-speed-bar');if(_sb)_sb.classList.remove('visible');
   }
 }
 
@@ -1861,10 +2139,12 @@ function _tppUpdate(dt,t){
   if(inputLen>1)inputVec.divideScalar(inputLen);
   const hasInput=inputLen>0.01;
 
-  // Accelerate (20/s²) / decelerate (28/s²) — snappy stops, smooth ramp-up
-  const lerpRate=hasInput?Math.min(1,20*dt):Math.min(1,28*dt);
-  playerVel.x+=(inputVec.x*MAX_SPD-playerVel.x)*lerpRate;
-  playerVel.z+=(inputVec.z*MAX_SPD-playerVel.z)*lerpRate;
+  // Exponential-decay smoothing: frame-rate independent, feels exactly like Unity
+  // kAcc=22 → ~90% of target velocity reached in 0.10s; kDec=32 → snappy stops
+  const kAcc=22,kDec=32;
+  const expK=1-Math.exp(-(hasInput?kAcc:kDec)*dt);
+  playerVel.x+=(inputVec.x*MAX_SPD-playerVel.x)*expK;
+  playerVel.z+=(inputVec.z*MAX_SPD-playerVel.z)*expK;
   const curSpd=Math.sqrt(playerVel.x*playerVel.x+playerVel.z*playerVel.z);
   if(curSpd>MAX_SPD){const inv=MAX_SPD/curSpd;playerVel.x*=inv;playerVel.z*=inv;}
 
@@ -1903,6 +2183,11 @@ function _tppUpdate(dt,t){
   camPos.copy(tppCamLerped);
   WC.position.copy(camPos);
   WC.lookAt(playerPos.x,playerPos.y+1.1,playerPos.z);
+  // Sprint FOV zoom-out (cinematic — Unity-style speed rush feel)
+  const baseFOV=isMobile?80:70;
+  const targetFOV=baseFOV+speedFrac*speedFrac*9;// max +9° at full sprint
+  WC.fov+=(targetFOV-WC.fov)*Math.min(1,dt*6);
+  WC.updateProjectionMatrix();
 
   // ── CHARACTER MESH ───────────────────────────────────────
   if(playerCharMesh){
@@ -1911,7 +2196,9 @@ function _tppUpdate(dt,t){
 
     // ── Body facing: smooth angular velocity toward movement dir ──
     if(curSpd>0.25){
-      const targetYawChar=Math.atan2(playerVel.x,playerVel.z);
+      // +PI: Soldier.glb model-space forward = -Z, so we flip 180° so the
+      // character's BACK faces the camera when running away (correct TPP view)
+      const targetYawChar=Math.atan2(playerVel.x,playerVel.z)+Math.PI;
       let dYaw=targetYawChar-playerFacingYaw;
       while(dYaw>Math.PI)dYaw-=2*Math.PI;
       while(dYaw<-Math.PI)dYaw+=2*Math.PI;
@@ -1931,23 +2218,57 @@ function _tppUpdate(dt,t){
 
     const charFloorY=playerPos.y+playerCharBaseY;
 
-    // ── Stride phase: accumulate for BOTH mixer and procedural paths ──
-    // This drives arm swing, bob, and all limb timing
-    if(isMoving)playerWalkBobT+=dt*(5.2+speedFrac*5.8);// ~1.6 strides/s at walk, ~2.7 at sprint
+    // ── Distance-locked stride (eliminates foot-slide) ───────
+    // Phase advances by actual ground covered × stride_freq, not by time
+    // At walk (~2.9 m/s) ≈ 1.8 cycles/m → natural cadence; scales up to sprint
+    if(isMoving){
+      const stepDist=curSpd*dt;
+      const strideFreq=2.0+speedFrac*1.0;// cycles per metre
+      playerWalkBobT+=stepDist*strideFreq*Math.PI*2;
+    } else {
+      // Settle to nearest rest pose (avoid frozen mid-swing arm)
+      const nearPhase=Math.round(playerWalkBobT/(Math.PI*2))*Math.PI*2;
+      playerWalkBobT+=(nearPhase-playerWalkBobT)*Math.min(1,dt*14);
+    }
     const stridePh=playerWalkBobT;
 
     // ── ANIMATION MIXER (GLB) ────────────────────────────────
     if(playerCharMixer){
-      // Unity-style speed → animation timeScale curve:
-      // idle=0, slow walk=0.65, walk=0.95, jog=1.4, full sprint=1.9
-      let tgtTS=0;
-      if(isMoving){
-        if(speedFrac<0.3)tgtTS=0.65+speedFrac*(0.95-0.65)/0.3;
-        else tgtTS=0.95+(speedFrac-0.3)*(1.9-0.95)/0.7;
+      const acts=playerCharMesh.userData.actions||{};
+      const{idle:idleA,walk:walkA,run:runA}=acts;
+      const has3=idleA&&(walkA||runA);
+
+      if(has3){
+        // ── Unity Animator Blend Tree: 3-way smooth weight blend ──
+        // Zone 1: stopped → walking  (speedFrac 0 → 0.40)
+        // Zone 2: walking → running  (speedFrac 0.40 → 1.0)
+        let wI=0,wW=0,wR=0;
+        if(speedFrac<0.04){wI=1;}
+        else if(speedFrac<0.40){const p=(speedFrac-0.04)/0.36;wI=1-p;wW=p;}
+        else{const p=(speedFrac-0.40)/0.60;wW=1-p;wR=p;}
+
+        // Smooth weight transitions (6× per second feels like Unity crossFade)
+        const wb=Math.min(1,dt*7);
+        idleA.setEffectiveWeight(idleA.getEffectiveWeight()+(wI-idleA.getEffectiveWeight())*wb);
+        if(walkA)walkA.setEffectiveWeight(walkA.getEffectiveWeight()+(wW-walkA.getEffectiveWeight())*wb);
+        if(runA) runA.setEffectiveWeight(runA.getEffectiveWeight()+(wR-runA.getEffectiveWeight())*wb);
+
+        // Scale playback speed to match actual movement speed
+        // Walk clip: native pace ≈ 0.8 at half speed, ramps to 1.1 at full walk
+        if(walkA)walkA.setEffectiveTimeScale(0.75+speedFrac*0.55);
+        // Run clip: native pace ≈ 1.0 at half speed, 1.35 at full sprint
+        if(runA) runA.setEffectiveTimeScale(0.90+speedFrac*0.55);
+        idleA.setEffectiveTimeScale(1.0);
+
+      } else {
+        // Single-clip fallback — timeScale ramp
+        let tgtTS=0;
+        if(isMoving){tgtTS=speedFrac<0.3?0.65+speedFrac*1.0:0.95+(speedFrac-0.3)*1.36;}
+        const tsB=hasInput?Math.min(1,dt*10):Math.min(1,dt*5);
+        playerCharMixer.timeScale+=(tgtTS-playerCharMixer.timeScale)*tsB;
+        if(playerCharMixer.timeScale<0.03)playerCharMixer.timeScale=0;
       }
-      const tsBlend=hasInput?Math.min(1,dt*10):Math.min(1,dt*5);
-      playerCharMixer.timeScale+=(tgtTS-playerCharMixer.timeScale)*tsBlend;
-      if(playerCharMixer.timeScale<0.03)playerCharMixer.timeScale=0;
+
       playerCharMixer.update(dt);
       playerCharMesh.position.y=charFloorY;
 
@@ -1955,12 +2276,21 @@ function _tppUpdate(dt,t){
       const accelBias=hasInput?speedFrac*0.11:speedFrac*(-0.045);
       playerCharMesh.rotation.x+=(slopePitch+accelBias-playerCharMesh.rotation.x)*Math.min(1,dt*8);
 
-      // ── Whole-body roll (side-slope banking) ─────────────
-      playerCharMesh.rotation.z+=(slopeRoll-playerCharMesh.rotation.z)*Math.min(1,dt*7);
+      // ── Turn banking: lean into camera rotation like a real runner ──
+      const yawDelta=camYaw-prevCamYaw;
+      prevCamYaw=camYaw;
+      // yawDelta/dt = angular velocity; scale by speed so standing still = no bank
+      const turnBank=Math.max(-0.22,Math.min(0.22,(yawDelta/Math.max(dt,0.001))*0.13*speedFrac));
+
+      // ── Whole-body roll (side-slope + turn bank) ─────────
+      playerCharMesh.rotation.z+=(slopeRoll+turnBank-playerCharMesh.rotation.z)*Math.min(1,dt*8);
 
       // ── POST-MIXER procedural bone overlay ───────────────
       // Arms, elbows, wrists, spine twist, head — layered on top of the clip
       _applyProceduralBones(stridePh,speedFrac,isMoving);
+
+      // ── Track glasses to head bone every frame ────────────
+      _updateGlassesTransform();
 
     } else {
       // ── PROCEDURAL FALLBACK (no GLB mixer) ───────────────
@@ -1987,7 +2317,35 @@ function _tppUpdate(dt,t){
       const bsc=playerCharMesh.userData._bsc;
       playerCharMesh.scale.set(bsc*sqXZ,bsc*sqY,bsc*sqXZ);
     }
-  }
+
+    // ── Footstep camera shake (inside null guard — stridePh in scope here) ──
+    if(playerCharMesh._prevStrideSin===undefined)playerCharMesh._prevStrideSin=0;
+    const curSin=Math.sin(stridePh);
+    const footfall=isMoving&&playerCharMesh._prevStrideSin<0&&curSin>=0;
+    playerCharMesh._prevStrideSin=curSin;
+    if(footfall){
+      const shk=0.022*speedFrac;
+      WC.position.x+=(Math.random()-.5)*shk;
+      WC.position.y-=Math.random()*shk*0.4;
+      // Ground pulse beat
+      const _fp=document.getElementById('hud-footpulse');
+      if(_fp){_fp.classList.add('beat');setTimeout(()=>_fp.classList.remove('beat'),80);}
+    }
+    // Bloom intensity ramps with running speed
+    const _bp=WS.userData._bloomPass;
+    if(_bp){_bp.strength=((inSecondWorld?0.9:0.72)+speedFrac*0.28)*(isMobile?0.75:1);}
+
+  }// end if(playerCharMesh)
+
+  // ── HUD updates — only need speedFrac / isMoving which are always in scope ──
+  const _sf=document.getElementById('hud-speed-fill');
+  if(_sf)_sf.style.width=(speedFrac*100).toFixed(1)+'%';
+  const _sb=document.getElementById('hud-speed-bar');
+  if(_sb)_sb.classList.toggle('visible',isMoving||speedFrac>0.02);
+  const _cx=document.getElementById('hud-crosshair');
+  if(_cx)_cx.classList.add('visible');
+  const _mb=document.getElementById('hud-mode-badge');
+  if(_mb)_mb.classList.add('visible');
 }
 
 // ── Chase game ──────────────────────────────────────────
@@ -2058,7 +2416,7 @@ function animLoop(now){
     THREE.Quaternion.slerp(flyFQ,flyTQ,WC.quaternion,e);
     camPos.copy(WC.position);
     if(flyT>=1){isFlying=false;if(focusedPanel&&!inSecondWorld)setTimeout(()=>openContent(focusedPanel.userData.sec),120);}
-    WR.render(WS,WC);return;
+    WComposer?WComposer.render():WR.render(WS,WC);return;
   }
 
   // Auto orbit
@@ -2136,6 +2494,12 @@ function animLoop(now){
     fissures[0].material.opacity=pulse;
     if(fissures[1])fissures[1].material.opacity=pulse*.48;
   }
+  // Ground glow plane pulse (sync with fissure heartbeat)
+  const _tgm=WS.userData._terrGlowMat;
+  if(_tgm){_tgm.opacity=.016+Math.sin(t*.9)*.008+Math.sin(t*2.1)*.004;}
+  // Lava ground light flicker
+  const _lv=WS.userData._lavaLight;
+  if(_lv){const lf=Math.sin(t*5.1)*Math.sin(t*8.3)*.4;_lv.intensity=1.8+lf+(Math.random()<.006?-1.2:0);}
 
   // Expanding lava ripple rings from ground
   if(rippleRings){
@@ -2174,18 +2538,8 @@ function animLoop(now){
     voidHaloMat.opacity=.06+Math.sin(t*.7)*.025+Math.sin(t*1.9)*.01;// breathing glow
   }
 
-  // ── Scene light flicker (upside down power instability) ──
-  if(WS.children){
-    if(!WS.userData._flickerLight){
-      // grab the central red point light (first PointLight child)
-      WS.userData._flickerLight=WS.children.find(c=>c.isLight&&c.color&&c.color.r>.8&&c.color.g<.1);
-    }
-    const fl=WS.userData._flickerLight;
-    if(fl){
-      const noise=Math.sin(t*7.3)*Math.sin(t*13.1)*Math.sin(t*3.7);
-      fl.intensity=4+noise*.6+(Math.random()<.004?-2:0);// occasional brief dip
-    }
-  }
+  // ── Central lava point light flicker (upside down power instability) ──
+  // Now handled by _lavaLight above for world 1 — nothing to do here
 
   // ══ SUCK-UP / PORTAL SYSTEM ═════════════════════════
   const suckOverlay=document.getElementById('suck-overlay');
@@ -2354,9 +2708,10 @@ function animLoop(now){
 
     // Return portal proximity (only if portal is still open)
     {const _rp=isTPP?playerPos:camPos;if(!returnActive&&!suckupActive&&!portalClosed&&_rp.distanceTo(new THREE.Vector3(0,1.8,0))<2.8)triggerReturn();}
-    WR.render(WS2,WC);
+    // Use world-2 composer if built, else WS2 raw render
+    if(WComposer2){WComposer2.render();}else{WR.render(WS2,WC);}
   } else {
-    WR.render(WS,WC);
+    WComposer?WComposer.render():WR.render(WS,WC);
   }
 }
 
