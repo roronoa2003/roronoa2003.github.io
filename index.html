@@ -299,6 +299,146 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   100%{opacity:0;  letter-spacing:.26em; filter:blur(10px)  brightness(.3);}
 }
 
+/* ══ WORLD ENTRY CINEMATIC ════════════════════════════════ */
+#intro-cinematic{
+  position:absolute;inset:0;z-index:9200;
+  background:#000;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  pointer-events:none;overflow:hidden;
+}
+#intro-cinematic.hidden{display:none;}
+
+/* CRT TV static (SVG feTurbulence via background) */
+#intro-cinematic .ic-noise{
+  position:absolute;inset:0;
+  opacity:.09;mix-blend-mode:screen;
+  background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='1'/></svg>");
+  animation:icNoise .07s steps(1) infinite;
+}
+@keyframes icNoise{
+  0%  {background-position:0 0;}
+  16% {background-position:40px -60px;}
+  33% {background-position:-30px 80px;}
+  50% {background-position:70px 20px;}
+  66% {background-position:-80px -40px;}
+  83% {background-position:20px 100px;}
+  100%{background-position:0 0;}
+}
+
+/* Scan-line sweep */
+#intro-cinematic .ic-scan{
+  position:absolute;left:0;right:0;height:4px;top:-4px;
+  background:linear-gradient(180deg,transparent,rgba(229,9,20,.18),transparent);
+  animation:icScan 2.8s linear infinite;pointer-events:none;
+}
+@keyframes icScan{from{top:-4px}to{top:100%}}
+
+/* Horizontal CRT lines (always-on) */
+#intro-cinematic::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.18) 2px,rgba(0,0,0,.18) 4px);
+}
+
+/* REC badge */
+#intro-cinematic .ic-rec{
+  position:absolute;top:1.4rem;right:2rem;
+  font-family:'Outfit',monospace;font-size:.65rem;letter-spacing:.2em;
+  color:rgba(229,9,20,.9);animation:icRecBlink .9s step-end infinite;
+  text-shadow:0 0 8px rgba(229,9,20,.7);
+}
+@keyframes icRecBlink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+/* Date stamp */
+#intro-cinematic .ic-date{
+  position:absolute;bottom:1.4rem;left:1.8rem;
+  font-family:'Outfit',monospace;font-size:.6rem;letter-spacing:.1em;
+  color:rgba(229,9,20,.6);
+}
+
+/* Credit bottom-center */
+#intro-cinematic .ic-credit{
+  position:absolute;bottom:1.4rem;left:50%;transform:translateX(-50%);
+  font-family:'Outfit',sans-serif;font-size:.55rem;letter-spacing:.22em;
+  color:rgba(255,255,255,.18);white-space:nowrap;
+  opacity:0;animation:icFadeUp .6s ease 1.4s forwards;
+}
+
+/* Location line */
+#intro-cinematic .ic-location{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(.65rem,1.8vw,.9rem);
+  letter-spacing:.55em;color:rgba(229,9,20,.7);text-transform:uppercase;
+  margin-bottom:.5rem;
+  opacity:0;animation:icFadeUp .5s ease .55s forwards;
+}
+
+/* Main HAWKINS title */
+#intro-cinematic .ic-city{
+  font-family:'ITC Benguiat Std','ITC Benguiat',Georgia,serif;
+  font-size:clamp(4.5rem,17vw,12rem);letter-spacing:.04em;line-height:.88;
+  color:#fff;
+  text-shadow:0 0 80px rgba(229,9,20,.9),0 0 160px rgba(229,9,20,.45),0 0 6px #fff;
+  opacity:0;animation:icCityIn .9s cubic-bezier(.16,1,.3,1) .2s forwards;
+  position:relative;
+}
+/* Chromatic aberration ghost layers */
+#intro-cinematic .ic-city::before{
+  content:attr(data-text);position:absolute;top:0;left:-3px;
+  color:rgba(255,30,30,.55);clip-path:polygon(0 30%,100% 30%,100% 60%,0 60%);
+  animation:icCA1 4s infinite 1s;
+}
+#intro-cinematic .ic-city::after{
+  content:attr(data-text);position:absolute;top:0;left:3px;
+  color:rgba(30,80,255,.40);clip-path:polygon(0 55%,100% 55%,100% 80%,0 80%);
+  animation:icCA2 4s infinite 1.3s;
+}
+@keyframes icCA1{0%,89%{transform:none;opacity:.55}90%{transform:translateX(-6px);opacity:.8}91%{transform:none}100%{transform:none;opacity:.55}}
+@keyframes icCA2{0%,91%{transform:none;opacity:.40}92%{transform:translateX(4px);opacity:.7}93%{transform:none}100%{transform:none;opacity:.40}}
+
+/* Thin red divider rule */
+#intro-cinematic .ic-rule{
+  width:min(280px,60vw);height:1px;
+  background:linear-gradient(90deg,transparent,rgba(229,9,20,.7),transparent);
+  margin:.6rem 0;
+  opacity:0;animation:icFadeUp .4s ease .9s forwards;
+}
+
+/* Year */
+#intro-cinematic .ic-year{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(1rem,3.5vw,2.2rem);
+  letter-spacing:.55em;color:rgba(255,255,255,.45);
+  opacity:0;animation:icFadeUp .5s ease 1.0s forwards;
+}
+
+@keyframes icCityIn{
+  from{opacity:0;letter-spacing:.01em;filter:blur(48px) brightness(4);}
+  to  {opacity:1;letter-spacing:.04em;filter:blur(0) brightness(1);}
+}
+@keyframes icFadeUp{
+  from{opacity:0;transform:translateY(10px);}
+  to  {opacity:1;transform:translateY(0);}
+}
+
+/* ── Exit transitions ── */
+/* Phase 1: white flash */
+#intro-cinematic.flash{background:#fff;transition:none;}
+/* Phase 2: wipe upward */
+#intro-cinematic.wipe{
+  animation:icWipe .55s cubic-bezier(.7,0,.85,.2) forwards;
+}
+@keyframes icWipe{
+  0%  {clip-path:inset(0 0 0 0);opacity:1;filter:brightness(1);}
+  15% {filter:brightness(3.5);}
+  40% {clip-path:inset(0 0 0 0);}
+  100%{clip-path:inset(100% 0 0 0);opacity:0;}
+}
+
+/* ── POST-ENTRY panel ignite reveal ── */
+@keyframes panelIgnite{
+  0%  {opacity:0;filter:brightness(5) blur(8px);}
+  40% {opacity:1;filter:brightness(2) blur(0);}
+  100%{opacity:1;filter:brightness(1);}
+}
+
 /* ── CHASE GAME UI ── */
 #game-alert{
   position:absolute;top:8rem;left:50%;transform:translateX(-50%);
@@ -564,6 +704,19 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 <!-- ═══ 3D WORLD ═══ -->
 <div id="world-screen">
   <canvas id="world-canvas"></canvas>
+
+  <!-- ═══ ENTRY CINEMATIC OVERLAY ═══ -->
+  <div id="intro-cinematic">
+    <div class="ic-noise"></div>
+    <div class="ic-scan"></div>
+    <div class="ic-rec">● REC</div>
+    <div class="ic-date" id="ic-date-stamp">NOV 06 · 1983</div>
+    <div class="ic-location">Hawkins, Indiana</div>
+    <div class="ic-city" data-text="HAWKINS">HAWKINS</div>
+    <div class="ic-rule"></div>
+    <div class="ic-year">1983</div>
+    <div class="ic-credit">AN INTERACTIVE PORTFOLIO &nbsp;·&nbsp; ROHAN IYER</div>
+  </div>
 
   <!-- Loading -->
   <div id="world-loading">
@@ -1043,6 +1196,11 @@ let tppNearPanel=null;// panel currently in proximity zone (TPP mode)
 let _lookZoneEl=null;// cached ref — toggled pointer-events with TPP state
 let _speechTyper=null,_speechHoldTimer=null;// typewriter handles
 let isFlying=false,flyT=0;
+// ── Intro cinematic camera state ─────────────────────────────────────────────
+let introCamActive=false,introCamT=0,introCamDur=3.2;// duration of aerial swoop
+// Bezier control points (set in runIntroSequence based on orbit angle)
+const icP0=new THREE.Vector3(),icP1=new THREE.Vector3(),icP2=new THREE.Vector3();
+
 const flyFP=new THREE.Vector3(),flyTP=new THREE.Vector3();
 const flyFQ=new THREE.Quaternion(),flyTQ=new THREE.Quaternion();
 let autoOrbit=true,autoAngle=Math.PI;
@@ -1132,13 +1290,17 @@ function initWorld(){
     },delay);
   })();
 
-  // Intro fly-in
-  flyFP.set(0,38,4);flyTP.set(0,1.8,0);
-  const tc=WC.clone();tc.position.copy(flyTP);tc.rotation.set(0,0,0,'YXZ');
-  flyFQ.copy(WC.quaternion);flyTQ.copy(tc.quaternion);
-  flyT=0;isFlying=true;
+  // ── CINEMATIC ENTRY: hide panels, set dramatic camera start ──
+  // Panels ignite one-by-one AFTER the title card dissolves
+  panelMeshes.forEach(m=>{m.visible=false;});
+  glowMeshes.forEach(m=>{m.visible=false;});
+
+  // Camera: high & offset — will swoop down via bezier during runIntroSequence
+  WC.position.set(26,52,26);
+  WC.lookAt(0,2,0);
 
   requestAnimationFrame(animLoop);
+  runIntroSequence();
 }
 
 function buildLights(){
@@ -2898,6 +3060,25 @@ function animLoop(now){
     WComposer?WComposer.render():WR.render(WS,WC);return;
   }
 
+  // ── INTRO CINEMATIC CAMERA SWOOP (quadratic bezier) ──────────
+  if(introCamActive){
+    introCamT+=dt/introCamDur;
+    if(introCamT>=1){introCamT=1;introCamActive=false;autoOrbit=true;}
+    // Ease-in-out: slow start, slow end, fast middle
+    const et=introCamT<.5?2*introCamT*introCamT:1-Math.pow(-2*introCamT+2,2)/2;
+    // Quadratic bezier: B(t) = (1-t)²P0 + 2(1-t)tP1 + t²P2
+    const mt=1-et;
+    const bx=mt*mt*icP0.x+2*mt*et*icP1.x+et*et*icP2.x;
+    const by=mt*mt*icP0.y+2*mt*et*icP1.y+et*et*icP2.y;
+    const bz=mt*mt*icP0.z+2*mt*et*icP1.z+et*et*icP2.z;
+    WC.position.set(bx,by,bz);
+    // Look slightly above center so terrain fills frame dramatically
+    WC.lookAt(0,1.4+et*(-0.6),0);
+    // Sync camYaw so orbit picks up seamlessly
+    camYaw=Math.atan2(bx,bz);camPitch=-0.08+et*.08;
+    targetYaw=camYaw;targetPitch=camPitch;
+  }
+
   // Auto orbit
   if(autoOrbit){autoAngle+=dt*.08;const orbitR=16;camPos.set(Math.sin(autoAngle)*orbitR,1.8,Math.cos(autoAngle)*orbitR);camYaw=autoAngle;targetYaw=autoAngle;camPitch=.07+Math.sin(autoAngle*.18)*.035;targetPitch=camPitch;}
 
@@ -3297,6 +3478,75 @@ function toggleThemeMute(){
   if(!a)return;
   if(a.muted){a.muted=false;if(btn)btn.classList.remove('muted');}
   else{a.muted=true;if(btn)btn.classList.add('muted');}
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CINEMATIC ENTRY SEQUENCE
+// ══════════════════════════════════════════════════════════════════════════════
+function runIntroSequence(){
+  const overlay=document.getElementById('intro-cinematic');
+  if(!overlay)return;
+
+  // ── Phase 1 (0–2.2s): title card holds while world builds ──
+  // Nothing to do — overlay is already visible from HTML
+
+  // ── Phase 2 (2.2s): white flash then VHS wipe ──
+  setTimeout(()=>{
+    overlay.classList.add('flash');
+    setTimeout(()=>{
+      overlay.classList.remove('flash');
+      overlay.classList.add('wipe');
+      // ── Phase 3: camera swoop begins while wipe is still playing ──
+      _startIntroCamSwoop();
+      setTimeout(()=>{
+        overlay.classList.add('hidden');
+        overlay.classList.remove('wipe');
+        // Dismiss loading indicator
+        const wl=document.getElementById('world-loading');
+        if(wl)wl.classList.add('done');
+      },560);// wipe animation duration
+    },80);// flash hold
+  },2200);
+
+  // ── Phase 4 (3.1s): panels ignite one by one as wipe clears ──
+  setTimeout(()=>{
+    panelMeshes.forEach((mesh,i)=>{
+      setTimeout(()=>{
+        mesh.visible=true;
+        if(glowMeshes[i])glowMeshes[i].visible=true;
+        // Briefly boost emissive, then settle
+        if(mesh.material&&mesh.material.emissive){
+          const origI=mesh.material.emissiveIntensity||0;
+          mesh.material.emissiveIntensity=origI*4+2;
+          setTimeout(()=>{
+            if(mesh.material)mesh.material.emissiveIntensity=origI;
+          },400);
+        }
+        // Panel spotlight: ramp from 0 to normal
+        if(panelLights[i]){const pl=panelLights[i];pl.intensity=0;
+          let pli=0;const plTimer=setInterval(()=>{
+            pli+=0.12;pl.intensity=Math.min(1.8,pli*1.8);
+            if(pli>=1)clearInterval(plTimer);
+          },30);
+        }
+      },i*160);// 160ms stagger per panel
+    });
+    // After last panel fires: auto-orbit already running (started in _startIntroCamSwoop end)
+  },3100);
+}
+
+function _startIntroCamSwoop(){
+  // 3-point quadratic bezier: high & far → mid arc → orbit landing position
+  const landAngle=Math.PI*0.82;// land from a dramatic angle
+  const orbitR=16;
+  // P0: current dramatic start position (set in initWorld)
+  icP0.set(26,52,26);
+  // P1: mid-air arc control point — swoops around to the side
+  icP1.set(22,20,-5);
+  // P2: landing — orbit position + slight height so it eases into auto-orbit
+  icP2.set(Math.sin(landAngle)*orbitR,2.2,Math.cos(landAngle)*orbitR);
+  introCamT=0;introCamDur=2.8;introCamActive=true;
+  autoOrbit=false;// prevent orbit from overriding
 }
 
 function enterWorld(){
