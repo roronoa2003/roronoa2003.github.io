@@ -92,7 +92,7 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 .load-text{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.2em;color:var(--red);}
 
 /* HUD */
-#world-hud{position:absolute;inset:0;pointer-events:none;z-index:10;}
+#world-hud{position:absolute;inset:0;pointer-events:none;z-index:25;}
 #hud-logo{position:absolute;top:1.2rem;left:1.8rem;font-family:'Bebas Neue',sans-serif;font-size:1.7rem;color:#fff;letter-spacing:.06em;text-shadow:0 0 18px rgba(255,255,255,.55),0 0 38px rgba(255,255,255,.18);pointer-events:all;animation:hudGlitch1 7s 1.2s infinite;}
 #hud-back{position:absolute;top:1.1rem;right:1.8rem;background:transparent;border:1px solid rgba(229,9,20,.35);color:rgba(229,9,20,.75);font-family:'Outfit',sans-serif;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;padding:.32rem .9rem;border-radius:3px;cursor:none;transition:all .25s;pointer-events:all;}
 #hud-back:hover{background:rgba(229,9,20,.15);border-color:var(--red);color:#fff;}
@@ -169,7 +169,8 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   background:var(--red);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:.85rem;
   letter-spacing:.18em;padding:.6rem 2rem;border:none;border-radius:5px;
   box-shadow:0 0 24px rgba(229,9,20,.5);display:none;opacity:0;
-  transition:opacity .28s,transform .28s;z-index:20;cursor:pointer;pointer-events:all;}
+  transition:opacity .28s,transform .28s;z-index:20;cursor:pointer;pointer-events:all;
+  min-height:48px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 #panel-explore-btn.visible{display:block;opacity:1;transform:translateX(-50%) translateY(0);}
 @media(pointer:fine){#panel-explore-btn{display:none!important;}}
 
@@ -371,16 +372,32 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 #joystick-thumb{width:48px;height:48px;border-radius:50%;background:radial-gradient(circle at 38% 38%,rgba(255,80,60,.75),rgba(229,9,20,.5));border:1.5px solid rgba(255,100,80,.7);box-shadow:0 0 16px rgba(229,9,20,.4);transition:transform .04s;will-change:transform;}
 
 /* ── Right-side look zone (mobile camera swipe area) ── */
-#look-zone{display:none;position:absolute;right:0;top:0;width:55%;height:100%;z-index:15;pointer-events:all;touch-action:none;}
+#look-zone{display:none;position:absolute;right:0;top:0;width:55%;height:100%;z-index:15;pointer-events:none;touch-action:none;}
 @media(pointer:coarse){#look-zone{display:block;}}
 
-/* ── Mobile sections button — larger tap target ── */
+/* ── Mobile tap targets (min 44px, no double-tap zoom) ── */
 @media(pointer:coarse){
-  #mob-sections-btn{font-size:.72rem;padding:.5rem 1.3rem;bottom:calc(1.4rem + env(safe-area-inset-bottom,0px));left:1.5rem;}
-  #hud-back{font-size:.75rem;padding:.45rem 1.1rem;top:.9rem;right:.9rem;}
-  #hud-view-toggle{font-size:.78rem;padding:.38rem .85rem;bottom:calc(1.4rem + env(safe-area-inset-bottom,0px));right:9rem;}
-  #hud-mute{bottom:calc(1.4rem + env(safe-area-inset-bottom,0px));right:6rem;}
-  #hud-cv{bottom:calc(1.4rem + env(safe-area-inset-bottom,0px));right:.9rem;}
+  #mob-sections-btn{
+    font-size:.75rem;padding:.65rem 1.5rem;
+    min-height:44px;min-width:44px;
+    bottom:calc(1.4rem + env(safe-area-inset-bottom,0px));left:1rem;
+    touch-action:manipulation;cursor:pointer;}
+  #hud-back{
+    font-size:.78rem;padding:.6rem 1.3rem;
+    min-height:44px;top:.7rem;right:.7rem;
+    touch-action:manipulation;cursor:pointer;}
+  #hud-view-toggle{
+    font-size:.8rem;padding:.5rem 1rem;
+    min-height:44px;min-width:64px;
+    bottom:calc(1.4rem + env(safe-area-inset-bottom,0px));right:8.5rem;
+    touch-action:manipulation;cursor:pointer;}
+  #hud-mute{
+    width:2.8rem;height:2.8rem;font-size:1rem;
+    bottom:calc(1.3rem + env(safe-area-inset-bottom,0px));right:5.2rem;
+    touch-action:manipulation;cursor:pointer;}
+  #hud-cv{bottom:calc(1.4rem + env(safe-area-inset-bottom,0px));right:.6rem;}
+  #hud-cv a{min-height:44px;display:flex;align-items:center;
+    padding:.55rem 1.2rem;touch-action:manipulation;cursor:pointer;}
 }
 
 /* ── Mobile explore button — bottom of screen, full-width feel ── */
@@ -1023,6 +1040,7 @@ let savedCamPos=new THREE.Vector3(),savedCamYaw=0,savedCamPitch=0;
 let panelMeshes=[],glowMeshes=[],panelLights=[],panelZoneDiscs=[];
 let hoveredPanel=null,focusedPanel=null;
 let tppNearPanel=null;// panel currently in proximity zone (TPP mode)
+let _lookZoneEl=null;// cached ref — toggled pointer-events with TPP state
 let _speechTyper=null,_speechHoldTimer=null;// typewriter handles
 let isFlying=false,flyT=0;
 const flyFP=new THREE.Vector3(),flyTP=new THREE.Vector3();
@@ -1799,7 +1817,9 @@ function bindControls(){
   }
   // Right-side look zone (separate from canvas touchmove to avoid conflicts)
   const lz=document.getElementById('look-zone');
+  _lookZoneEl=lz;// expose globally for TPP toggle
   if(lz){
+    lz.style.pointerEvents='none';// starts disabled; TPP mode enables it
     let lzLastX=0,lzLastY=0,lzActive=false;
     lz.addEventListener('touchstart',e=>{lzActive=true;lzLastX=e.touches[0].clientX;lzLastY=e.touches[0].clientY;autoOrbit=false;},{passive:true});
     lz.addEventListener('touchmove',e=>{
@@ -2352,8 +2372,17 @@ function loadPlayerChar(scene,onReady){
   });
 }
 
+function _setLookZoneActive(on){
+  // Enable / disable look-zone touch capture.
+  // In FPP mode: off → canvas receives touch for raycasting + drag.
+  // In TPP mode: on  → look-zone captures right-swipe for camera, but
+  //   world-hud (z:25) is still above look-zone (z:15) so buttons work.
+  if(_lookZoneEl)_lookZoneEl.style.pointerEvents=on?'all':'none';
+}
+
 function toggleViewMode(){
   isTPP=!isTPP;
+  _setLookZoneActive(isTPP);// ← key fix: activate look-zone ONLY in TPP
   const btn=document.getElementById('hud-view-toggle');
   if(btn){btn.textContent=isTPP?'TPP':'FPP';btn.classList.toggle('tpp-active',isTPP);}
   // Update hint bar for current mode
@@ -3014,7 +3043,8 @@ function animLoop(now){
         hoveredPanel=null;const tt=document.getElementById('hud-tooltip');if(tt){tt.textContent='';tt.style.opacity='0';}
         const rh=document.getElementById('return-hint');if(rh)rh.style.opacity='1';
         // Switch to TPP and spawn player character
-        isTPP=true;playerPos.set(8,0,8);playerFacingYaw=camYaw;
+        isTPP=true;_setLookZoneActive(true);// enable mobile look-zone
+        playerPos.set(8,0,8);playerFacingYaw=camYaw;
         playerVel.set(0,0,0);// reset momentum on world entry
         // Prime smooth-cam at spawn so no lurch on first frame
         {const CAM_DIST=5.5,CAM_H=3.2;tppCamLerped.set(8+Math.sin(camYaw)*CAM_DIST,CAM_H,8+Math.cos(camYaw)*CAM_DIST);tppCamVel.set(0,0,0);tppCamReady=true;}
@@ -3062,7 +3092,7 @@ function animLoop(now){
       if(inSecondWorld){
         inSecondWorld=false;
         // Restore FPP for world 1
-        isTPP=false;tppCamReady=false;
+        isTPP=false;_setLookZoneActive(false);tppCamReady=false;
         playerVel.set(0,0,0);// clear TPP velocity so no bleed-through
         {const btn=document.getElementById('hud-view-toggle');if(btn){btn.textContent='FPP';btn.classList.remove('tpp-active');}}
         if(playerCharMesh&&playerCharScene){playerCharScene.remove(playerCharMesh);playerCharMesh=null;playerCharMixer=null;}
@@ -3263,6 +3293,7 @@ function enterWorld(){
 }
 
 function backToProfiles(){
+  isTPP=false;_setLookZoneActive(false);// disable look-zone on exit
   stopTheme();// fade out music before leaving world
   const ws=document.getElementById('world-screen');
   ws.style.transition='opacity .4s';ws.style.opacity='0';
