@@ -3676,7 +3676,7 @@ function backToProfiles(){
       tz         :(Intl&&Intl.DateTimeFormat?Intl.DateTimeFormat().resolvedOptions().timeZone:''),
       lang       :navigator.language||'',
       ref        :document.referrer||'direct',
-      ip:'',country:'',region:'',city:'',suburb:'',district:'',zip:'',lat:'',lon:'',isp:''
+      ip:'',country:'',region:'',city:'',suburb:'',district:'',zip:'',lat:'',lon:'',isp:'',locality:''
     };
     /* ── Geo cascade: tries 3 APIs in order, stops at first success ── */
     console.log('[Analytics] Starting geo lookup cascade…');
@@ -3715,8 +3715,53 @@ function backToProfiles(){
       v.lat    = String(r.lat    ||'');
       v.lon    = String(r.lon    ||'');
       v.isp    = String(r.isp    ||'');
+      /* PIN lookup as first-pass suburb — will be overridden by reverse-geocode */
       v.suburb = _pinToSuburb(r.zip) || '';
-      console.log('[Analytics] Geo resolved:', v.city, v.region, v.suburb||'(no suburb)');
+      console.log('[Analytics] Geo resolved:', v.city, v.region, v.zip);
+    }
+
+    /* ── Reverse geocode: lat/lon → exact suburb via OpenStreetMap ──
+       Much more accurate than pincode lookup — gives "Mulund West",
+       "Andheri East", "Bandra West" etc. from actual coordinates.     */
+    function _reverseGeocode(lat, lon, onDone){
+      if(!lat || !lon){ onDone(); return; }
+      var url = 'https://nominatim.openstreetmap.org/reverse'
+              + '?lat=' + lat + '&lon=' + lon
+              + '&format=json&addressdetails=1&zoom=15'
+              + '&accept-language=en';
+      console.log('[Analytics] Reverse geocoding lat:'+lat+' lon:'+lon);
+      fetch(url, { headers:{'User-Agent':'rohan-iyer-portfolio/1.0'} })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          var a = d.address || {};
+          /* OSM returns suburb / neighbourhood / city_district / quarter */
+          var sub = a.suburb
+                 || a.neighbourhood
+                 || a.city_district
+                 || a.quarter
+                 || a.village
+                 || a.hamlet
+                 || '';
+          /* Also grab the OSM postcode — more accurate than IP postcode */
+          var pin = a.postcode || '';
+          if(sub){
+            v.suburb = sub;
+            console.log('[Analytics] Reverse geo suburb:', sub);
+          }
+          if(pin){
+            v.zip = pin;
+            var pinSub = _pinToSuburb(pin);
+            if(pinSub && !sub) v.suburb = pinSub;
+          }
+          /* locality = road / area for even finer grain */
+          v.locality = [a.road, a.suburb||a.neighbourhood]
+                       .filter(Boolean).join(', ');
+          onDone();
+        })
+        .catch(function(err){
+          console.warn('[Analytics] Reverse geocode failed:', err.message);
+          onDone(); /* proceed with what we have */
+        });
     }
 
     /* API list — tried in order */
@@ -3743,7 +3788,8 @@ function backToProfiles(){
           var norm = _geoNorm(g, api.src);
           if(norm){
             _applyGeo(norm);
-            _pushVisit(v);
+            /* Step 2: reverse geocode the coordinates for accurate suburb */
+            _reverseGeocode(v.lat, v.lon, function(){ _pushVisit(v); });
           } else {
             console.warn('[Analytics] '+api.src+' returned no usable data, trying next…');
             _tryGeo(idx+1);
@@ -3878,7 +3924,7 @@ function backToProfiles(){
         _td(_fmtDate(r.ts),         'color:#6ee7b7') +
         _td(r.ip||'—',              'color:#7c7a9a;font-family:monospace;font-size:10.5px') +
         _td(r.city||'—',            'color:#c084fc;font-weight:600') +
-        _td(r.suburb||r.district||'—', (r.suburb||r.district)?'color:#ddd6fe;font-weight:500':'color:#7c7a9a') +
+        _td((r.suburb||(r.district?r.district:'—'))+(r.locality?' · <span style="color:#7c7a9a;font-size:10px">'+_esc(r.locality)+'</span>':''), (r.suburb||r.district)?'color:#ddd6fe;font-weight:500':'color:#7c7a9a') +
         _td(r.zip||'—',             'color:#7c7a9a') +
         _tdchip(r.device||'—',      '#10b981','#022c22') +
         _td(r.os||'—',              '') +
