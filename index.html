@@ -36,12 +36,10 @@
 html,body{width:100%;height:100%;overflow:hidden;-webkit-tap-highlight-color:transparent;}
 body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;cursor:none;}
 @media(pointer:coarse){body{cursor:auto;}}
-
 /* CURSOR */
 #cursor{position:fixed;width:10px;height:10px;background:var(--red);border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);box-shadow:0 0 10px rgba(229,9,20,.9),0 0 24px rgba(229,9,20,.4);transition:width .2s,height .2s;}
 #cursor-ring{position:fixed;width:34px;height:34px;border:1.5px solid rgba(229,9,20,.5);border-radius:50%;pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:width .28s,height .28s,border-color .28s;}
 @media(pointer:coarse){#cursor,#cursor-ring{display:none;}}
-
 /* SPLASH */
 #splash{position:fixed;inset:0;z-index:9999;background:#000;display:flex;align-items:center;justify-content:center;flex-direction:column;}
 #splash-canvas{position:absolute;inset:0;}
@@ -60,7 +58,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 @keyframes loadBar{to{width:100%}}
 #splash.fade-out{animation:splFade .8s ease forwards;}
 @keyframes splFade{to{opacity:0;pointer-events:none}}
-
 /* PROFILES */
 #profiles-screen{display:none;position:fixed;inset:0;z-index:9000;background:var(--black);flex-direction:column;align-items:center;}
 #profiles-screen.show{display:flex;animation:fadeInUp .7s ease forwards;}
@@ -78,19 +75,16 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 .manage-btn{margin-top:3rem;border:1px solid #333;color:#555;background:none;padding:.4rem 1.3rem;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;cursor:none;transition:all .2s;font-family:'Outfit',sans-serif;}
 .manage-btn:hover{border-color:#888;color:#888;}
 @keyframes fadeInUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-
 /* WORLD SCREEN */
 #world-screen{display:none;position:fixed;inset:0;z-index:5000;}
 #world-screen.show{display:block;}
 #world-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
-
 /* LOADING OVERLAY */
 #world-loading{position:absolute;inset:0;z-index:60;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;transition:opacity .8s;}
 #world-loading.done{opacity:0;pointer-events:none;}
 .load-ring{width:60px;height:60px;border:2px solid #1a0008;border-top:2px solid var(--red);border-radius:50%;animation:spin 1s linear infinite;box-shadow:0 0 20px rgba(229,9,20,.3);}
 @keyframes spin{to{transform:rotate(360deg)}}
 .load-text{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.2em;color:var(--red);}
-
 /* HUD */
 #world-hud{position:absolute;inset:0;pointer-events:none;z-index:25;}
 #hud-logo{position:absolute;top:1.2rem;left:1.8rem;font-family:'Bebas Neue',sans-serif;font-size:1.7rem;color:#fff;letter-spacing:.06em;text-shadow:0 0 18px rgba(255,255,255,.55),0 0 38px rgba(255,255,255,.18);pointer-events:all;animation:hudGlitch1 7s 1.2s infinite;}
@@ -125,28 +119,23 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 #hud-crosshair .ch-dot{position:absolute;width:3px;height:3px;background:#fff;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);box-shadow:0 0 6px rgba(229,9,20,.8);}
 /* bottom bar */
 #hud-crosshair::after{box-shadow:none;}
-
 /* ── Speed / stamina bar (bottom centre) ── */
 #hud-speed-bar{position:absolute;bottom:3.8rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.3rem;pointer-events:none;opacity:0;transition:opacity .5s;}
 #hud-speed-bar.visible{opacity:1;}
 #hud-speed-track{width:90px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;}
 #hud-speed-fill{height:100%;width:0%;background:linear-gradient(90deg,rgba(229,9,20,.8),#ff6030);border-radius:2px;transition:width .06s linear;box-shadow:0 0 8px rgba(229,9,20,.6);}
 #hud-speed-label{font-size:.42rem;letter-spacing:.18em;color:rgba(255,255,255,.3);text-transform:uppercase;font-family:'Outfit',sans-serif;}
-
 /* ── Footstep pulse (subtle bottom vignette beat) ── */
 #hud-footpulse{position:absolute;inset:0;pointer-events:none;z-index:9;
   background:radial-gradient(ellipse 80% 40% at 50% 110%,rgba(229,9,20,.18) 0%,transparent 70%);
   opacity:0;transition:opacity .04s;}
 #hud-footpulse.beat{opacity:1;}
-
 /* ── TPP mode indicator ── */
 #hud-mode-badge{position:absolute;top:1.2rem;left:50%;transform:translateX(-50%);
   font-family:'Bebas Neue',sans-serif;font-size:.55rem;letter-spacing:.28em;
   color:rgba(200,140,255,.6);pointer-events:none;opacity:0;transition:opacity .4s;}
 #hud-mode-badge.visible{opacity:1;}
-
 @media(max-width:640px){#hud-stats-row{display:none;}#hud-hint{display:none;}#hud-crosshair{display:none;}#hud-speed-bar{display:none;}}
-
 /* ══ PANEL PROXIMITY SYSTEM ══════════════════════════════ */
 /* Desktop keyboard prompt */
 #panel-enter-prompt{
@@ -162,7 +151,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   border-radius:3px;padding:.04rem .38rem;font-size:.62rem;vertical-align:middle;margin-right:.3rem;
   font-family:'Outfit',sans-serif;letter-spacing:.05em;}
 @media(pointer:coarse){#panel-enter-prompt{display:none;}}
-
 /* Mobile explore button */
 #panel-explore-btn{
   position:absolute;bottom:6.8rem;left:50%;transform:translateX(-50%) translateY(6px);
@@ -173,7 +161,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   min-height:48px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 #panel-explore-btn.visible{display:block;opacity:1;transform:translateX(-50%) translateY(0);}
 @media(pointer:fine){#panel-explore-btn{display:none!important;}}
-
 /* ══ CHARACTER SPEECH BUBBLE ═════════════════════════════ */
 #char-speech{
   position:absolute;transform:translate(-50%,-100%);max-width:220px;
@@ -197,10 +184,8 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     max-width:calc(100vw - 2.8rem);font-size:.73rem;}
   #char-speech::after{display:none;}
 }
-
 /* ══ ZONE DISC INDICATOR (above ground circle) ════════════ */
 /* purely 3D — no extra CSS needed; handled in Three.js */
-
 /* ── STRANGER THINGS OVERLAYS ── */
 /* CRT scanlines */
 #st-scanlines{position:absolute;inset:0;pointer-events:none;z-index:11;
@@ -227,7 +212,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   100%{filter:none;}
 }
 #world-canvas.glitch{animation:stGlitch .18s steps(1) forwards;}
-
 /* ── HUD text glitch — chromatic aberration + jitter ── */
 @keyframes hudGlitch1{
   /* ROHAN IYER — fires at ~87% of the 7s cycle */
@@ -258,7 +242,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   86%{transform:translateX(-1px);text-shadow:1px 0 rgba(0,240,255,.5),-1px 0 rgba(255,0,100,.5);filter:brightness(1.2);}
   87%{transform:translateX(0);text-shadow:0 0 10px rgba(255,255,255,.4);filter:none;}
 }
-
 /* ── SUCK-UP / WORLD TRANSITION OVERLAY ── */
 #suck-overlay{position:absolute;inset:0;pointer-events:none;z-index:180;opacity:0;
   background:radial-gradient(ellipse at 50% 50%,rgba(255,200,255,1) 0%,rgba(160,40,220,0.95) 40%,rgba(80,0,120,0.9) 100%);
@@ -271,7 +254,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   font-family:'Bebas Neue',sans-serif;font-size:.85rem;letter-spacing:.2em;
   color:rgba(255,150,255,.9);text-shadow:0 0 14px rgba(200,80,255,.8);
   pointer-events:none;opacity:0;transition:opacity .6s;white-space:nowrap;z-index:15;}
-
 /* ── WELCOME TO THE VOID ── */
 #void-welcome{
   position:absolute;top:50%;left:50%;
@@ -298,7 +280,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   /* fade out */
   100%{opacity:0;  letter-spacing:.26em; filter:blur(10px)  brightness(.3);}
 }
-
 /* ══ WORLD ENTRY CINEMATIC ════════════════════════════════ */
 #intro-cinematic{
   position:absolute;inset:0;z-index:9200;
@@ -307,7 +288,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   pointer-events:none;overflow:hidden;
 }
 #intro-cinematic.hidden{display:none;}
-
 /* CRT TV static (SVG feTurbulence via background) */
 #intro-cinematic .ic-noise{
   position:absolute;inset:0;
@@ -324,7 +304,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   83% {background-position:20px 100px;}
   100%{background-position:0 0;}
 }
-
 /* Scan-line sweep */
 #intro-cinematic .ic-scan{
   position:absolute;left:0;right:0;height:4px;top:-4px;
@@ -332,13 +311,11 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   animation:icScan 2.8s linear infinite;pointer-events:none;
 }
 @keyframes icScan{from{top:-4px}to{top:100%}}
-
 /* Horizontal CRT lines (always-on) */
 #intro-cinematic::after{
   content:'';position:absolute;inset:0;pointer-events:none;
   background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.18) 2px,rgba(0,0,0,.18) 4px);
 }
-
 /* REC badge */
 #intro-cinematic .ic-rec{
   position:absolute;top:1.4rem;right:2rem;
@@ -347,14 +324,12 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   text-shadow:0 0 8px rgba(229,9,20,.7);
 }
 @keyframes icRecBlink{0%,49%{opacity:1}50%,100%{opacity:0}}
-
 /* Date stamp */
 #intro-cinematic .ic-date{
   position:absolute;bottom:1.4rem;left:1.8rem;
   font-family:'Outfit',monospace;font-size:.6rem;letter-spacing:.1em;
   color:rgba(229,9,20,.6);
 }
-
 /* Credit bottom-center */
 #intro-cinematic .ic-credit{
   position:absolute;bottom:1.4rem;left:50%;transform:translateX(-50%);
@@ -362,7 +337,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   color:rgba(255,255,255,.18);white-space:nowrap;
   opacity:0;animation:icFadeUp .6s ease 1.4s forwards;
 }
-
 /* Location line */
 #intro-cinematic .ic-location{
   font-family:'Bebas Neue',sans-serif;font-size:clamp(.65rem,1.8vw,.9rem);
@@ -370,7 +344,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   margin-bottom:.5rem;
   opacity:0;animation:icFadeUp .5s ease .55s forwards;
 }
-
 /* Main HAWKINS title */
 #intro-cinematic .ic-city{
   font-family:'ITC Benguiat Std','ITC Benguiat',Georgia,serif;
@@ -393,7 +366,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 }
 @keyframes icCA1{0%,89%{transform:none;opacity:.55}90%{transform:translateX(-6px);opacity:.8}91%{transform:none}100%{transform:none;opacity:.55}}
 @keyframes icCA2{0%,91%{transform:none;opacity:.40}92%{transform:translateX(4px);opacity:.7}93%{transform:none}100%{transform:none;opacity:.40}}
-
 /* Thin red divider rule */
 #intro-cinematic .ic-rule{
   width:min(280px,60vw);height:1px;
@@ -401,14 +373,12 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   margin:.6rem 0;
   opacity:0;animation:icFadeUp .4s ease .9s forwards;
 }
-
 /* Year */
 #intro-cinematic .ic-year{
   font-family:'Bebas Neue',sans-serif;font-size:clamp(1rem,3.5vw,2.2rem);
   letter-spacing:.55em;color:rgba(255,255,255,.45);
   opacity:0;animation:icFadeUp .5s ease 1.0s forwards;
 }
-
 @keyframes icCityIn{
   from{opacity:0;letter-spacing:.01em;filter:blur(48px) brightness(4);}
   to  {opacity:1;letter-spacing:.04em;filter:blur(0) brightness(1);}
@@ -417,7 +387,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   from{opacity:0;transform:translateY(10px);}
   to  {opacity:1;transform:translateY(0);}
 }
-
 /* ── Exit transitions ── */
 /* Phase 1: white flash */
 #intro-cinematic.flash{background:#fff;transition:none;}
@@ -431,14 +400,12 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   40% {clip-path:inset(0 0 0 0);}
   100%{clip-path:inset(100% 0 0 0);opacity:0;}
 }
-
 /* ── POST-ENTRY panel ignite reveal ── */
 @keyframes panelIgnite{
   0%  {opacity:0;filter:brightness(5) blur(8px);}
   40% {opacity:1;filter:brightness(2) blur(0);}
   100%{opacity:1;filter:brightness(1);}
 }
-
 /* ── CHASE GAME UI ── */
 #game-alert{
   position:absolute;top:8rem;left:50%;transform:translateX(-50%);
@@ -489,7 +456,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 }
 #go-hint span{color:rgba(229,9,20,.8);}
 @keyframes goWord{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
-
 /* MOBILE SECTIONS BUTTON */
 #mob-sections-btn{display:block;position:absolute;bottom:1.4rem;left:1.8rem;background:rgba(229,9,20,.15);border:1px solid rgba(229,9,20,.4);color:rgba(229,9,20,.9);font-family:'Outfit',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:.35rem 1rem;border-radius:3px;pointer-events:all;cursor:none;}
 @media(pointer:coarse){#mob-sections-btn{cursor:pointer;}}
@@ -504,17 +470,14 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 .mob-sec-btn .msb-label{font-size:.55rem;color:rgba(255,255,255,.5);letter-spacing:.06em;text-transform:uppercase;line-height:1.3;}
 #mob-menu-close{background:transparent;border:1px solid #333;color:#666;font-family:'Outfit',sans-serif;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;padding:.35rem 1.2rem;border-radius:3px;cursor:none;margin-top:.5rem;}
 @media(pointer:coarse){#mob-menu-close{cursor:pointer;}}
-
 /* ══ VIRTUAL JOYSTICK — larger & more tactile ══════════ */
 #joystick-zone{display:none;position:absolute;bottom:env(safe-area-inset-bottom,0px);bottom:calc(5.5rem + env(safe-area-inset-bottom,0px));left:1.5rem;width:140px;height:140px;pointer-events:all;z-index:20;touch-action:none;}
 @media(pointer:coarse){#joystick-zone{display:block;}}
 #joystick-base{width:128px;height:128px;border-radius:50%;border:1.5px solid rgba(229,9,20,.20);background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:inset 0 0 20px rgba(229,9,20,.06);}
 #joystick-thumb{width:48px;height:48px;border-radius:50%;background:radial-gradient(circle at 38% 38%,rgba(255,80,60,.75),rgba(229,9,20,.5));border:1.5px solid rgba(255,100,80,.7);box-shadow:0 0 16px rgba(229,9,20,.4);transition:transform .04s;will-change:transform;}
-
 /* ── Right-side look zone (mobile camera swipe area) ── */
 #look-zone{display:none;position:absolute;right:0;top:0;width:55%;height:100%;z-index:15;pointer-events:none;touch-action:none;}
 @media(pointer:coarse){#look-zone{display:block;}}
-
 /* ── Mobile tap targets (min 44px, no double-tap zoom) ── */
 @media(pointer:coarse){
   #mob-sections-btn{
@@ -539,7 +502,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   #hud-cv a{min-height:44px;display:flex;align-items:center;
     padding:.55rem 1.2rem;touch-action:manipulation;cursor:pointer;}
 }
-
 /* ── Mobile explore button — bottom of screen, full-width feel ── */
 @media(pointer:coarse){
   #panel-explore-btn{
@@ -549,7 +511,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     box-shadow:0 4px 28px rgba(229,9,20,.55),0 0 0 1px rgba(229,9,20,.3);
   }
 }
-
 /* ══ SPEECH BUBBLE — fixed bottom on mobile, projected on desktop ═ */
 @media(pointer:coarse),(max-width:768px){
   #char-speech{
@@ -563,7 +524,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     line-height:1.6;
   }
 }
-
 /* CONTENT OVERLAY */
 #content-overlay{position:absolute;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:1rem;}
 #content-overlay.active{display:flex;}
@@ -579,7 +539,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 #content-body::-webkit-scrollbar{width:3px;}
 #content-body::-webkit-scrollbar-track{background:transparent;}
 #content-body::-webkit-scrollbar-thumb{background:rgba(229,9,20,.35);border-radius:3px;}
-
 /* ── CONTENT INNER STYLES ── */
 .c-hero{text-align:center;padding:1rem 0;}
 .c-hero-photo{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--red);box-shadow:0 0 30px rgba(229,9,20,.5);margin:0 auto 1rem;}
@@ -669,10 +628,8 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 </style>
 </head>
 <body>
-
 <div id="cursor"></div>
 <div id="cursor-ring"></div>
-
 <!-- ═══ SPLASH ═══ -->
 <div id="splash">
   <canvas id="splash-canvas"></canvas>
@@ -682,7 +639,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     <div id="splash-bar"><div id="splash-progress"></div></div>
   </div>
 </div>
-
 <!-- ═══ PROFILES ═══ -->
 <div id="profiles-screen">
   <header id="profiles-header"><div class="wordmark">ROHAN IYER</div></header>
@@ -700,11 +656,9 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     <button class="manage-btn">MANAGE PROFILES</button>
   </main>
 </div>
-
 <!-- ═══ 3D WORLD ═══ -->
 <div id="world-screen">
   <canvas id="world-canvas"></canvas>
-
   <!-- ═══ ENTRY CINEMATIC OVERLAY ═══ -->
   <div id="intro-cinematic">
     <div class="ic-noise"></div>
@@ -717,13 +671,11 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     <div class="ic-year">1983</div>
     <div class="ic-credit">AN INTERACTIVE PORTFOLIO &nbsp;·&nbsp; ROHAN IYER</div>
   </div>
-
   <!-- Loading -->
   <div id="world-loading">
     <div class="load-ring"></div>
     <div class="load-text">INITIALISING WORLD…</div>
   </div>
-
   <!-- HUD -->
   <div id="world-hud">
     <div id="hud-logo">ROHAN IYER</div>
@@ -756,10 +708,8 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     <button id="hud-view-toggle" onclick="toggleViewMode()" title="Toggle FPP / TPP">FPP</button>
     <button id="hud-mute" onclick="toggleThemeMute()" title="Toggle music">♫</button>
   </div>
-
   <!-- Theme audio — loops across both worlds -->
   <audio id="theme-audio" src="./stranger_things.mp3" loop preload="auto"></audio>
-
   <!-- Mobile controls -->
   <button id="mob-sections-btn" onclick="toggleMobMenu()">≡ SECTIONS</button>
   <div id="mob-menu">
@@ -767,14 +717,12 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     <div id="mob-menu-grid"></div>
     <button id="mob-menu-close" onclick="toggleMobMenu()">✕ CLOSE</button>
   </div>
-
   <!-- Virtual Joystick (bottom-left) -->
   <div id="joystick-zone">
     <div id="joystick-base"><div id="joystick-thumb"></div></div>
   </div>
   <!-- Right-side look zone (camera drag on mobile) -->
   <div id="look-zone"></div>
-
   <!-- Stranger Things overlays -->
   <div id="st-scanlines"></div>
   <div id="st-vignette"></div>
@@ -789,7 +737,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     <div id="go-body">THE PORTAL HAS CLOSED<br>YOU ARE TRAPPED IN THE VOID FOREVER</div>
     <div id="go-hint">↻ <span>REFRESH</span> TO INTERACT AGAIN</div>
   </div>
-
   <!-- Content Overlay -->
   <div id="content-overlay">
     <div id="content-bg" onclick="closeContent()"></div>
@@ -802,7 +749,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     </div>
   </div>
 </div>
-
 <script>
 // ══════════════════════════════════════════════════════
 // CURSOR
@@ -816,7 +762,6 @@ document.addEventListener('mousemove',e=>{
 });
 (function tickRing(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;$ring.style.left=rx+'px';$ring.style.top=ry+'px';requestAnimationFrame(tickRing);})();
 function hoverCursor(on){$ring.style.width=on?'55px':'34px';$ring.style.height=on?'55px':'34px';$ring.style.borderColor=on?'var(--red)':'rgba(229,9,20,.5)';}
-
 // ══════════════════════════════════════════════════════
 // SPLASH THREE.JS
 // ══════════════════════════════════════════════════════
@@ -837,11 +782,9 @@ function hoverCursor(on){$ring.style.width=on?'55px':'34px';$ring.style.height=o
   let f=0;const anim=()=>{f++;i1.rotation.x=f*.004;i1.rotation.y=f*.007;i2.rotation.x=-f*.007;i2.rotation.y=f*.005;torus.rotation.z=f*.003;pts.rotation.y=f*.002;R.render(sc,cam);if(document.getElementById('splash').style.display!=='none')requestAnimationFrame(anim);};anim();
   window.addEventListener('resize',()=>{R.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();});
 })();
-
 window.addEventListener('load',()=>{
   setTimeout(()=>{const sp=document.getElementById('splash');sp.classList.add('fade-out');sp.addEventListener('animationend',()=>{sp.style.display='none';document.getElementById('profiles-screen').classList.add('show');},{once:true});},2800);
 });
-
 // ══════════════════════════════════════════════════════
 // SECTIONS METADATA
 // ══════════════════════════════════════════════════════
@@ -857,11 +800,9 @@ const SECTIONS=[
   {id:'work',      title:'WORK & PRESS',   icon:'🎥',sub:'Reels & Papers',   angle:270, h:PANEL_H, dist:12},
   {id:'contact',   title:'CONTACT',        icon:'🤝',sub:'Awards & Connect', angle:320, h:PANEL_H, dist:12},
 ];
-
 // ══════════════════════════════════════════════════════
 // DIALOGUE DATA — all spoken lines for the character
 // ══════════════════════════════════════════════════════
-
 // Wave 1 — fired once per panel on FIRST zone entry
 const PANEL_DIALOGUES={
   hero:      "Welcome. I'm Rohan Iyer — a builder, a thinker, and apparently someone who made a Stranger Things portfolio.\nStep into the light and press ENTER to start.",
@@ -873,7 +814,6 @@ const PANEL_DIALOGUES={
   work:      "Press coverage. Research papers. Demo reels.\nWhen the work is good, people notice. This is that chapter.",
   contact:   "Ready to build something together?\nI'm one message away from being the best decision you make this year."
 };
-
 // Wave 2 — fired if player dwells in a zone 8s+ without opening it
 // (nudge to actually explore, with deeper context)
 const PANEL_DIALOGUES_DWELL={
@@ -886,7 +826,6 @@ const PANEL_DIALOGUES_DWELL={
   work:      "One of my papers got cited within a week of publishing.\nI wasn't expecting that. I'm still not entirely used to it.",
   contact:   "Seriously, don't overthink it.\nOne message. That's all. I reply fast."
 };
-
 // Wave 3 — fired after closing a panel (reaction to what was just seen)
 const PANEL_DIALOGUES_POST={
   hero:      "That's the overview. Now go deeper — every other panel has more.",
@@ -898,7 +837,6 @@ const PANEL_DIALOGUES_POST={
   work:      "The reception has been good. But I'm more interested in what comes next.",
   contact:   "Seriously — send me a message. What's the worst that could happen?"
 };
-
 // Ambient World 1 lines — fire every ~30s while in TPP mode
 const AMBIENT_W1=[
   "The floating particles around you? Upside Down spores. They're harmless... probably.",
@@ -912,7 +850,6 @@ const AMBIENT_W1=[
   "You're walking through 1983 Hawkins.\nEverything here is intentional — even the fog.",
   "Notice how the ground glows under the panels?\nThat's not decoration. That's an invitation.",
 ];
-
 // Ambient World 2 lines — fire every ~22s while in the Upside Down
 const AMBIENT_W2=[
   "It's watching you. Keep moving — don't stop for anything.",
@@ -924,7 +861,6 @@ const AMBIENT_W2=[
   "Run. The distance between you and it matters more than anything else right now.",
   "Every step here costs you time.\nWhen you get back — use it.",
 ];
-
 // Zone-entry tracking (prevent same dialogue firing twice)
 const _panelDialogueSeen=new Set();
 const _panelDwellSeen=new Set();
@@ -933,7 +869,6 @@ let _lastDialogueT=0;// elapsed time of last ambient line
 let _ambientIdx={w1:0,w2:0};// round-robin through ambient lines
 let _zoneEntryT=0;// when player entered current zone (for dwell detection)
 let _zoneEntryPanel=null;// which panel zone the dwell timer is for
-
 // ══════════════════════════════════════════════════════
 // CONTENT HTML GENERATORS
 // ══════════════════════════════════════════════════════
@@ -959,7 +894,6 @@ function getContent(id){
       <a href="https://github.com/roronoa2003" target="_blank" class="c-btn c-btn-g">⌥ GitHub</a>
     </div>
   </div>`;
-
   case 'about':return`
   <div class="c-info-grid">
     <div class="c-icard">
@@ -980,7 +914,6 @@ function getContent(id){
     <div class="c-card"><h3>LSTM Encoder-Decoder for Text Summarization</h3><div class="c-meta">IEEE ICCC 2025</div><p>Deep learning approach to abstractive text summarization using LSTM encoder-decoder architecture.</p></div>
     <div class="c-card"><h3>Kubera: NLP-Based Financial Analysis Tool</h3><div class="c-meta">AIDE 2024 · Hintweis</div><p>NLP-powered personal finance management system for intelligent spend classification and insights.</p></div>
   </div>`;
-
   case 'education':return`
   <div class="c-grid-2">
     <div class="c-card"><div class="c-card-row">
@@ -992,14 +925,12 @@ function getContent(id){
       <div><h3>Smt. Sulochanadevi Singhania School</h3><div class="c-meta">Class XII (ISC) · 96.2% · 2021</div><p>Class X (ICSE) · 94.17% · 2019</p></div>
     </div></div>
   </div>`;
-
   case 'skills':return`
   <div class="c-skills">
     <div class="c-sk"><h3>Languages</h3><p>Python, Java, JavaScript, C, C++, HTML, CSS, SQL, C#</p></div>
     <div class="c-sk"><h3>Frameworks &amp; Libraries</h3><p>Flask, NumPy, Pandas, Matplotlib, Seaborn, Sklearn, OpenCV, Roboflow, Flutter, Django</p></div>
     <div class="c-sk"><h3>Concepts &amp; Tools</h3><p>OOP, DSA, OS, DBMS, ML, NLP, Software Engineering, GCP, AWS, Tableau, Power BI, Git, Android Studio, Shopify</p></div>
   </div>`;
-
   case 'experience':return`
   <div class="c-grid-2">
     <div class="c-card"><div class="c-card-row">
@@ -1016,7 +947,6 @@ function getContent(id){
       <div><h3>Practus</h3><div class="c-meta">AI Automation Analyst · March 2026 – Present</div><p>Building deployable agents and automations to make Practus an AI native consulting company.</p><div class="c-tags"><span class="c-tag">Claude Co-Work</span><span class="c-tag">AWS AI Foundry</span><span class="c-tag">Power Automate</span><span class="c-tag">Copilot Studios</span></div></div>
     </div></div>
   </div>`;
-
   case 'projects':return`
   <div class="c-bb">
     <div class="c-bb-c">
@@ -1037,7 +967,6 @@ function getContent(id){
     <div class="c-card"><div class="c-card-row"><div class="c-logo"><img src="./image-removebg-preview.png" alt="EV" onerror="this.outerHTML='⚡'"/></div><div><h3>Infinity Motors UI/UX</h3><div class="c-meta">2021 · Design</div><p>Modern UI mockups for an EV company.</p></div></div></div>
     <div class="c-card"><div class="c-card-row"><div class="c-logo"><img src="https://upload.wikimedia.org/wikipedia/en/3/30/Java_programming_language_logo.svg" alt="Java" onerror="this.outerHTML='☕'"/></div><div><h3>Bag Store Billing System</h3><div class="c-meta">2019 · Java</div><p>Feature-rich Java billing software, 2000+ lines.</p></div></div></div>
   </div>`;
-
   case 'work':return`
   <div class="c-lbl">🎥 Upper Celestials — Brand Reels</div>
   <div class="c-reel-grid">
@@ -1046,7 +975,6 @@ function getContent(id){
     <div class="c-reel"><div class="c-reel-head"><div class="c-reel-dot"></div><span class="c-reel-label">Reel 3</span></div><iframe src="https://www.instagram.com/reel/DTxmJR8jBGF/embed" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" allowfullscreen></iframe></div>
     <div class="c-reel"><div class="c-reel-head"><div class="c-reel-dot"></div><span class="c-reel-label">Reel 4</span></div><iframe src="https://www.instagram.com/reel/DMVVEKmoaVw/embed" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" allowfullscreen></iframe></div>
   </div>`;
-
   case 'contact':return`
   <div class="c-lbl">🏆 Awards &amp; Leadership</div>
   <div class="c-award-list" style="margin-bottom:1rem">
@@ -1084,7 +1012,6 @@ function getContent(id){
   }
   return '<p style="color:#666;font-size:.8rem">Content loading…</p>';
 }
-
 // ══════════════════════════════════════════════════════
 // PANEL CANVAS TEXTURE
 // ══════════════════════════════════════════════════════
@@ -1095,21 +1022,17 @@ function makePanelTex(sec){
   const PAD=48, TOP_BAR=14, BOT_BAR=14;
   const ICON_Y=210, ICON_SZ=108;
   const TITLE_Y=348, RULE_Y=516, SUB_Y=554, CTA_Y=868;
-
   // ── 1. Flat dark background (subtle linear gradient top→bottom) ───────
   const bgGrad=ctx.createLinearGradient(0,0,0,H);
   bgGrad.addColorStop(0,'#0e0314');bgGrad.addColorStop(1,'#050108');
   ctx.fillStyle=bgGrad;ctx.fillRect(0,0,W,H);
-
   // ── 2. Edge vignette ──────────────────────────────────────────────────
   const vig=ctx.createRadialGradient(W/2,H/2,H*.22,W/2,H/2,H*.88);
   vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(1,'rgba(0,0,0,.6)');
   ctx.fillStyle=vig;ctx.fillRect(0,0,W,H);
-
   // ── 3. Full-perimeter border ──────────────────────────────────────────
   ctx.strokeStyle='rgba(229,9,20,.5)';ctx.lineWidth=3;
   ctx.strokeRect(PAD*.5,PAD*.5,W-PAD,H-PAD);
-
   // ── 4. Top + bottom red bars ──────────────────────────────────────────
   const barGrad=ctx.createLinearGradient(0,0,W,0);
   barGrad.addColorStop(0,'rgba(180,0,12,0)');barGrad.addColorStop(.12,'#e50914');
@@ -1118,7 +1041,6 @@ function makePanelTex(sec){
   ctx.fillStyle=barGrad;
   ctx.fillRect(0,0,W,TOP_BAR);
   ctx.fillRect(0,H-BOT_BAR,W,BOT_BAR);
-
   // ── 5. Icon with soft radial backdrop ────────────────────────────────
   const iconBg=ctx.createRadialGradient(W/2,ICON_Y,0,W/2,ICON_Y,88);
   iconBg.addColorStop(0,'rgba(229,9,20,.18)');iconBg.addColorStop(1,'rgba(0,0,0,0)');
@@ -1128,7 +1050,6 @@ function makePanelTex(sec){
   ctx.shadowColor='rgba(255,255,255,.28)';ctx.shadowBlur=18;
   ctx.fillStyle='#fff';ctx.fillText(sec.icon,W/2,ICON_Y);
   ctx.restore();
-
   // ── 6. Title — ITC Benguiat Std (Stranger Things font), red drop-shadow ─
   ctx.save();
   ctx.font='bold 112px "Bebas Neue",sans-serif';
@@ -1137,7 +1058,6 @@ function makePanelTex(sec){
   ctx.fillStyle='#ffffff';
   ctx.fillText(sec.title,W/2,TITLE_Y);
   ctx.restore();
-
   // ── 7. Horizontal rule ────────────────────────────────────────────────
   const rLen=340;
   const rGrad=ctx.createLinearGradient(W/2-rLen,RULE_Y,W/2+rLen,RULE_Y);
@@ -1146,7 +1066,6 @@ function makePanelTex(sec){
   rGrad.addColorStop(1,'rgba(229,9,20,0)');
   ctx.strokeStyle=rGrad;ctx.lineWidth=2.5;
   ctx.beginPath();ctx.moveTo(W/2-rLen,RULE_Y);ctx.lineTo(W/2+rLen,RULE_Y);ctx.stroke();
-
   // ── 8. Subtitle ───────────────────────────────────────────────────────
   ctx.save();
   ctx.font='400 35px "Outfit",Arial,sans-serif';
@@ -1155,32 +1074,27 @@ function makePanelTex(sec){
   ctx.fillStyle='rgba(210,210,220,.88)';
   ctx.fillText(sec.sub,W/2,SUB_Y);
   ctx.restore();
-
   // ── 9. CTA thin separator + text ─────────────────────────────────────
   const sepG=ctx.createLinearGradient(PAD*3,0,W-PAD*3,0);
   sepG.addColorStop(0,'rgba(255,255,255,0)');sepG.addColorStop(.5,'rgba(255,255,255,.1)');sepG.addColorStop(1,'rgba(255,255,255,0)');
   ctx.strokeStyle=sepG;ctx.lineWidth=1;
   ctx.beginPath();ctx.moveTo(PAD*3,CTA_Y-22);ctx.lineTo(W-PAD*3,CTA_Y-22);ctx.stroke();
-
   ctx.save();
   ctx.font='300 26px "Outfit",Arial,sans-serif';
   ctx.textAlign='center';ctx.textBaseline='top';
   ctx.fillStyle='rgba(229,9,20,.82)';
   ctx.fillText('CLICK  TO  EXPLORE',W/2,CTA_Y);
   ctx.restore();
-
   // ── 10. Corner ticks — same length on every panel ─────────────────────
   const TK=44;
   ctx.strokeStyle='rgba(229,9,20,.72)';ctx.lineWidth=3;
   [[PAD,PAD,1,1],[W-PAD,PAD,-1,1],[PAD,H-PAD,1,-1],[W-PAD,H-PAD,-1,-1]].forEach(([cx,cy,sx,sy])=>{
     ctx.beginPath();ctx.moveTo(cx+sx*TK,cy);ctx.lineTo(cx,cy);ctx.lineTo(cx,cy+sy*TK);ctx.stroke();
   });
-
   const tex=new THREE.CanvasTexture(cv);
   tex.anisotropy=WR?WR.capabilities.getMaxAnisotropy():16;
   return tex;
 }
-
 // ══════════════════════════════════════════════════════
 // WORLD ENGINE
 // ══════════════════════════════════════════════════════
@@ -1200,7 +1114,6 @@ let isFlying=false,flyT=0;
 let introCamActive=false,introCamT=0,introCamDur=3.2;// duration of aerial swoop
 // Bezier control points (set in runIntroSequence based on orbit angle)
 const icP0=new THREE.Vector3(),icP1=new THREE.Vector3(),icP2=new THREE.Vector3();
-
 const flyFP=new THREE.Vector3(),flyTP=new THREE.Vector3();
 const flyFQ=new THREE.Quaternion(),flyTQ=new THREE.Quaternion();
 let autoOrbit=true,autoAngle=Math.PI;
@@ -1230,7 +1143,6 @@ const isMobile='ontouchstart' in window;
 // Joystick
 let jActive=false,jX=0,jY=0;
 let jXS=0,jYS=0;// smoothed joystick (k=14 gives ~0.07s lag, eliminates thumb jitter)
-
 function initWorld(){
   const canvas=document.getElementById('world-canvas');
   WR=new THREE.WebGLRenderer({canvas,antialias:!isMobile,alpha:false,powerPreference:'high-performance',stencil:false});
@@ -1244,13 +1156,11 @@ function initWorld(){
   // ── PCF Soft Shadows (Unity-quality contact shadows) ──
   WR.shadowMap.enabled=true;
   WR.shadowMap.type=THREE.PCFSoftShadowMap;
-
   WS=new THREE.Scene();
   WS.fog=new THREE.FogExp2(0x0a0002,.022);
   WC=new THREE.PerspectiveCamera(isMobile?80:70,innerWidth/innerHeight,.05,500);
   WC.position.set(0,38,4);
   WC.rotation.order='YXZ';
-
   // ── EffectComposer with Unreal Bloom (main world) ─────
   if(THREE.EffectComposer){
     const sz=new THREE.Vector2(innerWidth,innerHeight);
@@ -1264,10 +1174,8 @@ function initWorld(){
     WComposer.addPass(bloom);
     WS.userData._bloomPass=bloom;
   }
-
   buildLights();
   buildFloor();
-
   buildStars();
   buildDust();
   buildSpores();
@@ -1289,26 +1197,21 @@ function initWorld(){
       scheduleGlitch();
     },delay);
   })();
-
   // ── CINEMATIC ENTRY: hide panels, set dramatic camera start ──
   // Panels ignite one-by-one AFTER the title card dissolves
   panelMeshes.forEach(m=>{m.visible=false;});
   glowMeshes.forEach(m=>{m.visible=false;});
-
   // Camera: high & offset — will swoop down via bezier during runIntroSequence
   WC.position.set(26,52,26);
   WC.lookAt(0,2,0);
-
   requestAnimationFrame(animLoop);
   runIntroSequence();
 }
-
 function buildLights(){
   // ── Hemisphere (sky/ground gradient) — replaces flat ambient ──
   // Sky = cold deep purple, Ground = dark warm terracotta bounce
   const hemi=new THREE.HemisphereLight(0x1a0a2e,0x3b0a03,2.2);
   WS.add(hemi);
-
   // ── Main directional — cold moonlight, casts PCF soft shadows ──
   const d=new THREE.DirectionalLight(0xc8d8ff,2.6);
   d.position.set(12,28,10);
@@ -1322,30 +1225,24 @@ function buildLights(){
   d.shadow.normalBias=0.05;
   WS.add(d);
   WS.userData._sunLight=d;// store for day/night access
-
   // ── Central lava-glow point (main atmosphere) ──
   const r1=new THREE.PointLight(0xe50914,5.5,45);
   r1.position.set(0,7,0);r1.castShadow=false;// skip shadow for perf
   WS.add(r1);
-
   // ── Secondary warm fill (character illumination) ──
   const r2=new THREE.PointLight(0xff6030,2.0,32);
   r2.position.set(-6,4,6);WS.add(r2);
-
   // ── Cool rim accent (back-lighting for depth) ──
   const b=new THREE.PointLight(0x2040cc,1.4,36);
   b.position.set(7,6,-10);WS.add(b);
-
   // ── Wide low fill (outer zone / vegetation ring) ──
   const outer=new THREE.PointLight(0xff9060,.8,80);
   outer.position.set(0,5,0);WS.add(outer);
-
   // ── Upward bounce from ground (simulates lava fissure radiance) ──
   const lava=new THREE.PointLight(0xdd2200,1.8,18);
   lava.position.set(0,.5,0);WS.add(lava);
   WS.userData._lavaLight=lava;// for flicker animation
 }
-
 // ── Analytical terrain height sampler ───────────────────────────────────────
 // Must mirror buildFloor / buildSecondWorld geometry exactly (excl. random noise).
 // Used every frame to keep player character on the surface ridges.
@@ -1362,7 +1259,6 @@ function getTerrainHeight(x,z){
   if(r>20)h+=Math.abs(Math.sin(x*.16)*Math.cos(z*.19))*3.0*Math.min(1,(r-20)/14);
   return h-.02;
 }
-
 function buildFloor(){
   // ── Rocky exoplanet terrain — layered PBR (Poly Haven CC0) ──
   // Primary: rock_ground_rough — natural ground-level rocky surface
@@ -1373,7 +1269,6 @@ function buildFloor(){
   const FALL_DIFF ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_rocks_02/aerial_rocks_02_diff_2k.jpg';
   const FALL_NOR  ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_rocks_02/aerial_rocks_02_nor_gl_2k.jpg';
   const FALL_ROUGH='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_rocks_02/aerial_rocks_02_rough_2k.jpg';
-
   // Higher res for desktop = sharper ridges visible at walk distance
   const segs=isMobile?120:280;
   const geo=new THREE.PlaneGeometry(260,260,segs,segs);
@@ -1405,14 +1300,12 @@ function buildFloor(){
     pos.setY(i,h-.02);
   }
   geo.computeVertexNormals();
-
   // Dark alien tint — PBR maps applied below
   const terrMat=new THREE.MeshStandardMaterial({color:0x250607,roughness:.97,metalness:.02});
   const terrMesh=new THREE.Mesh(geo,terrMat);
   terrMesh.receiveShadow=true;// terrain receives character shadows
   WS.add(terrMesh);
   WS.userData.terrMat=terrMat;// store for world 2 texture sharing
-
   // ── Thin emissive glow plane — sits 2mm above terrain, additive blend ──
   // Creates the appearance of lava light leaking up from fissures into the ground
   const glowGeo=new THREE.PlaneGeometry(200,200,1,1);glowGeo.rotateX(-Math.PI/2);
@@ -1425,7 +1318,6 @@ function buildFloor(){
   glowPlane.position.y=.022;
   WS.add(glowPlane);
   WS.userData._terrGlowMat=glowMat;// for lava pulse animation
-
   // Load PBR maps — try primary first; fall back gracefully
   const txLoader=new THREE.TextureLoader();
   // Finer tiling (28×) = visibly sharper surface at walk distance
@@ -1443,8 +1335,6 @@ function buildFloor(){
     undefined,
     ()=>{loadSet(FALL_DIFF,FALL_NOR,FALL_ROUGH);}
   );
-
-
   // ── Glowing lava fissures ────────────────────────────
   const fPts=[];
   for(let i=0;i<55;i++){
@@ -1457,7 +1347,6 @@ function buildFloor(){
   fGeo.setAttribute('position',new THREE.Float32BufferAttribute(fPts,3));
   const fissure1=new THREE.LineSegments(fGeo,new THREE.LineBasicMaterial({color:0xff2008,transparent:true,opacity:.22,blending:THREE.AdditiveBlending,depthWrite:false}));
   WS.add(fissure1);
-
   // ── Secondary fissure layer ───────────────────────────
   const f2Pts=[];
   for(let i=0;i<35;i++){
@@ -1470,7 +1359,6 @@ function buildFloor(){
   WS.add(fissure2);
   WS.userData.fissures=[fissure1,fissure2];
 }
-
 function buildStars(){
   // ── NASA real Milky Way equirectangular sky sphere ──
   const skyGeo=new THREE.SphereGeometry(280,48,24);
@@ -1517,8 +1405,6 @@ function buildStars(){
     ()=>{skyMat.map=buildCanvasGalaxy();skyMat.needsUpdate=true;}
   );
 }
-
-
 function buildDust(){
   const cnt=isMobile?500:1000;
   const dG=new THREE.BufferGeometry(),dp=new Float32Array(cnt*3),dv=[];
@@ -1527,7 +1413,6 @@ function buildDust(){
   const dustPts=new THREE.Points(dG,new THREE.PointsMaterial({color:0xe50914,size:.06,transparent:true,opacity:.35}));
   WS.add(dustPts);WS.userData.dustPts=dustPts;WS.userData.dustVel=dv;WS.userData.dustPos=dp;WS.userData.dustCnt=cnt;
 }
-
 function buildPanels(){
   SECTIONS.forEach((sec,i)=>{
     const ang=sec.angle*Math.PI/180;
@@ -1545,11 +1430,9 @@ function buildPanels(){
     glow.position.z=-.12;panel.add(glow);glowMeshes.push(glow);
     // Light
     const pl=new THREE.PointLight(0xe50914,.7,14);pl.position.set(x,sec.h,z*.95);WS.add(pl);panelLights.push(pl);
-
     // ── Ground interaction zone (small, light, elegant) ──
     // Position: 80% radius toward centre so player walks naturally into it
     const zx=Math.sin(ang)*sec.dist*.80, zz=-Math.cos(ang)*sec.dist*.80;
-
     // Core small circle — bright white/cream
     const zGeo=new THREE.CircleGeometry(0.85,36);zGeo.rotateX(-Math.PI/2);
     const zMat=new THREE.MeshBasicMaterial({
@@ -1560,14 +1443,12 @@ function buildPanels(){
     zDisc.position.set(zx,.04,zz);
     zDisc.userData.panelIdx=i;zDisc.userData.cx=zx;zDisc.userData.cz=zz;
     WS.add(zDisc);panelZoneDiscs.push(zDisc);
-
     // Thin ring (steady halo around dot)
     const ringGeo=new THREE.RingGeometry(.90,1.05,36);ringGeo.rotateX(-Math.PI/2);
     const ringMat=new THREE.MeshBasicMaterial({color:0xfff0d0,transparent:true,opacity:.12,blending:THREE.AdditiveBlending,depthWrite:false});
     const ringMesh=new THREE.Mesh(ringGeo,ringMat);
     ringMesh.position.set(zx,.04,zz);
     WS.add(ringMesh);zDisc.userData.haloRing=ringMesh;
-
     // Two animated expanding pulse rings (sonar ping effect)
     const pulseRings=[];
     for(let p=0;p<2;p++){
@@ -1579,14 +1460,12 @@ function buildPanels(){
       WS.add(pMesh);pulseRings.push(pMesh);
     }
     zDisc.userData.pulseRings=pulseRings;
-
     // Soft spotlight from above (intensifies when player enters)
     const spotUp=new THREE.PointLight(0xffe0b0,0,10);
     spotUp.position.set(zx,6,zz);
     WS.add(spotUp);zDisc.userData.spotLight=spotUp;
   });
 }
-
 // ══════════════════════════════════════════════════════
 // STRANGER THINGS: UPSIDE DOWN SPORES
 // ══════════════════════════════════════════════════════
@@ -1613,7 +1492,6 @@ function buildSpores(){
   WS.add(pts);
   WS.userData.sporesPts=pts;WS.userData.sporesVel=vel;WS.userData.sporesPos=pos;WS.userData.sporesCnt=cnt;
 }
-
 // ══════════════════════════════════════════════════════
 // STRANGER THINGS: CHRISTMAS LIGHTS
 // ══════════════════════════════════════════════════════
@@ -1623,7 +1501,6 @@ function buildSpores(){
 function buildVoidPlanet(){
   const grp=new THREE.Group();
   grp.position.set(0,90,0);// straight up overhead
-
   // ── Core planet — same rock_ground_rough texture as the floor ──
   const planetGeo=new THREE.SphereGeometry(28,64,64);
   // Dark crimson tint so it reads as the Upside Down mirror of the ground
@@ -1641,21 +1518,18 @@ function buildVoidPlanet(){
   pTxLoader.load(ROCK_NOR,  t=>{planetMat.normalMap=pTile(t,4);planetMat.normalScale.set(1.2,1.2);planetMat.needsUpdate=true;});
   pTxLoader.load(ROCK_ROUGH,t=>{planetMat.roughnessMap=pTile(t,4);planetMat.needsUpdate=true;});
   grp.add(new THREE.Mesh(planetGeo,planetMat));
-
   // ── Atmosphere halo — glowing red rim ──
   const haloGeo=new THREE.SphereGeometry(30,48,48);
   const haloMat=new THREE.MeshBasicMaterial({
     color:0xcc1500,transparent:true,opacity:.08,side:THREE.BackSide,depthWrite:false,blending:THREE.AdditiveBlending
   });
   grp.add(new THREE.Mesh(haloGeo,haloMat));
-
   // ── Outer glow corona ──
   const coronaGeo=new THREE.SphereGeometry(34,32,32);
   const coronaMat=new THREE.MeshBasicMaterial({
     color:0x7a0005,transparent:true,opacity:.04,side:THREE.BackSide,depthWrite:false,blending:THREE.AdditiveBlending
   });
   grp.add(new THREE.Mesh(coronaGeo,coronaMat));
-
   // ── Ring of debris (asteroid belt look) ──
   const debrisGeo=new THREE.BufferGeometry();
   const debrisCnt=300;const dp=new Float32Array(debrisCnt*3);
@@ -1668,24 +1542,20 @@ function buildVoidPlanet(){
   debrisGeo.setAttribute('position',new THREE.BufferAttribute(dp,3));
   const debrisMat=new THREE.PointsMaterial({color:0x661100,size:.55,transparent:true,opacity:.6,depthWrite:false,blending:THREE.AdditiveBlending});
   grp.add(new THREE.Points(debrisGeo,debrisMat));
-
   // ── Down-beam: ghostly red light shaft connecting planet to ground ──
   const beamGeo=new THREE.CylinderGeometry(.5,6,90,16,1,true);
   const beamMat=new THREE.MeshBasicMaterial({color:0xaa0005,transparent:true,opacity:.035,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending});
   const beam=new THREE.Mesh(beamGeo,beamMat);
   beam.position.y=-45;// hangs down from planet center toward ground
   grp.add(beam);
-
   // ── Subtle downward point light from planet ──
   const pl=new THREE.PointLight(0xaa0008,1.5,80);pl.position.set(0,-30,0);
   grp.add(pl);WS.userData._voidPlanetLight=pl;
-
   WS.add(grp);
   WS.userData.voidPlanet=grp;
   WS.userData.voidPlanetMat=planetMat;
   WS.userData.voidHaloMat=haloMat;
 }
-
 // ══════════════════════════════════════════════════════
 // STRANGER THINGS: UPSIDE DOWN VINES
 // ══════════════════════════════════════════════════════
@@ -1725,7 +1595,6 @@ function buildVines(){
   });
   WS.userData.stVines=vines;
 }
-
 function buildDecorations(){
   // ── Shared PBR texture loader ──────────────────────────────────────────
   const txLoader=new THREE.TextureLoader();
@@ -1733,7 +1602,6 @@ function buildDecorations(){
   const MP_DIFF ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate/metal_plate_diff_2k.jpg';
   const MP_NOR  ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate/metal_plate_nor_gl_2k.jpg';
   const MP_ROUGH='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/metal_plate/metal_plate_rough_2k.jpg';
-
   // Helper: load a set of PBR maps into a material
   function applyPBR(mat,diff,nor,rough,repeat){
     const r=repeat||1;
@@ -1742,13 +1610,11 @@ function buildDecorations(){
     txLoader.load(nor,  t=>{mat.normalMap=tile(t);mat.normalScale.set(.8,.8);mat.needsUpdate=true;},undefined,()=>{});
     txLoader.load(rough,t=>{mat.roughnessMap=tile(t);mat.needsUpdate=true;},undefined,()=>{});
   }
-
   // ── Torus knot — solid metal centerpiece ───────────────────────────────
   const tkMat=new THREE.MeshStandardMaterial({color:0xcc3322,emissive:0x1a0008,emissiveIntensity:.25,roughness:.35,metalness:.85});
   applyPBR(tkMat,MP_DIFF,MP_NOR,MP_ROUGH,3);
   const tk=new THREE.Mesh(new THREE.TorusKnotGeometry(4.5,.12,160,18),tkMat);
   tk.position.y=3.5;tk.castShadow=true;WS.add(tk);WS.userData.tk=tk;
-
   // ── Inner ring markers — 8 small upright metal hoops at radius 4.5 ───
   // Placed well inside the panel ring (radius 12) so they never overlap panels.
   const ringMat=new THREE.MeshStandardMaterial({color:0xdd2211,emissive:0xe50914,emissiveIntensity:.45,roughness:.25,metalness:.9});
@@ -1762,7 +1628,6 @@ function buildDecorations(){
     WS.add(ring);
   }
 }
-
 function buildRipples(){
   // ── Expanding lava ripple rings from ground centre ──
   const rings=[];const maxR=24;
@@ -1777,13 +1642,10 @@ function buildRipples(){
   }
   WS.userData.rippleRings=rings;
 }
-
-
 function buildProfileAvatar(){
   const S=1024; // high-res canvas for crisp display
   const cv=document.createElement('canvas');cv.width=S;cv.height=S;
   const ctx=cv.getContext('2d');
-
   function buildAvatar(imgSrc){
     if(imgSrc){
       // Clip to circle — no crossOrigin needed for local file
@@ -1842,13 +1704,11 @@ function buildProfileAvatar(){
     nameMesh.position.set(0,4.3,0);WS.add(nameMesh);WS.userData.nameMesh=nameMesh;
     const pl=new THREE.PointLight(0xe50914,1.8,10);pl.position.set(0,5.8,.4);WS.add(pl);
   }
-
   const img=new Image(); // no crossOrigin — local file is same-origin
   img.onload=()=>buildAvatar(img);
   img.onerror=()=>buildAvatar(null);
   img.src='./profilephoto.jpg';
 }
-
 function loadGLBModel(){
   if(!THREE.GLTFLoader){buildFallbackModel();return;}
   const loader=new THREE.GLTFLoader();
@@ -1887,7 +1747,6 @@ function loadGLBModel(){
   },undefined,()=>{buildFallbackModel();});
   setTimeout(()=>{if(!WS.userData.glbLoaded){buildFallbackModel();}},8000);
 }
-
 function buildFallbackModel(){
   // Beautiful custom centerpiece: nested icosahedra + torus rings
   const grp=new THREE.Group();grp.position.set(0,2.8,0);
@@ -1898,12 +1757,10 @@ function buildFallbackModel(){
   WS.add(grp);WS.userData.glbModel=grp;
   setTimeout(dismissLoading,200);
 }
-
 function dismissLoading(){
   const l=document.getElementById('world-loading');
   if(l){l.classList.add('done');setTimeout(()=>l.style.display='none',900);}
 }
-
 // ══════════════════════════════════════════════════════
 // CONTROLS
 // ══════════════════════════════════════════════════════
@@ -2016,7 +1873,6 @@ function bindControls(){
     if(WComposer2)WComposer2.setSize(innerWidth,innerHeight);
   });
 }
-
 function doRaycast(nmx,nmy){
   const tt=document.getElementById('hud-tooltip');
   // Suppress all panel hover when in second world or during transitions
@@ -2029,7 +1885,6 @@ function doRaycast(nmx,nmy){
   tt.textContent=hoveredPanel?hoveredPanel.userData.sec.title:'';
   tt.style.opacity=hoveredPanel?'1':'0';
 }
-
 // ══════════════════════════════════════════════════════
 // FLY TO PANEL
 // ══════════════════════════════════════════════════════
@@ -2044,14 +1899,12 @@ function flyToPanel(panel){
   flyFQ.copy(WC.quaternion);flyTQ.copy(tc.quaternion);
   flyT=0;isFlying=true;
 }
-
 // ══════════════════════════════════════════════════════
 // SECOND WORLD — UPSIDE DOWN PORTAL DIMENSION
 // ══════════════════════════════════════════════════════
 function buildSecondWorld(){
   WS2=new THREE.Scene();
   WS2.fog=new THREE.FogExp2(0x1a0230,.022);
-
   // ── Lights — hemisphere sky/ground + shadow directional ──
   WS2.add(new THREE.HemisphereLight(0x200830,0x1a0015,2.0));
   const d2=new THREE.DirectionalLight(0xd0b8ff,2.0);
@@ -2067,7 +1920,6 @@ function buildSecondWorld(){
   const p2=new THREE.PointLight(0xff44aa,1.6,32);p2.position.set(-5,3,5);WS2.add(p2);
   const p3=new THREE.PointLight(0x8822ff,1.2,36);p3.position.set(5,5,-8);WS2.add(p3);
   WS2.userData._w2FlickerLight=p1;
-
   // ── Build EffectComposer for world 2 (same bloom settings) ──
   if(THREE.EffectComposer){
     WComposer2=new THREE.EffectComposer(WR);
@@ -2078,7 +1930,6 @@ function buildSecondWorld(){
       0.42,0.78
     ));
   }
-
   // ── Ground — same heightmap as world 1, purple tint, shadow receive ──
   const segs=isMobile?120:280;
   const geo2=new THREE.PlaneGeometry(260,260,segs,segs);
@@ -2118,7 +1969,6 @@ function buildSecondWorld(){
   if(!_w1m||!_w1m.map){txL2.load(RD,t=>{terrMat2.map=tile2(t,28);terrMat2.needsUpdate=true;});}
   if(!_w1m||!_w1m.normalMap){txL2.load(RN,t=>{terrMat2.normalMap=tile2(t,28);terrMat2.normalScale.set(1.6,1.6);terrMat2.needsUpdate=true;});}
   if(!_w1m||!_w1m.roughnessMap){txL2.load(RR,t=>{terrMat2.roughnessMap=tile2(t,28);terrMat2.needsUpdate=true;});}
-
   // ── Sky — pinkish-purple, same NASA map with pink multiplier ──
   const skyGeo2=new THREE.SphereGeometry(280,48,24);
   const skyMat2=new THREE.MeshBasicMaterial({color:0x8822cc,side:THREE.BackSide,depthWrite:false,fog:false});
@@ -2129,7 +1979,6 @@ function buildSecondWorld(){
   );
   const sky2=new THREE.Mesh(skyGeo2,skyMat2);
   WS2.add(sky2);WS2.userData.sky2=sky2;
-
   // ── Lavender spores ──
   const sc2=600;const sp2geo=new THREE.BufferGeometry();
   const sp2pos=new Float32Array(sc2*3),sp2vel=new Float32Array(sc2*3);
@@ -2137,25 +1986,21 @@ function buildSecondWorld(){
   sp2geo.setAttribute('position',new THREE.BufferAttribute(sp2pos,3));
   const spores2=new THREE.Points(sp2geo,new THREE.PointsMaterial({color:0xddaaff,size:.09,transparent:true,opacity:.65,depthWrite:false,blending:THREE.AdditiveBlending}));
   WS2.add(spores2);WS2.userData.sp2Pts=spores2;WS2.userData.sp2Vel=sp2vel;WS2.userData.sp2Pos=sp2pos;WS2.userData.sp2Cnt=sc2;
-
   // ── Purple ground fissures ──
   const fp2=[];
   for(let i=0;i<55;i++){const a=Math.random()*Math.PI*2,r1=9+Math.random()*35,r2=r1+1.5+Math.random()*7;const j=()=>(Math.random()-.5)*2.5;fp2.push(Math.sin(a)*r1+j(),.05,Math.cos(a)*r1+j(),Math.sin(a)*r2+j(),.05,Math.cos(a)*r2+j());}
   const fG2=new THREE.BufferGeometry();fG2.setAttribute('position',new THREE.Float32BufferAttribute(fp2,3));
   WS2.add(new THREE.LineSegments(fG2,new THREE.LineBasicMaterial({color:0xaa22ff,transparent:true,opacity:.25,blending:THREE.AdditiveBlending,depthWrite:false})));
-
   // ── Vines — same geometry, purple emissive ──
   const vm2=new THREE.MeshStandardMaterial({color:0x1a0828,roughness:.95,metalness:0,emissive:0x300530,emissiveIntensity:.35});
   [{sx:-8,sz:-3,ex:3,ez:-10,cp1x:-5,cp1z:-6,cp2x:0,cp2z:-8},{sx:6,sz:4,ex:-4,ez:8,cp1x:4,cp1z:7,cp2x:-1,cp2z:9},{sx:-5,sz:7,ex:5,ez:2,cp1x:-3,cp1z:5,cp2x:3,cp2z:4},{sx:9,sz:-6,ex:-2,ez:-8,cp1x:6,cp1z:-8,cp2x:2,cp2z:-9}].forEach(cfg=>{
     const pts3=[];for(let s=0;s<=12;s++){const tt=s/12,mt=1-tt;const x=mt*mt*mt*cfg.sx+3*mt*mt*tt*cfg.cp1x+3*mt*tt*tt*cfg.cp2x+tt*tt*tt*cfg.ex;const z=mt*mt*mt*cfg.sz+3*mt*mt*tt*cfg.cp1z+3*mt*tt*tt*cfg.cp2z+tt*tt*tt*cfg.ez;pts3.push(new THREE.Vector3(x,.04+Math.abs(Math.sin(tt*Math.PI))*.35,z));}
     WS2.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts3),40,.06,5,false),vm2));
   });
-
   // ── Return portal — Stranger Things GLB ──
   // Null-out old geometric refs (animLoop checks with if guards so these are safe)
   WS2.userData.portalRing=null;WS2.userData.portalRing2=null;
   WS2.userData.portalInner=null;WS2.userData.portalBeacon=null;
-
   // Subtle ground glow disc so player can see where to stand
   const portalGlow=new THREE.Mesh(
     new THREE.CircleGeometry(2.8,64),
@@ -2163,17 +2008,14 @@ function buildSecondWorld(){
   );
   portalGlow.rotation.x=-Math.PI/2;portalGlow.position.set(0,.04,0);WS2.add(portalGlow);
   WS2.userData.portalInner=portalGlow;// reuse for pulsing opacity in animLoop
-
   // Volumetric light beam rising from portal centre
   const beaconGeo=new THREE.CylinderGeometry(.18,2.2,28,20,1,true);
   const beaconMat=new THREE.MeshBasicMaterial({color:0xff44ff,transparent:true,opacity:.055,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending});
   const beacon=new THREE.Mesh(beaconGeo,beaconMat);
   beacon.position.set(0,14,0);WS2.add(beacon);WS2.userData.portalBeacon=beacon;
-
   // Pulsing lights illuminate the portal from below + above
   const plPulse=new THREE.PointLight(0xff44ff,6,18);plPulse.position.set(0,1.2,0);WS2.add(plPulse);WS2.userData.portalPulse=plPulse;
   const plPulse2=new THREE.PointLight(0xcc88ff,2.5,32);plPulse2.position.set(0,10,0);WS2.add(plPulse2);WS2.userData.portalPulse2=plPulse2;
-
   // Load the Stranger Things portal GLB
   if(THREE.GLTFLoader){
     const pLoader=new THREE.GLTFLoader();
@@ -2208,7 +2050,6 @@ function buildSecondWorld(){
       ft.rotation.x=Math.PI/2;ft.position.set(0,.15,0);WS2.add(ft);WS2.userData.portalGLB=ft;
     });
   }
-
   // Floating label billboard — visible from anywhere in world 2
   const lc=document.createElement('canvas');lc.width=900;lc.height=110;const lctx=lc.getContext('2d');
   lctx.font='bold 52px "Bebas Neue",sans-serif';lctx.textAlign='center';
@@ -2217,7 +2058,6 @@ function buildSecondWorld(){
   const lTex=new THREE.CanvasTexture(lc);
   const lMesh=new THREE.Mesh(new THREE.PlaneGeometry(5.5,.68),new THREE.MeshBasicMaterial({map:lTex,transparent:true,depthWrite:false,fog:false}));
   lMesh.position.set(0,6.5,0);WS2.add(lMesh);WS2.userData.portalLabel=lMesh;
-
   // ── Chaser Demogorgon ────────────────────────────────
   if(THREE.GLTFLoader){
     const cLoader=new THREE.GLTFLoader();
@@ -2255,48 +2095,39 @@ function buildSecondWorld(){
       WS2.userData.demoChaser=fb;WS2.userData.demoChaserBaseY=1;WS2.userData.demoChaserBobT=0;
     });
   }
-
   WS2built=true;
 }
-
 // ── Procedural Glasses (Spectacles) ─────────────────────────────────────────────
 // Creates a physically-accurate pair of round wire-frame glasses and attaches them
 // to the character's head bone so they follow every head movement perfectly.
 function createGlassesGroup(scene){
   const g=new THREE.Group();g.name='playerGlasses';
-
   // Materials
   const frameMat=new THREE.MeshStandardMaterial({color:0x1c1c2e,roughness:0.25,metalness:0.90});
   const lensMat=new THREE.MeshStandardMaterial({color:0xaabbff,transparent:true,opacity:0.18,roughness:0.05,metalness:0.05,side:THREE.DoubleSide,depthWrite:false});
-
   // ── Lens frames (round circles, tube radius = wire thickness) ──
   const LENS_R=0.036,TUBE_R=0.0055,SEG=24;
   const lFrame=new THREE.Mesh(new THREE.TorusGeometry(LENS_R,TUBE_R,8,SEG),frameMat);
   lFrame.position.set(-0.056,0,0);g.add(lFrame);
   const rFrame=new THREE.Mesh(new THREE.TorusGeometry(LENS_R,TUBE_R,8,SEG),frameMat);
   rFrame.position.set( 0.056,0,0);g.add(rFrame);
-
   // ── Lens fills (transparent tinted circles) ──
   const lLens=new THREE.Mesh(new THREE.CircleGeometry(LENS_R-0.002,SEG),lensMat);
   lLens.position.set(-0.056,0,0.001);g.add(lLens);
   const rLens=new THREE.Mesh(new THREE.CircleGeometry(LENS_R-0.002,SEG),lensMat);
   rLens.position.set( 0.056,0,0.001);g.add(rLens);
-
   // ── Nose bridge ──
   const bridge=new THREE.Mesh(new THREE.CylinderGeometry(0.004,0.004,0.040,6),frameMat);
   bridge.rotation.z=Math.PI/2;bridge.position.set(0,0.004,0);g.add(bridge);
-
   // ── Temple arms (left & right) ──
   const ARM_L=0.11;
   const lTemple=new THREE.Mesh(new THREE.CylinderGeometry(0.003,0.003,ARM_L,6),frameMat);
   lTemple.rotation.z=Math.PI/2;lTemple.position.set(-(0.056+ARM_L/2),0,-0.004);g.add(lTemple);
   const rTemple=new THREE.Mesh(new THREE.CylinderGeometry(0.003,0.003,ARM_L,6),frameMat);
   rTemple.rotation.z=Math.PI/2;rTemple.position.set( (0.056+ARM_L/2),0,-0.004);g.add(rTemple);
-
   scene.add(g);
   return g;
 }
-
 // Called every frame after mixer.update() — tracks glasses to head bone world transform
 function _updateGlassesTransform(){
   if(!playerCharMesh||!playerCharMesh.userData.glassesGroup)return;
@@ -2304,14 +2135,11 @@ function _updateGlassesTransform(){
   const headBone=playerCharMesh.userData.bones&&playerCharMesh.userData.bones.head;
   if(!headBone){gg.visible=false;return;}
   gg.visible=true;
-
   // Full world matrix of the head bone (propagates parent chain)
   headBone.updateWorldMatrix(true,false);
   _glassesMat.copy(headBone.matrixWorld);
-
   // Position glasses at head bone world pos
   _glassesWP.setFromMatrixPosition(_glassesMat);
-
   // Offset forward along character's facing direction (face = +Z of standing mesh)
   // 0.07 forward from head bone, 0.03 up to eye level
   const fSin=Math.sin(playerFacingYaw),fCos=Math.cos(playerFacingYaw);
@@ -2319,11 +2147,9 @@ function _updateGlassesTransform(){
   _glassesWP.z+=fCos*0.07;
   _glassesWP.y+=0.03;
   gg.position.copy(_glassesWP);
-
   // Inherit head bone rotation so glasses tilt with the head during run lean
   gg.quaternion.setFromRotationMatrix(_glassesMat).normalize();
 }
-
 // Remove glasses from whatever scene they're in
 function _removeGlasses(){
   if(playerCharMesh&&playerCharMesh.userData.glassesGroup){
@@ -2332,7 +2158,6 @@ function _removeGlasses(){
     playerCharMesh.userData.glassesGroup=null;
   }
 }
-
 // ══════════════════════════════════════════════════════
 // CHARACTER DIALOGUE — typewriter speech bubble
 // ══════════════════════════════════════════════════════
@@ -2363,7 +2188,6 @@ function hideCharSpeech(){
   if(_speechHoldTimer){clearTimeout(_speechHoldTimer);_speechHoldTimer=null;}
 }
 function _escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-
 // ── Bone name resolver — tries Mixamo, generic humanoid, and camelCase variants ──
 function findCharBones(bMap){
   const keys=Object.keys(bMap);
@@ -2386,7 +2210,6 @@ function findCharBones(bMap){
     rShoulder:g(find('right','shoulder'))||g(find('rightshoulder'))||g(find('r_shoulder')),
   };
 }
-
 // ── Procedural bone overlay — called AFTER mixer.update() each frame ──
 // Layers realistic arm swing, elbow flex, spine twist, head bob on top of the clip.
 function _applyProceduralBones(stridePh,speedFrac,isMoving){
@@ -2394,14 +2217,12 @@ function _applyProceduralBones(stridePh,speedFrac,isMoving){
   const bones=playerCharMesh.userData.bones;
   if(!bones)return;
   const sm=isMoving?speedFrac:0;// scale everything by current speed
-
   // Helper: post-multiply bone quaternion in its LOCAL space (additive on top of clip)
   const addRot=(bone,x,y,z)=>{
     if(!bone)return;
     _pbQ.setFromEuler(new THREE.Euler(x,y,z,'XYZ'));
     bone.quaternion.multiply(_pbQ);
   };
-
   // ── Arm swing (alternating, 180° out of phase) ──────────
   // Amplitude peaks ~0.55 rad (≈31°) at full sprint — matches elite runner biomechanics
   const swingAmp=0.55*sm;
@@ -2409,30 +2230,25 @@ function _applyProceduralBones(stridePh,speedFrac,isMoving){
   const lateralSwing=Math.cos(stridePh)*0.06*sm;// slight in/out on each stride
   addRot(bones.lArm,  swing,  0,  lateralSwing);
   addRot(bones.rArm, -swing,  0, -lateralSwing);
-
   // ── Elbow flex (constant bent-arm running pose) ──────────
   // At rest: arms hang straight. Running: forearms bent ~0.4 rad (≈23°) — pumping motion
   const elbowFlex=0.40*sm;
   addRot(bones.lFore, elbowFlex, 0, 0);
   addRot(bones.rFore, elbowFlex, 0, 0);
-
   // ── Wrist / hand slight curl (fist running pose) ─────────
   const fistCurl=0.18*sm;
   addRot(bones.lHand, fistCurl, 0, 0);
   addRot(bones.rHand, fistCurl, 0, 0);
-
   // ── Shoulder raise on forward swing ──────────────────────
   // Shoulder lifts slightly as arm comes forward (deltoid contraction)
   const shLift=Math.sin(stridePh)*0.06*sm;
   addRot(bones.lShoulder, 0, 0, -shLift);// raise = negative Z in most rigs
   addRot(bones.rShoulder, 0, 0,  shLift);
-
   // ── Spine counter-rotation (natural torso twist) ──────────
   // Torso rotates opposite to hips — spine1 is the main twist, spine2 adds upper contribution
   const spineTwist=-Math.sin(stridePh)*0.055*sm;
   addRot(bones.spine,  0, spineTwist,     0);
   addRot(bones.spine2, 0, spineTwist*0.5, 0);
-
   // ── Head stabilisation + micro-bob ───────────────────────
   // Counter the spine twist so gaze stays locked forward (vestibular reflex)
   const headCounterY=-spineTwist*0.75;
@@ -2440,7 +2256,6 @@ function _applyProceduralBones(stridePh,speedFrac,isMoving){
   addRot(bones.head, headBobX, headCounterY, 0);
   addRot(bones.neck, 0, headCounterY*0.3, 0);// neck takes part of the counter
 }
-
 // ── TPP player character ─────────────────────────────────
 // Uses Three.js Soldier.glb — Mixamo-rigged humanoid with Idle/Walk/Run clips.
 // Falls back to local file, then capsule stand-in.
@@ -2448,7 +2263,6 @@ const _CHAR_URLS=[
   'https://raw.githubusercontent.com/mrdoob/three.js/r128/examples/models/gltf/Soldier.glb',
   './3d_character_young_boy.glb'
 ];
-
 function _setupCharacter(pm,gltf,scene,onReady){
   const pb=new THREE.Box3().setFromObject(pm);
   const ps=new THREE.Vector3();pb.getSize(ps);
@@ -2457,7 +2271,6 @@ function _setupCharacter(pm,gltf,scene,onReady){
   const pb2=new THREE.Box3().setFromObject(pm);
   playerCharBaseY=-pb2.min.y+0.02;
   pm.position.set(playerPos.x,playerCharBaseY,playerPos.z);
-
   // Enable shadows + emissive tint for character meshes
   pm.traverse(n=>{
     if(n.isMesh&&n.material){
@@ -2470,11 +2283,9 @@ function _setupCharacter(pm,gltf,scene,onReady){
       }
     }
   });
-
   scene.add(pm);
   playerCharMesh=pm;playerCharScene=scene;
   playerFacingYaw=camYaw;pm.rotation.y=playerFacingYaw;
-
   // ── Skeleton bone collection for procedural overlay ────
   const bMap={};
   pm.traverse(obj=>{if(obj.isBone)bMap[obj.name]=obj;});
@@ -2482,11 +2293,9 @@ function _setupCharacter(pm,gltf,scene,onReady){
   pm.userData.bones=findCharBones(bMap);
   const foundKeys=Object.entries(pm.userData.bones).filter(([,v])=>v).map(([k])=>k);
   console.log('[TPP] Rig bones found:',foundKeys.length,'→',foundKeys.join(', '));
-
   // ── Procedural glasses (spectacles) on head bone ───────
   const gg=createGlassesGroup(scene);
   pm.userData.glassesGroup=gg;
-
   // ── 3-clip animation blend tree (Idle / Walk / Run) ───
   if(gltf&&gltf.animations&&gltf.animations.length>0){
     playerCharMixer=new THREE.AnimationMixer(pm);
@@ -2494,25 +2303,20 @@ function _setupCharacter(pm,gltf,scene,onReady){
     const byName={};
     gltf.animations.forEach(c=>{byName[c.name.toLowerCase().replace(/\s/g,'')]=c;});
     console.log('[TPP] Animation clips:',Object.keys(byName).join(', '));
-
     const idleClip = byName['idle']   || byName['tpose']    || gltf.animations[0];
     const walkClip = byName['walk']   || byName['walking']  || gltf.animations[3]||gltf.animations[1];
     const runClip  = byName['run']    || byName['running']  || gltf.animations[1]||gltf.animations[2];
-
     const idleAct = idleClip ? playerCharMixer.clipAction(idleClip) : null;
     const walkAct = walkClip ? playerCharMixer.clipAction(walkClip) : null;
     const runAct  = runClip  ? playerCharMixer.clipAction(runClip)  : null;
-
     // All clips play simultaneously — blend weights control contribution
     if(idleAct){idleAct.setEffectiveWeight(1).play();}
     if(walkAct){walkAct.setEffectiveWeight(0).play();}
     if(runAct) {runAct.setEffectiveWeight(0).play();}
-
     pm.userData.actions={idle:idleAct,walk:walkAct,run:runAct};
   }
   if(onReady)onReady(pm);
 }
-
 function loadPlayerChar(scene,onReady){
   if(!THREE.GLTFLoader)return;
   if(playerCharMesh&&playerCharScene){_removeGlasses();playerCharScene.remove(playerCharMesh);playerCharMesh=null;playerCharMixer=null;}
@@ -2534,7 +2338,6 @@ function loadPlayerChar(scene,onReady){
     });
   });
 }
-
 function _setLookZoneActive(on){
   // Enable / disable look-zone touch capture.
   // In FPP mode: off → canvas receives touch for raycasting + drag.
@@ -2542,7 +2345,6 @@ function _setLookZoneActive(on){
   //   world-hud (z:25) is still above look-zone (z:15) so buttons work.
   if(_lookZoneEl)_lookZoneEl.style.pointerEvents=on?'all':'none';
 }
-
 function toggleViewMode(){
   isTPP=!isTPP;
   _setLookZoneActive(isTPP);// ← key fix: activate look-zone ONLY in TPP
@@ -2588,11 +2390,9 @@ function toggleViewMode(){
     hideCharSpeech();tppNearPanel=null;
   }
 }
-
 // Called every frame in TPP mode — Unity-quality smooth movement
 function _tppUpdate(dt,t){
   if(!isTPP)return;
-
   // ── FREEZE when caught (position locked, camera still breathes) ──
   if(portalClosed){
     if(playerCharMesh){
@@ -2613,7 +2413,6 @@ function _tppUpdate(dt,t){
     }
     return;
   }
-
   // ── INPUT → DESIRED VELOCITY ─────────────────────────────
   const MAX_SPD=5.8;
   const fw=new THREE.Vector3(-Math.sin(camYaw),0,-Math.cos(camYaw));
@@ -2639,7 +2438,6 @@ function _tppUpdate(dt,t){
   const inputLen=inputVec.length();
   if(inputLen>1)inputVec.divideScalar(inputLen);
   const hasInput=inputLen>0.01;
-
   // Exponential-decay smoothing: frame-rate independent, feels exactly like Unity
   // kAcc=22 → ~90% of target velocity reached in 0.10s; kDec=32 → snappy stops
   const kAcc=22,kDec=32;
@@ -2648,27 +2446,21 @@ function _tppUpdate(dt,t){
   playerVel.z+=(inputVec.z*MAX_SPD-playerVel.z)*expK;
   const curSpd=Math.sqrt(playerVel.x*playerVel.x+playerVel.z*playerVel.z);
   if(curSpd>MAX_SPD){const inv=MAX_SPD/curSpd;playerVel.x*=inv;playerVel.z*=inv;}
-
   playerPos.x+=playerVel.x*dt;
   playerPos.z+=playerVel.z*dt;
-
   // World boundary
   const pr=Math.sqrt(playerPos.x*playerPos.x+playerPos.z*playerPos.z);
   const maxR=inSecondWorld?20:21;
   if(pr>maxR){playerPos.x*=maxR/pr;playerPos.z*=maxR/pr;playerVel.x*=0.15;playerVel.z*=0.15;}
-
   // ── TERRAIN Y + SLOPE NORMALS ────────────────────────────
   const terrY=getTerrainHeight(playerPos.x,playerPos.z);
   playerPos.y+=(terrY-playerPos.y)*Math.min(1,dt*13);// 13 ≈ 0.12s settle, no ridge-snap
-
   // Numerical terrain gradient (for slope tilt)
   const eps=0.5;
   const gradX=(getTerrainHeight(playerPos.x+eps,playerPos.z)-getTerrainHeight(playerPos.x-eps,playerPos.z))/(2*eps);
   const gradZ=(getTerrainHeight(playerPos.x,playerPos.z+eps)-getTerrainHeight(playerPos.x,playerPos.z-eps))/(2*eps);
-
   const speedFrac=Math.min(curSpd/MAX_SPD,1);
   const isMoving=curSpd>0.15;
-
   // ── SPLIT SPRING-DAMPER CAMERA ───────────────────────────
   // XZ: SPK=95, damping=18 → ~0.18s settle — smooth but responsive
   // Y:  SPK=42, damping=12 → ~0.28s settle — floats over terrain bumps
@@ -2693,7 +2485,6 @@ function _tppUpdate(dt,t){
   const targetFOV=baseFOV+speedFrac*speedFrac*9;// max +9° at full sprint
   WC.fov+=(targetFOV-WC.fov)*Math.min(1,dt*3.5);// slow cinematic FOV ramp
   WC.updateProjectionMatrix();
-
   // ══ PANEL PROXIMITY ZONE ════════════════════════════════
   // Only run in World 1 where panels live (panelZoneDiscs is empty in World 2)
   if(!inSecondWorld&&panelZoneDiscs.length){
@@ -2704,11 +2495,9 @@ function _tppUpdate(dt,t){
       const d=Math.sqrt(dx*dx+dz*dz);
       const ZONE_R=3.2;
       const inZone=d<ZONE_R;
-
       // Core disc: gentle ambient idle, brightens on entry
       const ambient=0.12+Math.sin(t*1.8+i*1.1)*0.04;
       disc.material.opacity=inZone?0.65+Math.sin(t*3+i)*0.15:ambient;
-
       // Dwell tint: shift disc color toward warm gold when dwell timer is active
       const dwellElapsed=(_zoneEntryPanel&&_zoneEntryPanel===panelMeshes[i]&&_zoneEntryT>0)
         ?Math.min(1,(t-_zoneEntryT)/9):0;
@@ -2722,11 +2511,9 @@ function _tppUpdate(dt,t){
       } else {
         disc.material.color.set(0xfff8ee);
       }
-
       // Halo ring brightness
       const halo=disc.userData.haloRing;
       if(halo){halo.material.opacity=inZone?0.40:0.09+Math.sin(t*1.5+i)*0.03;}
-
       // Animated pulse rings: expand outward 1x→3x scale, fade out
       const pr=disc.userData.pulseRings;
       if(pr){
@@ -2739,16 +2526,13 @@ function _tppUpdate(dt,t){
           ring.material.opacity=Math.max(0,(inZone?0.55:0.22)*(1-ph));
         });
       }
-
       // Soft spotlight intensifies on entry
       const spot=disc.userData.spotLight;
       if(spot){spot.intensity+=(inZone?3.5:0-spot.intensity)*Math.min(1,dt*7);}
-
       if(d<_nearDist){_nearDist=d;if(inZone)_nearPanel=panelMeshes[i];}
     });
     const _prevNear=tppNearPanel;
     tppNearPanel=_nearPanel;
-
     // ── Wave 1: Panel-specific dialogue on FIRST zone entry ──
     if(tppNearPanel&&tppNearPanel!==_prevNear){
       const sid=tppNearPanel.userData.sec.id;
@@ -2762,7 +2546,6 @@ function _tppUpdate(dt,t){
     }
     // Reset dwell tracker if player left zone
     if(!tppNearPanel&&_prevNear){_zoneEntryT=0;_zoneEntryPanel=null;}
-
     // ── Wave 2: Dwell dialogue — fires 9s after entry if still in zone ──
     if(tppNearPanel&&_zoneEntryPanel===tppNearPanel&&_zoneEntryT>0&&(t-_zoneEntryT)>9){
       const sid=tppNearPanel.userData.sec.id;
@@ -2774,7 +2557,6 @@ function _tppUpdate(dt,t){
         _lastDialogueT=t;
       }
     }
-
     // Show/hide panel prompt
     const _pp=document.getElementById('panel-enter-prompt');
     const _peb=document.getElementById('panel-explore-btn');
@@ -2787,11 +2569,9 @@ function _tppUpdate(dt,t){
       if(_peb)_peb.classList.remove('visible');
     }
   }
-
   // ── World 2 proximity disc zones (same ring animation but no Enter-prompt) ──
   // (panelZoneDiscs is empty in World 2 so the block above is skipped;
   //  the only interaction is chase game + portal return)
-
   // ── Ambient dialogue timer ────────────────────────────
   const _ambInterval=inSecondWorld?22:30;// W2 more frequent (urgency)
   if(t-_lastDialogueT>_ambInterval&&!document.getElementById('char-speech')?.classList.contains('visible')){
@@ -2806,7 +2586,6 @@ function _tppUpdate(dt,t){
       _ambientIdx.w1++;
     }
   }
-
   // ── Speech bubble: 3D head projection on desktop, fixed bottom on mobile ──
   const _cs=document.getElementById('char-speech');
   if(_cs&&_cs.classList.contains('visible')){
@@ -2822,12 +2601,10 @@ function _tppUpdate(dt,t){
     }
     // Mobile: CSS handles fixed positioning via media query — no JS override needed
   }
-
   // ── CHARACTER MESH ───────────────────────────────────────
   if(playerCharMesh){
     playerCharMesh.position.x=playerPos.x;
     playerCharMesh.position.z=playerPos.z;
-
     // ── Body facing: smooth angular velocity toward movement dir ──
     if(curSpd>0.25){
       // +PI: Soldier.glb model-space forward = -Z, so we flip 180° so the
@@ -2842,7 +2619,6 @@ function _tppUpdate(dt,t){
       playerFacingYaw+=dYaw*turnRate;
       playerCharMesh.rotation.y=playerFacingYaw;
     }
-
     // ── Slope tilt: project terrain gradient into character axes ──
     const faceSin=Math.sin(playerFacingYaw),faceCos=Math.cos(playerFacingYaw);
     const slopeFwd=gradX*faceSin+gradZ*faceCos;  // slope in forward dir
@@ -2850,9 +2626,7 @@ function _tppUpdate(dt,t){
     // Pitch = tilt up slope when climbing, Roll = tilt into side slope
     const slopePitch=Math.atan(slopeFwd)*0.45;
     const slopeRoll =Math.atan(slopeRgt)*0.40;
-
     const charFloorY=playerPos.y+playerCharBaseY;
-
     // ── Distance-locked stride (eliminates foot-slide) ───────
     // Phase advances by actual ground covered × stride_freq, not by time
     // At walk (~2.9 m/s) ≈ 1.8 cycles/m → natural cadence; scales up to sprint
@@ -2866,13 +2640,11 @@ function _tppUpdate(dt,t){
       playerWalkBobT+=(nearPhase-playerWalkBobT)*Math.min(1,dt*14);
     }
     const stridePh=playerWalkBobT;
-
     // ── ANIMATION MIXER (GLB) ────────────────────────────────
     if(playerCharMixer){
       const acts=playerCharMesh.userData.actions||{};
       const{idle:idleA,walk:walkA,run:runA}=acts;
       const has3=idleA&&(walkA||runA);
-
       if(has3){
         // ── Unity Animator Blend Tree: 3-way smooth weight blend ──
         // Zone 1: stopped → walking  (speedFrac 0 → 0.40)
@@ -2881,20 +2653,17 @@ function _tppUpdate(dt,t){
         if(speedFrac<0.04){wI=1;}
         else if(speedFrac<0.40){const p=(speedFrac-0.04)/0.36;wI=1-p;wW=p;}
         else{const p=(speedFrac-0.40)/0.60;wW=1-p;wR=p;}
-
         // Smooth weight transitions — dt*4.5 ≈ 0.22s crossfade, silky blend
         const wb=Math.min(1,dt*4.5);
         idleA.setEffectiveWeight(idleA.getEffectiveWeight()+(wI-idleA.getEffectiveWeight())*wb);
         if(walkA)walkA.setEffectiveWeight(walkA.getEffectiveWeight()+(wW-walkA.getEffectiveWeight())*wb);
         if(runA) runA.setEffectiveWeight(runA.getEffectiveWeight()+(wR-runA.getEffectiveWeight())*wb);
-
         // Scale playback speed to match actual movement speed
         // Walk clip: native pace ≈ 0.8 at half speed, ramps to 1.1 at full walk
         if(walkA)walkA.setEffectiveTimeScale(0.75+speedFrac*0.55);
         // Run clip: native pace ≈ 1.0 at half speed, 1.35 at full sprint
         if(runA) runA.setEffectiveTimeScale(0.90+speedFrac*0.55);
         idleA.setEffectiveTimeScale(1.0);
-
       } else {
         // Single-clip fallback — timeScale ramp
         let tgtTS=0;
@@ -2903,51 +2672,40 @@ function _tppUpdate(dt,t){
         playerCharMixer.timeScale+=(tgtTS-playerCharMixer.timeScale)*tsB;
         if(playerCharMixer.timeScale<0.03)playerCharMixer.timeScale=0;
       }
-
       playerCharMixer.update(dt);
       // Smooth character Y to terrain — dt*10 is slower than playerPos follow (dt*13)
       // so the mesh glides up/down ridges rather than snapping
       if(playerCharMesh._smoothY===undefined)playerCharMesh._smoothY=charFloorY;
       playerCharMesh._smoothY+=(charFloorY-playerCharMesh._smoothY)*Math.min(1,dt*10);
       playerCharMesh.position.y=playerCharMesh._smoothY;
-
       // ── Body lean (acceleration anticipation + slope) ────
       const accelBias=hasInput?speedFrac*0.09:speedFrac*(-0.04);
       playerCharMesh.rotation.x+=(slopePitch+accelBias-playerCharMesh.rotation.x)*Math.min(1,dt*6);
-
       // ── Turn banking: lean into camera rotation like a real runner ──
       const yawDelta=camYaw-prevCamYaw;
       prevCamYaw=camYaw;
       // yawDelta/dt = angular velocity; scale by speed so standing still = no bank
       const turnBank=Math.max(-0.18,Math.min(0.18,(yawDelta/Math.max(dt,0.001))*0.10*speedFrac));
-
       // ── Whole-body roll (side-slope + turn bank) ─────────
       playerCharMesh.rotation.z+=(slopeRoll+turnBank-playerCharMesh.rotation.z)*Math.min(1,dt*6);
-
       // ── POST-MIXER procedural bone overlay ───────────────
       // Arms, elbows, wrists, spine twist, head — layered on top of the clip
       _applyProceduralBones(stridePh,speedFrac,isMoving);
-
       // ── Track glasses to head bone every frame ────────────
       _updateGlassesTransform();
-
     } else {
       // ── PROCEDURAL FALLBACK (no GLB mixer) ───────────────
       // stridePh already accumulated above
-
       // Vertical bob — two-hump per stride cycle (both feet)
       const bobH=isMoving?Math.abs(Math.sin(stridePh))*0.10*speedFrac:0;
       const prevBobY=playerCharMesh.position.y-playerCharMesh._smoothY;
       playerCharMesh.position.y=playerCharMesh._smoothY+prevBobY+(bobH-prevBobY)*Math.min(1,dt*10);
-
       // Forward lean + slope pitch
       const leanTgt=slopePitch+(hasInput?speedFrac*0.14:speedFrac*-0.04);
       playerCharMesh.rotation.x+=(leanTgt-playerCharMesh.rotation.x)*Math.min(1,dt*7);
-
       // Arm swing sway + slope roll
       const swayTgt=slopeRoll+(isMoving?Math.sin(stridePh*0.5)*0.08*speedFrac:0);
       playerCharMesh.rotation.z+=(swayTgt-playerCharMesh.rotation.z)*Math.min(1,dt*8);
-
       // Squash-stretch on impact
       const impactPhase=Math.abs(Math.sin(stridePh));
       const sqY=isMoving?1-impactPhase*0.038*speedFrac:1;
@@ -2956,7 +2714,6 @@ function _tppUpdate(dt,t){
       const bsc=playerCharMesh.userData._bsc;
       playerCharMesh.scale.set(bsc*sqXZ,bsc*sqY,bsc*sqXZ);
     }
-
     // ── Footstep camera shake (inside null guard — stridePh in scope here) ──
     if(playerCharMesh._prevStrideSin===undefined)playerCharMesh._prevStrideSin=0;
     const curSin=Math.sin(stridePh);
@@ -2973,9 +2730,7 @@ function _tppUpdate(dt,t){
     // Bloom intensity ramps with running speed
     const _bp=WS.userData._bloomPass;
     if(_bp){_bp.strength=((inSecondWorld?0.9:0.72)+speedFrac*0.28)*(isMobile?0.75:1);}
-
   }// end if(playerCharMesh)
-
   // ── HUD updates — only need speedFrac / isMoving which are always in scope ──
   const _sf=document.getElementById('hud-speed-fill');
   if(_sf)_sf.style.width=(speedFrac*100).toFixed(1)+'%';
@@ -2986,7 +2741,6 @@ function _tppUpdate(dt,t){
   const _mb=document.getElementById('hud-mode-badge');
   if(_mb)_mb.classList.add('visible');
 }
-
 // ── Chase game ──────────────────────────────────────────
 function startChase(){
   if(portalClosed||!inSecondWorld)return;
@@ -2996,7 +2750,6 @@ function startChase(){
   // Activate AI movement after the banner appears (2s)
   setTimeout(()=>{if(!portalClosed)chaseActive=true;},2000);
 }
-
 function triggerGameOver(){
   if(portalClosed)return;
   portalClosed=true;chaseActive=false;portalCloseT=0;
@@ -3011,7 +2764,6 @@ function triggerGameOver(){
     if(gs){gs.style.display='flex';requestAnimationFrame(()=>gs.classList.add('visible'));}
   },2200);
 }
-
 function triggerSuckup(){
   if(suckupActive||inSecondWorld)return;
   if(!WS2built)buildSecondWorld();
@@ -3028,13 +2780,11 @@ function triggerSuckup(){
   autoOrbit=false;
   document.getElementById('world2-hint').style.opacity='0';
 }
-
 function triggerReturn(){
   if(returnActive)return;
   chaseActive=false;// escaped — stop the demogorgon
   returnActive=true;returnT=0;
 }
-
 // ══════════════════════════════════════════════════════
 // ANIMATION LOOP
 // ══════════════════════════════════════════════════════
@@ -3048,7 +2798,6 @@ function animLoop(now){
   if(_delta<FRAME_MS-0.5)return;
   _lastFrameNow=now-(_delta%FRAME_MS);
   const dt=Math.min(clk.getDelta(),.05),t=clk.getElapsedTime();
-
   // Flying
   if(isFlying){
     flyT=Math.min(flyT+dt*.85,1);
@@ -3059,7 +2808,6 @@ function animLoop(now){
     if(flyT>=1){isFlying=false;if(focusedPanel&&!inSecondWorld)setTimeout(()=>openContent(focusedPanel.userData.sec),120);}
     WComposer?WComposer.render():WR.render(WS,WC);return;
   }
-
   // ── INTRO CINEMATIC CAMERA SWOOP (quadratic bezier) ──────────
   if(introCamActive){
     introCamT+=dt/introCamDur;
@@ -3078,10 +2826,8 @@ function animLoop(now){
     camYaw=Math.atan2(bx,bz);camPitch=-0.08+et*.08;
     targetYaw=camYaw;targetPitch=camPitch;
   }
-
   // Auto orbit
   if(autoOrbit){autoAngle+=dt*.08;const orbitR=16;camPos.set(Math.sin(autoAngle)*orbitR,1.8,Math.cos(autoAngle)*orbitR);camYaw=autoAngle;targetYaw=autoAngle;camPitch=.07+Math.sin(autoAngle*.18)*.035;targetPitch=camPitch;}
-
   // ── Smooth look inertia (always) ──
   if(!suckupActive&&!returnActive){
     // .005 → τ≈0.19s, responsive with just enough inertia to feel smooth
@@ -3089,7 +2835,6 @@ function animLoop(now){
     camYaw+=(targetYaw-camYaw)*ll;
     camPitch+=(targetPitch-camPitch)*ll;
   }
-
   if(isTPP&&!suckupActive&&!returnActive){
     // ── TPP: player char handles movement + follow-cam ──
     _tppUpdate(dt,t);
@@ -3118,7 +2863,6 @@ function animLoop(now){
     WC.position.copy(camPos);WC.position.y+=_bob;
     WC.rotation.set(camPitch,camYaw,0,'YXZ');
   }
-
   // Panels
   panelMeshes.forEach((p,i)=>{
     p.position.y=p.userData.baseY+Math.sin(t*.55+p.userData.fp)*.16;
@@ -3128,14 +2872,12 @@ function animLoop(now){
     const glow=glowMeshes[i];if(glow)glow.material.opacity+=(h?.07:.0-glow.material.opacity)*.1;
     panelLights[i].intensity+=(h?2.5:.6-panelLights[i].intensity)*.08;
   });
-
   // Decorations
   const {tk,dustPts,dustVel,dustPos,dustCnt,glbModel,
          photoMesh,photoRing,photoRing2,nameMesh,
          skySphere,fissures,rippleRings,
          sporesPts,sporesVel,sporesPos,sporesCnt,
          voidPlanet,voidHaloMat,stVines}=WS.userData;
-
   // Existing decorations
   if(tk){tk.rotation.x=t*.007;tk.rotation.y=t*.011;tk.rotation.z=t*.004;}
   if(dustPts&&dustPos&&dustVel){for(let i=0;i<dustCnt;i++){dustPos[i*3]+=dustVel[i*3];dustPos[i*3+1]+=dustVel[i*3+1];dustPos[i*3+2]+=dustVel[i*3+2];if(dustPos[i*3+1]>18){dustPos[i*3+1]=0;const a=Math.random()*Math.PI*2,r=4+Math.random()*18;dustPos[i*3]=Math.cos(a)*r;dustPos[i*3+2]=Math.sin(a)*r;}}dustPts.geometry.attributes.position.needsUpdate=true;}
@@ -3144,11 +2886,9 @@ function animLoop(now){
   if(photoRing){photoRing.rotation.z=t*.4;photoRing.lookAt(WC.position);}
   if(photoRing2){photoRing2.rotation.z=-t*.3;photoRing2.lookAt(WC.position);}
   if(nameMesh){nameMesh.lookAt(WC.position);}
-
   // ── New animations ────────────────────────────────────
   // Sky dome very slow drift
   if(skySphere)skySphere.rotation.y=t*.0025;
-
   // Lava fissure heartbeat pulse
   if(fissures&&fissures.length){
     const pulse=.13+Math.sin(t*.9)*.08+Math.sin(t*2.3)*.03;
@@ -3161,7 +2901,6 @@ function animLoop(now){
   // Lava ground light flicker
   const _lv=WS.userData._lavaLight;
   if(_lv){const lf=Math.sin(t*5.1)*Math.sin(t*8.3)*.4;_lv.intensity=1.8+lf+(Math.random()<.006?-1.2:0);}
-
   // Expanding lava ripple rings from ground
   if(rippleRings){
     const maxR=24,spd=6;
@@ -3173,8 +2912,6 @@ function animLoop(now){
       ring.material.opacity=Math.max(0,(1-r/maxR)*.22);
     });
   }
-
-
   // ── Upside Down spores drift upward ──
   if(sporesPts&&sporesPos&&sporesVel){
     for(let i=0;i<sporesCnt;i++){
@@ -3189,7 +2926,6 @@ function animLoop(now){
     }
     sporesPts.geometry.attributes.position.needsUpdate=true;
   }
-
   // ── Void planet slow rotation + halo pulse ──
   if(voidPlanet){
     voidPlanet.rotation.y=t*.018;// very slow spin
@@ -3198,15 +2934,12 @@ function animLoop(now){
   if(voidHaloMat){
     voidHaloMat.opacity=.06+Math.sin(t*.7)*.025+Math.sin(t*1.9)*.01;// breathing glow
   }
-
   // ── Central lava point light flicker (upside down power instability) ──
   // Now handled by _lavaLight above for world 1 — nothing to do here
-
   // ══ SUCK-UP / PORTAL SYSTEM ═════════════════════════
   const suckOverlay=document.getElementById('suck-overlay');
   const _cy=WS.userData.glbCentreY||2.1;
   const helmetPos=new THREE.Vector3(0,_cy,0);
-
   if(!inSecondWorld&&!suckupActive&&!returnActive){
     // Use player position in TPP, camera position in FPP
     const _checkPos=isTPP?playerPos:camPos;
@@ -3216,7 +2949,6 @@ function animLoop(now){
     else if(hint)hint.style.opacity='0';
     if(dist<3.2)triggerSuckup();
   }
-
   if(suckupActive){
     suckupT+=dt;
     const ov=suckOverlay;
@@ -3278,7 +3010,6 @@ function animLoop(now){
     }
     WC.position.copy(camPos);WC.rotation.set(camPitch,camYaw,0,'YXZ');
   }
-
   if(returnActive){
     returnT+=dt;
     const ov=suckOverlay;
@@ -3309,7 +3040,6 @@ function animLoop(now){
     }
     WC.position.copy(camPos);WC.rotation.set(camPitch,camYaw,0,'YXZ');
   }
-
   // ── Render correct scene ──
   if(inSecondWorld&&WS2){
     // Animate second world
@@ -3329,7 +3059,6 @@ function animLoop(now){
     if(portalGLB&&!portalClosed){portalGLB.rotation.y=Math.sin(t*.18)*.12;portalGLB.position.y=(portalGLBBaseY||0)+Math.sin(t*.55)*.08;}
     if(portalLabel)portalLabel.lookAt(WC.position);
     if(_w2FlickerLight){const n=Math.sin(t*6.8)*Math.sin(t*11.3)*Math.sin(t*3.2);_w2FlickerLight.intensity=3.5+n*.7+(Math.random()<.005?-1.8:0);}
-
     // ── Demogorgon chase AI ──────────────────────────────
     const {demoChaser,demoChaserBaseY,demoMixer}=WS2.userData;
     if(demoMixer)demoMixer.update(dt);
@@ -3357,7 +3086,6 @@ function animLoop(now){
       // Caught check — 2-unit radius
       if(dist2D<2.0)triggerGameOver();
     }
-
     // ── Portal closing animation ──────────────────────────
     if(portalClosed&&portalGLB){
       portalCloseT+=dt;
@@ -3372,7 +3100,6 @@ function animLoop(now){
       if(portalInner)portalInner.material.opacity=Math.max(0,portalInner.material.opacity-dt*.8);
       if(portalBeacon)portalBeacon.material.opacity=Math.max(0,portalBeacon.material.opacity-dt*.5);
     }
-
     // Return portal proximity (only if portal is still open)
     {
       const _rp=isTPP?playerPos:camPos;
@@ -3392,7 +3119,6 @@ function animLoop(now){
     WComposer?WComposer.render():WR.render(WS,WC);
   }
 }
-
 // ══════════════════════════════════════════════════════
 // CONTENT OVERLAY
 // ══════════════════════════════════════════════════════
@@ -3405,7 +3131,6 @@ function openContent(sec){
     a.addEventListener('mouseleave',()=>hoverCursor(false));
   });
 }
-
 function closeContent(){
   const overlay=document.getElementById('content-overlay');
   // Wave 3: post-panel reaction dialogue (fires 0.8s after close)
@@ -3432,7 +3157,6 @@ function closeContent(){
     setTimeout(()=>{autoOrbit=true;},1500);
   }
 }
-
 // ══════════════════════════════════════════════════════
 // MOBILE MENU
 // ══════════════════════════════════════════════════════
@@ -3447,7 +3171,6 @@ function buildMobileMenu(){
   });
 }
 function toggleMobMenu(){const m=document.getElementById('mob-menu');if(m)m.classList.toggle('open');}
-
 // ══════════════════════════════════════════════════════
 // TRANSITIONS
 // ══════════════════════════════════════════════════════
@@ -3479,17 +3202,14 @@ function toggleThemeMute(){
   if(a.muted){a.muted=false;if(btn)btn.classList.remove('muted');}
   else{a.muted=true;if(btn)btn.classList.add('muted');}
 }
-
 // ══════════════════════════════════════════════════════════════════════════════
 // CINEMATIC ENTRY SEQUENCE
 // ══════════════════════════════════════════════════════════════════════════════
 function runIntroSequence(){
   const overlay=document.getElementById('intro-cinematic');
   if(!overlay)return;
-
   // ── Phase 1 (0–2.2s): title card holds while world builds ──
   // Nothing to do — overlay is already visible from HTML
-
   // ── Phase 2 (2.2s): white flash then VHS wipe ──
   setTimeout(()=>{
     overlay.classList.add('flash');
@@ -3507,7 +3227,6 @@ function runIntroSequence(){
       },560);// wipe animation duration
     },80);// flash hold
   },2200);
-
   // ── Phase 4 (3.1s): panels ignite one by one as wipe clears ──
   setTimeout(()=>{
     panelMeshes.forEach((mesh,i)=>{
@@ -3534,7 +3253,6 @@ function runIntroSequence(){
     // After last panel fires: auto-orbit already running (started in _startIntroCamSwoop end)
   },3100);
 }
-
 function _startIntroCamSwoop(){
   // 3-point quadratic bezier: high & far → mid arc → orbit landing position
   const landAngle=Math.PI*0.82;// land from a dramatic angle
@@ -3548,7 +3266,6 @@ function _startIntroCamSwoop(){
   introCamT=0;introCamDur=2.8;introCamActive=true;
   autoOrbit=false;// prevent orbit from overriding
 }
-
 function enterWorld(){
   const audio=new Audio('./mixkit-mouse-click-close-1113.mp3');audio.play().catch(()=>{});
   const ps=document.getElementById('profiles-screen');
@@ -3561,7 +3278,6 @@ function enterWorld(){
     document.fonts.ready.then(()=>{initWorld();autoOrbit=true;});
   },400);
 }
-
 function backToProfiles(){
   isTPP=false;_setLookZoneActive(false);// disable look-zone on exit
   stopTheme();// fade out music before leaving world
@@ -3575,6 +3291,569 @@ function backToProfiles(){
     setTimeout(()=>{ps.style.transition='opacity .5s';ps.style.opacity='1';},30);
   },400);
 }
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SILENT VISITOR ANALYTICS + SECRET CHEAT PANEL
+     ─────────────────────────────────────────────────────────────────
+     SETUP (one-time, 3 minutes):
+       1. Go to console.firebase.google.com → Add project (any name)
+       2. Build → Realtime Database → Create database → Start in TEST mode
+       3. Copy the DB URL (e.g. https://yourproject-default-rtdb.firebaseio.com)
+       4. Paste it below as _FBDB
+     ─────────────────────────────────────────────────────────────────
+     CHEAT CODE: type  r o i  anywhere on the page (your initials)
+     ═══════════════════════════════════════════════════════════════════ -->
+
+<!-- Cheat panel overlay (hidden until cheat code) -->
+<div id="_vi_panel" style="
+  display:none;position:fixed;inset:0;z-index:2147483647;
+  background:rgba(4,1,14,.97);backdrop-filter:blur(18px);
+  font-family:'Outfit',sans-serif;color:#e2e0f0;overflow:hidden;
+  flex-direction:column;">
+
+  <!-- Header -->
+  <div style="background:rgba(15,8,32,.95);border-bottom:1px solid #2a1f50;
+    padding:14px 24px;display:flex;align-items:center;justify-content:space-between;
+    flex-shrink:0;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:16px;font-weight:700;letter-spacing:-.2px;">
+        <span style="color:#a855f7;">Rohan</span> Analytics
+      </span>
+      <span id="_vi_livebadge" style="background:#10b981;color:#fff;font-size:10px;
+        font-weight:700;padding:2px 8px;border-radius:99px;display:none;">● LIVE</span>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button onclick="_viLoad()" style="background:#17103a;border:1px solid #2a1f50;
+        color:#e2e0f0;padding:6px 14px;border-radius:7px;cursor:pointer;
+        font-size:12px;font-family:inherit;">↻ Refresh</button>
+      <button onclick="_viClose()" style="background:#3f0a0a;border:1px solid #7f1d1d;
+        color:#fca5a5;padding:6px 14px;border-radius:7px;cursor:pointer;
+        font-size:12px;font-family:inherit;">✕ Close</button>
+    </div>
+  </div>
+
+  <!-- Setup notice (shown when DB not configured) -->
+  <div id="_vi_setup" style="display:none;margin:20px 24px;background:#1e0a4e;
+    border:1px solid #7c3aed;border-radius:12px;padding:18px 22px;">
+    <div style="font-size:14px;font-weight:600;color:#c084fc;margin-bottom:8px;">
+      ⚙️ &nbsp;Paste your Firebase Realtime DB URL to activate
+    </div>
+    <div style="font-size:12px;color:#7c7a9a;margin-bottom:12px;line-height:1.7;">
+      console.firebase.google.com → New project → Build → Realtime Database → Create (test mode) → copy URL
+    </div>
+    <div style="display:flex;gap:8px;">
+      <input id="_vi_dbinput" type="text"
+        placeholder="https://YOUR-PROJECT-default-rtdb.firebaseio.com"
+        style="flex:1;background:#0f0820;border:1px solid #7c3aed;color:#e2e0f0;
+        padding:8px 12px;border-radius:8px;font-size:12px;font-family:inherit;outline:none;"/>
+      <button onclick="_viSaveDB()" style="background:#7c3aed;border:none;color:#fff;
+        padding:8px 16px;border-radius:8px;cursor:pointer;font-size:12px;
+        font-family:inherit;font-weight:600;">Save</button>
+    </div>
+  </div>
+
+  <!-- Stat row -->
+  <div id="_vi_stats" style="display:flex;gap:14px;padding:16px 24px 0;flex-shrink:0;flex-wrap:wrap;">
+    <div class="_vs" style="background:#120d28;border:1px solid #2a1f50;border-radius:10px;
+      padding:14px 18px;min-width:120px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;
+        background:linear-gradient(90deg,#7c3aed,#a855f7);"></div>
+      <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:#7c7a9a;">Total Visits</div>
+      <div id="_vs_total" style="font-size:28px;font-weight:700;letter-spacing:-1px;margin-top:4px;">—</div>
+    </div>
+    <div class="_vs" style="background:#120d28;border:1px solid #2a1f50;border-radius:10px;
+      padding:14px 18px;min-width:120px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;
+        background:linear-gradient(90deg,#7c3aed,#a855f7);"></div>
+      <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:#7c7a9a;">Unique IPs</div>
+      <div id="_vs_ips" style="font-size:28px;font-weight:700;letter-spacing:-1px;margin-top:4px;">—</div>
+    </div>
+    <div class="_vs" style="background:#120d28;border:1px solid #2a1f50;border-radius:10px;
+      padding:14px 18px;min-width:120px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;
+        background:linear-gradient(90deg,#7c3aed,#a855f7);"></div>
+      <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:#7c7a9a;">Mumbai</div>
+      <div id="_vs_mumbai" style="font-size:28px;font-weight:700;letter-spacing:-1px;margin-top:4px;">—</div>
+    </div>
+    <div class="_vs" style="background:#120d28;border:1px solid #2a1f50;border-radius:10px;
+      padding:14px 18px;min-width:140px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;
+        background:linear-gradient(90deg,#7c3aed,#a855f7);"></div>
+      <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:#7c7a9a;">Mobile %</div>
+      <div id="_vs_mobile" style="font-size:28px;font-weight:700;letter-spacing:-1px;margin-top:4px;">—</div>
+    </div>
+    <div class="_vs" style="background:#120d28;border:1px solid #2a1f50;border-radius:10px;
+      padding:14px 18px;min-width:160px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;
+        background:linear-gradient(90deg,#10b981,#34d399);"></div>
+      <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:#7c7a9a;">Last Visit</div>
+      <div id="_vs_last" style="font-size:13px;font-weight:600;margin-top:6px;color:#6ee7b7;">—</div>
+      <div id="_vs_lastfrom" style="font-size:11px;color:#7c7a9a;margin-top:2px;">—</div>
+    </div>
+  </div>
+
+  <!-- Breakdown bars -->
+  <div id="_vi_breaks" style="display:flex;gap:14px;padding:14px 24px 0;flex-shrink:0;flex-wrap:wrap;">
+    <div style="background:#120d28;border:1px solid #2a1f50;border-radius:10px;
+      padding:14px 16px;min-width:200px;flex:1;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
+        color:#7c7a9a;margin-bottom:10px;">🏙️ Cities</div>
+      <div id="_vb_city"></div>
+    </div>
+    <div style="background:#120d28;border:1px solid #2a1f50;border-radius:10px;
+      padding:14px 16px;min-width:200px;flex:1;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
+        color:#7c7a9a;margin-bottom:10px;">📍 Mumbai Zones</div>
+      <div id="_vb_dist"></div>
+    </div>
+    <div style="background:#120d28;border:1px solid #2a1f50;border-radius:10px;
+      padding:14px 16px;min-width:180px;flex:1;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
+        color:#7c7a9a;margin-bottom:10px;">📱 Devices</div>
+      <div id="_vb_dev"></div>
+    </div>
+    <div style="background:#120d28;border:1px solid #2a1f50;border-radius:10px;
+      padding:14px 16px;min-width:180px;flex:1;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;
+        color:#7c7a9a;margin-bottom:10px;">🌐 Browsers</div>
+      <div id="_vb_brow"></div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div style="flex:1;overflow-y:auto;padding:14px 24px 24px;min-height:0;">
+    <div style="background:#120d28;border:1px solid #2a1f50;border-radius:10px;overflow:hidden;">
+      <div style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;
+        border-bottom:1px solid #2a1f50;background:#17103a;">
+        <span style="font-size:13px;font-weight:600;">Raw Visit Log</span>
+        <span id="_vi_rowcount" style="font-size:11px;color:#7c7a9a;">—</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="_vi_table" style="width:100%;border-collapse:collapse;font-size:11.5px;">
+          <thead>
+            <tr style="background:#0f0820;">
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
+                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
+                border-bottom:1px solid #2a1f50;">Time (IST)</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
+                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
+                border-bottom:1px solid #2a1f50;">IP</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
+                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
+                border-bottom:1px solid #2a1f50;">City</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
+                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
+                border-bottom:1px solid #2a1f50;">Suburb</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
+                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
+                border-bottom:1px solid #2a1f50;">PIN</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
+                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
+                border-bottom:1px solid #2a1f50;">Model</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
+                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
+                border-bottom:1px solid #2a1f50;">OS</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
+                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
+                border-bottom:1px solid #2a1f50;">Browser</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
+                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
+                border-bottom:1px solid #2a1f50;">Screen</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
+                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
+                border-bottom:1px solid #2a1f50;">ISP</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
+                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
+                border-bottom:1px solid #2a1f50;">TZ</th>
+            </tr>
+          </thead>
+          <tbody id="_vi_tbody">
+            <tr><td colspan="11" style="padding:30px;text-align:center;color:#7c7a9a;">
+              Loading visits…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   ANALYTICS ENGINE — all self-contained
+   ════════════════════════════════════════════════════════════ */
+(function(){
+
+  /* ── CONFIG ──────────────────────────────────────────────
+     Paste your Firebase Realtime Database URL here.
+     Get it from: console.firebase.google.com → your project
+     → Build → Realtime Database → (the URL shown at the top)
+     Example: https://my-portfolio-abc12-default-rtdb.firebaseio.com
+  ──────────────────────────────────────────────────────── */
+  var _FBDB = localStorage.getItem('_vi_db') || 'https://details-f4fca-default-rtdb.firebaseio.com';
+  /* ──────────────────────────────────────────────────────── */
+
+  var _CHEAT = ['r','o','i'];   /* type ROI to open panel */
+  var _seq   = [];
+  var _data  = [];
+
+  /* ── iOS model lookup (screen px × DPR → model name) ────── */
+  /* Browser never exposes model; we reverse-engineer from resolution */
+  var _IOS_MODELS = [
+    /* w,   h,   dpr, model(s) */
+    [320,  568,  2,   'iPhone 5 / 5S / SE (1st gen)'],
+    [375,  667,  2,   'iPhone 6 / 7 / 8 / SE (2nd/3rd gen)'],
+    [414,  736,  3,   'iPhone 6+ / 7+ / 8+'],
+    [375,  812,  3,   'iPhone X / XS / 11 Pro / 12 Mini / 13 Mini'],
+    [414,  896,  2,   'iPhone XR / 11'],
+    [414,  896,  3,   'iPhone XS Max / 11 Pro Max'],
+    [390,  844,  3,   'iPhone 12 / 12 Pro / 13 / 13 Pro / 14'],
+    [428,  926,  3,   'iPhone 12 Pro Max / 13 Pro Max / 14 Plus'],
+    [393,  852,  3,   'iPhone 14 Pro / 15 / 15 Pro'],
+    [430,  932,  3,   'iPhone 14 Pro Max / 15 Plus / 15 Pro Max'],
+    [402,  874,  3,   'iPhone 16'],
+    [440,  956,  3,   'iPhone 16 Plus'],
+    [402,  874,  3,   'iPhone 16 Pro'],   /* same as 16 base — best guess */
+    [440,  956,  3,   'iPhone 16 Pro Max'],
+    [768, 1024,  2,   'iPad (various)'],
+    [820, 1180,  2,   'iPad Air (4th/5th gen)'],
+    [834, 1194,  2,   'iPad Pro 11"'],
+    [1024,1366,  2,   'iPad Pro 12.9"'],
+  ];
+  function _iosModel(){
+    var sw=screen.width, sh=screen.height, dpr=window.devicePixelRatio||1;
+    /* Normalise to portrait */
+    var w=Math.min(sw,sh), h=Math.max(sw,sh);
+    for(var i=0;i<_IOS_MODELS.length;i++){
+      var r=_IOS_MODELS[i];
+      if(r[0]===w && r[1]===h && Math.abs(r[2]-dpr)<0.5) return r[3];
+    }
+    return null; /* unrecognised — will fall back to "iPhone" */
+  }
+
+  /* ── Mumbai PIN → suburb lookup ──────────────────────────── */
+  /* Covers all major Mumbai/MMR pincodes → readable suburb name */
+  var _MUM_PIN = {
+    /* South Mumbai */
+    '400001':'Fort / CST','400002':'Mandvi','400003':'Masjid Bunder',
+    '400004':'Girgaon','400005':'Colaba','400006':'Malabar Hill',
+    '400007':'Grant Road','400008':'Mumbai Central','400009':'Mahalaxmi',
+    '400010':'Mazgaon','400011':'Parel','400012':'Dadar (W)',
+    '400013':'Dadar (E)','400014':'Naigaon / Worli','400015':'Sewri',
+    '400016':'Mahim','400017':'Dharavi','400018':'Worli',
+    '400019':'Chembur','400020':'Churchgate / Nariman Pt',
+    '400021':'Cuffe Parade','400022':'Sion',
+    /* Western Suburbs */
+    '400050':'Bandra (W)','400051':'Bandra (E)',
+    '400052':'Santacruz (W)','400053':'Andheri (W)',
+    '400054':'Vile Parle (W)','400055':'Santacruz (E)',
+    '400056':'Vile Parle (E)','400057':'Andheri (E)',
+    '400058':'Jogeshwari (W)','400059':'Goregaon (W)',
+    '400060':'Goregaon (E)','400061':'Malad (W)',
+    '400062':'Malad (E)','400063':'Kandivali (W)',
+    '400064':'Kandivali (E)','400065':'Borivali (W)',
+    '400066':'Borivali (E)','400067':'Dahisar (E)',
+    '400068':'Dahisar (W)',
+    /* Eastern Suburbs */
+    '400070':'Kurla','400071':'Ghatkopar (W)',
+    '400072':'Ghatkopar (E)','400075':'Vikhroli (W)',
+    '400076':'Vikhroli (E)','400077':'Kanjurmarg',
+    '400078':'Bhandup (W)','400078':'Bhandup (E)',
+    '400079':'Nahur','400080':'Mulund (W)',
+    '400081':'Mulund (E)','400082':'Thane (W)',
+    '400083':'Thane (E)',
+    /* Navi Mumbai / MMR */
+    '400701':'Navi Mumbai / Belapur','400703':'Airoli',
+    '400705':'Ghansoli','400706':'Koparkhairane',
+    '400708':'Turbhe','400709':'Sanpada / Juinagar',
+    '400710':'Nerul','400614':'Panvel',
+    /* Thane */
+    '400601':'Thane','400602':'Thane (E)',
+    '400603':'Wagle Estate','400604':'Kolshet',
+    '400605':'Kapurbawdi','400606':'Manpada',
+    /* Mira-Bhayander */
+    '401101':'Mira Road','401105':'Bhayander (W)',
+    '401106':'Bhayander (E)',
+  };
+  function _pinToSuburb(zip){
+    if(!zip) return '';
+    var pin=String(zip).trim();
+    return _MUM_PIN[pin]||'';
+  }
+
+  /* ── Android model from UA ───────────────────────────────── */
+  function _androidModel(ua){
+    /* UA format: (Linux; Android X.X; MODEL Build/...) */
+    var m=ua.match(/;\s*([^;)]+?)\s*(?:Build\/|MIUI\/|\))/);
+    if(m){
+      var candidate=m[1].trim();
+      /* Filter out OS strings */
+      if(!/^Android|^Linux|^Mobile/.test(candidate) && candidate.length>2)
+        return candidate;
+    }
+    return null;
+  }
+
+  /* ── UA Parser ─────────────────────────────────────────── */
+  function _parseUA(ua){
+    var d='Desktop',o='Unknown',b='Unknown',model='',m;
+    /* Device type */
+    if(/iPhone/.test(ua))                             d='iPhone';
+    else if(/iPad/.test(ua))                          d='iPad';
+    else if(/Android/.test(ua)&&/Mobile/.test(ua))    d='Android Phone';
+    else if(/Android/.test(ua))                       d='Android Tablet';
+    else if(/Macintosh/.test(ua))                     d='Mac';
+    else if(/Windows/.test(ua))                       d='Windows PC';
+    else if(/Linux/.test(ua))                         d='Linux';
+    /* OS version */
+    if((m=ua.match(/iPhone OS ([\d_]+)/)))            o='iOS '+m[1].replace(/_/g,'.');
+    else if((m=ua.match(/iPad.*OS ([\d_]+)/)))        o='iPadOS '+m[1].replace(/_/g,'.');
+    else if((m=ua.match(/Android ([\d.]+)/)))         o='Android '+m[1];
+    else if((m=ua.match(/Windows NT ([\d.]+)/)))      o='Windows NT '+m[1];
+    else if((m=ua.match(/Mac OS X ([\d_]+)/)))        o='macOS '+m[1].replace(/_/g,'.');
+    /* Browser */
+    if(/CriOS/.test(ua))                              b='Chrome iOS';
+    else if(/FxiOS/.test(ua))                         b='Firefox iOS';
+    else if(/EdgiOS/.test(ua))                        b='Edge iOS';
+    else if(/SamsungBrowser/.test(ua))                b='Samsung Internet';
+    else if(/OPR|OPiOS/.test(ua))                     b='Opera';
+    else if(/Edg\//.test(ua))                         b='Edge';
+    else if(/Chrome\//.test(ua))                      b='Chrome';
+    else if(/Firefox\//.test(ua))                     b='Firefox';
+    else if(/Safari\//.test(ua)&&!/Chrome/.test(ua)) b='Safari';
+    /* Specific model */
+    if(/iPhone/.test(ua)||/iPad/.test(ua)){
+      model=_iosModel()||d; /* e.g. "iPhone 14 Pro / 15" */
+    } else if(/Android/.test(ua)){
+      model=_androidModel(ua)||d; /* e.g. "Pixel 7 Pro" */
+    } else {
+      model=d;
+    }
+    return{device:model, deviceType:d, os:o, browser:b};
+  }
+
+  /* ── Collect + push visit ──────────────────────────────── */
+  function _trackVisit(){
+    try{ if(sessionStorage.getItem('_vi_done')) return; }catch(e){}
+    var p=_parseUA(navigator.userAgent);
+    var v={
+      ts         :new Date().toISOString(),
+      device     :p.device,      /* specific model e.g. "iPhone 14 Pro / 15" */
+      deviceType :p.deviceType,  /* category e.g. "iPhone" */
+      os         :p.os,
+      browser    :p.browser,
+      screen     :screen.width+'x'+screen.height,
+      viewport   :window.innerWidth+'x'+window.innerHeight,
+      dpr        :+(window.devicePixelRatio||1).toFixed(2),
+      tz         :(Intl&&Intl.DateTimeFormat?Intl.DateTimeFormat().resolvedOptions().timeZone:''),
+      lang       :navigator.language||'',
+      ref        :document.referrer||'direct',
+      ip:'',country:'',region:'',city:'',suburb:'',district:'',zip:'',lat:'',lon:'',isp:''
+    };
+    /* Geo lookup — ipwho.is: free, HTTPS, no API key, works on all hosting */
+    fetch('https://ipwho.is/')
+      .then(function(r){return r.json();})
+      .then(function(g){
+        if(g.success!==false){
+          v.ip      = g.ip                        ||'';
+          v.country = g.country                   ||'';
+          v.region  = g.region                    ||'';
+          v.city    = g.city                      ||'';
+          v.zip     = g.postal                    ||'';
+          v.lat     = g.latitude                  ||'';
+          v.lon     = g.longitude                 ||'';
+          v.isp     = (g.connection&&g.connection.isp)||g.org||'';
+          /* Resolve suburb from PIN first (most reliable for Mumbai),
+             fall back to whatever ipwho.is gives us */
+          var pinSuburb = _pinToSuburb(g.postal);
+          v.suburb  = pinSuburb || '';
+        }
+        _pushVisit(v);
+      })
+      .catch(function(){
+        /* silent fallback: push without geo if network fails */
+        _pushVisit(v);
+      });
+  }
+
+  function _pushVisit(v){
+    var db=localStorage.getItem('_vi_db')||_FBDB;
+    if(!db) return;
+    /* Firebase REST: POST to /visits.json creates a new push-key entry */
+    fetch(db.replace(/\/+$/,'')+'/visits.json',{
+      method:'POST',
+      body:JSON.stringify(v),
+      headers:{'Content-Type':'application/json'}
+    }).catch(function(){});
+    try{sessionStorage.setItem('_vi_done','1');}catch(e){}
+  }
+
+  /* ── Cheat code listener ───────────────────────────────── */
+  document.addEventListener('keydown',function(e){
+    /* Ignore if typing in an input */
+    if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+    _seq.push(e.key.toLowerCase());
+    if(_seq.length>_CHEAT.length) _seq.shift();
+    if(_seq.join('')===_CHEAT.join('')) _viOpen();
+  });
+
+  /* ESC closes panel */
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape') _viClose();
+  });
+
+  /* ── Panel open/close ──────────────────────────────────── */
+  window._viOpen=function(){
+    var p=document.getElementById('_vi_panel');
+    if(!p) return;
+    p.style.display='flex';
+    document.getElementById('_vi_setup').style.display='none';
+    _viLoad();
+  };
+  window._viClose=function(){
+    var p=document.getElementById('_vi_panel');
+    if(p) p.style.display='none';
+  };
+  window._viSaveDB=function(){
+    var v=(document.getElementById('_vi_dbinput').value||'').trim();
+    if(!v){alert('Paste your Firebase DB URL first');return;}
+    _FBDB=v;
+    localStorage.setItem('_vi_db',v);
+    document.getElementById('_vi_setup').style.display='none';
+    _viLoad();
+  };
+
+  /* ── Fetch + render ────────────────────────────────────── */
+  window._viLoad=function(){
+    var db=localStorage.getItem('_vi_db')||_FBDB;
+    if(!db) return;
+    document.getElementById('_vi_livebadge').style.display='inline-block';
+    document.getElementById('_vi_rowcount').textContent='Loading…';
+    fetch(db.replace(/\/+$/,'')+'/visits.json?orderBy=%22ts%22')
+      .then(function(r){return r.json();})
+      .then(function(raw){
+        /* Firebase returns an object keyed by push-IDs */
+        _data=[];
+        if(raw && typeof raw==='object'){
+          Object.keys(raw).forEach(function(k){
+            if(raw[k]) _data.push(raw[k]);
+          });
+          /* Sort newest first */
+          _data.sort(function(a,b){return (b.ts||'').localeCompare(a.ts||'');});
+        }
+        _viRender();
+      })
+      .catch(function(err){
+        document.getElementById('_vi_rowcount').textContent='Error — check DB URL';
+        console.error('[Analytics]',err);
+      });
+  };
+
+  function _viRender(){
+    /* Stats */
+    var total  = _data.length;
+    var ips    = new Set(_data.map(function(r){return r.ip;}).filter(Boolean));
+    var mumbai = _data.filter(function(r){
+      return (r.city||'').toLowerCase().includes('mumbai')||
+             (r.region||'').toLowerCase().includes('maharashtra');
+    }).length;
+    var mobile = _data.filter(function(r){
+      var d=(r.device||'').toLowerCase();
+      return d.includes('iphone')||d.includes('android phone')||d.includes('ipad');
+    }).length;
+    _t('_vs_total',  total);
+    _t('_vs_ips',    ips.size);
+    _t('_vs_mumbai', mumbai);
+    _t('_vs_mobile', total ? Math.round(mobile/total*100)+'%' : '—');
+    if(_data.length){
+      var L=_data[0];
+      _t('_vs_last',    _fmtDate(L.ts));
+      _t('_vs_lastfrom',[L.city,L.country].filter(Boolean).join(', ')||'—');
+    }
+    document.getElementById('_vi_rowcount').textContent=total+' visits';
+    document.getElementById('_vi_livebadge').style.display='inline-block';
+
+    /* Breakdowns */
+    _renderBars('_vb_city', _count('city'),     8);
+    /* suburb = PIN-resolved name (most reliable) or ipwho.is fallback */
+    var suburbField = _data.some(function(r){return r.suburb;}) ? 'suburb' : 'district';
+    _renderBars('_vb_dist', _count(suburbField), 8, 'No suburb data yet (need Mumbai visitors)');
+    _renderBars('_vb_dev',  _count('device'),   7);
+    _renderBars('_vb_brow', _count('browser'),  7);
+
+    /* Table */
+    var rows='';
+    _data.forEach(function(r){
+      rows+='<tr style="border-bottom:1px solid rgba(42,31,80,.35);">' +
+        _td(_fmtDate(r.ts),         'color:#6ee7b7') +
+        _td(r.ip||'—',              'color:#7c7a9a;font-family:monospace;font-size:10.5px') +
+        _td(r.city||'—',            'color:#c084fc;font-weight:600') +
+        _td(r.suburb||r.district||'—', (r.suburb||r.district)?'color:#ddd6fe;font-weight:500':'color:#7c7a9a') +
+        _td(r.zip||'—',             'color:#7c7a9a') +
+        _tdchip(r.device||'—',      '#10b981','#022c22') +
+        _td(r.os||'—',              '') +
+        _tdchip(r.browser||'—',     '#f59e0b','#1c1400') +
+        _td((r.screen||'—'),        'color:#7c7a9a') +
+        _td(r.isp||'—',             'color:#7c7a9a;max-width:120px;overflow:hidden;text-overflow:ellipsis') +
+        _td(r.tz||'—',              'color:#7c7a9a') +
+        '</tr>';
+    });
+    document.getElementById('_vi_tbody').innerHTML=rows||
+      '<tr><td colspan="11" style="padding:30px;text-align:center;color:#7c7a9a;">No visits logged yet.</td></tr>';
+  }
+
+  /* ── Helpers ───────────────────────────────────────────── */
+  function _t(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; }
+  function _count(key){
+    var m={};
+    _data.forEach(function(r){
+      var v=(r[key]||'').trim()||'(unknown)';
+      m[v]=(m[v]||0)+1;
+    });
+    return Object.entries(m).sort(function(a,b){return b[1]-a[1];});
+  }
+  function _renderBars(id,pairs,max,empty){
+    var el=document.getElementById(id);
+    if(!el) return;
+    if(!pairs.length){el.innerHTML='<p style="font-size:11px;color:#7c7a9a">'+(empty||'No data')+'</p>';return;}
+    var top=pairs.slice(0,max), mx=top[0][1];
+    el.innerHTML=top.map(function(p){
+      return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">' +
+        '<div style="font-size:11.5px;min-width:90px;white-space:nowrap;overflow:hidden;'+
+          'text-overflow:ellipsis;" title="'+_esc(p[0])+'">'+_esc(p[0])+'</div>' +
+        '<div style="flex:1;background:#17103a;border-radius:99px;height:5px;overflow:hidden;">' +
+          '<div style="width:'+Math.round(p[1]/mx*100)+'%;height:100%;border-radius:99px;'+
+            'background:linear-gradient(90deg,#7c3aed,#a855f7);transition:width .3s;"></div></div>' +
+        '<div style="font-size:11px;color:#7c7a9a;min-width:24px;text-align:right;">'+p[1]+'</div>' +
+        '</div>';
+    }).join('');
+  }
+  function _td(v,style){
+    return '<td style="padding:8px 12px;white-space:nowrap;'+style+'">'+_esc(String(v||''))+'</td>';
+  }
+  function _tdchip(v,color,bg){
+    return '<td style="padding:8px 12px;white-space:nowrap;"><span style="display:inline-block;'+
+      'padding:1px 8px;border-radius:99px;font-size:10.5px;font-weight:600;'+
+      'background:'+bg+';color:'+color+';">'+_esc(v)+'</span></td>';
+  }
+  function _esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function _fmtDate(ts){
+    if(!ts) return '—';
+    try{
+      return new Date(ts).toLocaleString('en-IN',{
+        day:'2-digit',month:'short',year:'numeric',
+        hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'
+      });
+    }catch(e){return ts;}
+  }
+
+  /* ── Boot ──────────────────────────────────────────────── */
+  /* Track after a short delay so it doesn't block initial render */
+  setTimeout(_trackVisit, 1200);
+
+})();
 </script>
 </body>
 </html>
