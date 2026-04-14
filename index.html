@@ -3324,6 +3324,9 @@ function backToProfiles(){
         font-weight:700;padding:2px 8px;border-radius:99px;display:none;">● LIVE</span>
     </div>
     <div style="display:flex;gap:10px;align-items:center;">
+      <button onclick="_viRunDiag()" style="background:#1a0a00;border:1px solid #92400e;
+        color:#fcd34d;padding:6px 14px;border-radius:7px;cursor:pointer;
+        font-size:12px;font-family:inherit;">🔍 Diagnose</button>
       <button onclick="_viLoad()" style="background:#17103a;border:1px solid #2a1f50;
         color:#e2e0f0;padding:6px 14px;border-radius:7px;cursor:pointer;
         font-size:12px;font-family:inherit;">↻ Refresh</button>
@@ -3331,6 +3334,16 @@ function backToProfiles(){
         color:#fca5a5;padding:6px 14px;border-radius:7px;cursor:pointer;
         font-size:12px;font-family:inherit;">✕ Close</button>
     </div>
+  </div>
+
+  <!-- Diagnostics strip -->
+  <div id="_vi_diag" style="display:none;background:#0d0820;border-bottom:1px solid #2a1f50;
+    padding:10px 24px;font-size:11.5px;display:none;gap:20px;flex-wrap:wrap;align-items:center;">
+    <span style="color:#7c7a9a;font-weight:600;text-transform:uppercase;letter-spacing:.5px;font-size:10px;">Status</span>
+    <span id="_vd_geo">🌐 Geo: —</span>
+    <span id="_vd_fb_write">✍️ DB Write: —</span>
+    <span id="_vd_fb_read">📖 DB Read: —</span>
+    <span id="_vd_session">🔁 Session lock: —</span>
   </div>
 
   <!-- Setup notice (shown when DB not configured) -->
@@ -3490,12 +3503,27 @@ function backToProfiles(){
      → Build → Realtime Database → (the URL shown at the top)
      Example: https://my-portfolio-abc12-default-rtdb.firebaseio.com
   ──────────────────────────────────────────────────────── */
-  var _FBDB = localStorage.getItem('_vi_db') || 'https://details-f4fca-default-rtdb.firebaseio.com';
+  var _FBDB  = localStorage.getItem('_vi_db') || 'https://details-f4fca-default-rtdb.firebaseio.com';
+  var _DBURL = _FBDB.replace(/\/+$/,'');
   /* ──────────────────────────────────────────────────────── */
 
   var _CHEAT = ['r','o','i'];   /* type ROI to open panel */
   var _seq   = [];
   var _data  = [];
+
+  /* ── Dedup: max 1 log per visitor per hour ─────────────── */
+  /* Uses localStorage (not sessionStorage) so it survives tab close */
+  function _alreadyLogged(){
+    try{
+      var last=localStorage.getItem('_vi_last');
+      if(!last) return false;
+      var age=(Date.now()-parseInt(last,10));
+      return age < 60*60*1000; /* within last 60 min → skip */
+    }catch(e){ return false; }
+  }
+  function _markLogged(){
+    try{ localStorage.setItem('_vi_last', String(Date.now())); }catch(e){}
+  }
 
   /* ── iOS model lookup (screen px × DPR → model name) ────── */
   /* Browser never exposes model; we reverse-engineer from resolution */
@@ -3634,7 +3662,7 @@ function backToProfiles(){
 
   /* ── Collect + push visit ──────────────────────────────── */
   function _trackVisit(){
-    try{ if(sessionStorage.getItem('_vi_done')) return; }catch(e){}
+    if(_alreadyLogged()){ console.log('[Analytics] Skipped — already logged within last hour'); return; }
     var p=_parseUA(navigator.userAgent);
     var v={
       ts         :new Date().toISOString(),
@@ -3650,42 +3678,52 @@ function backToProfiles(){
       ref        :document.referrer||'direct',
       ip:'',country:'',region:'',city:'',suburb:'',district:'',zip:'',lat:'',lon:'',isp:''
     };
-    /* Geo lookup — ipwho.is: free, HTTPS, no API key, works on all hosting */
+    /* Geo lookup — ipwho.is (HTTPS, free, no key) */
+    console.log('[Analytics] Firing geo lookup…');
     fetch('https://ipwho.is/')
       .then(function(r){return r.json();})
       .then(function(g){
-        if(g.success!==false){
-          v.ip      = g.ip                        ||'';
-          v.country = g.country                   ||'';
-          v.region  = g.region                    ||'';
-          v.city    = g.city                      ||'';
-          v.zip     = g.postal                    ||'';
-          v.lat     = g.latitude                  ||'';
-          v.lon     = g.longitude                 ||'';
-          v.isp     = (g.connection&&g.connection.isp)||g.org||'';
-          /* Resolve suburb from PIN first (most reliable for Mumbai),
-             fall back to whatever ipwho.is gives us */
+        console.log('[Analytics] Geo response:', g);
+        if(g && g.success!==false){
+          v.ip      = g.ip                              ||'';
+          v.country = g.country                         ||'';
+          v.region  = g.region                          ||'';
+          v.city    = g.city                            ||'';
+          v.zip     = g.postal                          ||'';
+          v.lat     = g.latitude                        ||'';
+          v.lon     = g.longitude                       ||'';
+          v.isp     = (g.connection&&g.connection.isp)  ||'';
           var pinSuburb = _pinToSuburb(g.postal);
           v.suburb  = pinSuburb || '';
+        } else {
+          console.warn('[Analytics] Geo returned failure:', g);
         }
         _pushVisit(v);
       })
-      .catch(function(){
-        /* silent fallback: push without geo if network fails */
-        _pushVisit(v);
+      .catch(function(err){
+        console.error('[Analytics] Geo fetch failed:', err);
+        _pushVisit(v); /* still log device/browser without geo */
       });
   }
 
   function _pushVisit(v){
     var db=localStorage.getItem('_vi_db')||_FBDB;
     if(!db) return;
-    /* Firebase REST: POST to /visits.json creates a new push-key entry */
-    fetch(db.replace(/\/+$/,'')+'/visits.json',{
+    var url=db.replace(/\/+$/,'')+'/visits.json';
+    console.log('[Analytics] Pushing visit to:', url, v);
+    fetch(url,{
       method:'POST',
       body:JSON.stringify(v),
       headers:{'Content-Type':'application/json'}
-    }).catch(function(){});
-    try{sessionStorage.setItem('_vi_done','1');}catch(e){}
+    })
+    .then(function(r){
+      console.log('[Analytics] Firebase write status:', r.status, r.ok ? '✓ OK' : '✗ FAILED');
+      if(!r.ok) r.text().then(function(t){ console.error('[Analytics] Firebase error body:', t); });
+    })
+    .catch(function(err){
+      console.error('[Analytics] Firebase write failed (network/CORS):', err);
+    });
+    _markLogged();
   }
 
   /* ── Cheat code listener ───────────────────────────────── */
@@ -3848,6 +3886,68 @@ function backToProfiles(){
       });
     }catch(e){return ts;}
   }
+
+  /* ── Diagnose function (triggered by 🔍 button) ─────────── */
+  window._viRunDiag = function(){
+    var diag = document.getElementById('_vi_diag');
+    diag.style.display = 'flex';
+    function _ds(id,txt,ok){
+      var el=document.getElementById(id);
+      if(el) el.innerHTML = txt + ' ' +
+        (ok===true  ? '<span style="color:#10b981;font-weight:700;">✓ OK</span>' :
+         ok===false ? '<span style="color:#ef4444;font-weight:700;">✗ FAIL</span>' :
+                      '<span style="color:#f59e0b;">⏳</span>');
+    }
+
+    /* 1. Session lock */
+    var last=null;
+    try{last=localStorage.getItem('_vi_last');}catch(e){}
+    if(last){
+      var mins=Math.round((Date.now()-parseInt(last,10))/60000);
+      _ds('_vd_session','🔁 Session lock: logged '+mins+'m ago', mins<60);
+      if(mins<60) _ds('_vd_session','🔁 Session lock: logged '+mins+' min ago — clears in '+(60-mins)+'min (clearing now for test…)',false);
+      /* Clear so diagnose can re-fire a real test write */
+      try{localStorage.removeItem('_vi_last');}catch(e){}
+    } else {
+      _ds('_vd_session','🔁 Session lock: not locked',true);
+    }
+
+    /* 2. Geo test */
+    _ds('_vd_geo','🌐 Geo: testing…',null);
+    fetch('https://ipwho.is/')
+      .then(function(r){return r.json();})
+      .then(function(g){
+        if(g&&g.city) _ds('_vd_geo','🌐 Geo: '+g.city+', '+g.country+' / PIN '+g.postal,true);
+        else          _ds('_vd_geo','🌐 Geo: returned but no city field',false);
+      })
+      .catch(function(e){ _ds('_vd_geo','🌐 Geo: fetch failed — '+e.message,false); });
+
+    /* 3. Firebase WRITE test */
+    var db=(localStorage.getItem('_vi_db')||_FBDB).replace(/\/+$/,'');
+    _ds('_vd_fb_write','✍️ DB Write: testing…',null);
+    fetch(db+'/diag_test.json',{
+      method:'PUT',
+      body:JSON.stringify({ping:Date.now()}),
+      headers:{'Content-Type':'application/json'}
+    })
+    .then(function(r){
+      if(r.ok) _ds('_vd_fb_write','✍️ DB Write: HTTP '+r.status,true);
+      else     r.text().then(function(t){ _ds('_vd_fb_write','✍️ DB Write: HTTP '+r.status+' — '+t.slice(0,60),false); });
+    })
+    .catch(function(e){ _ds('_vd_fb_write','✍️ DB Write: failed — '+e.message,false); });
+
+    /* 4. Firebase READ test */
+    _ds('_vd_fb_read','📖 DB Read: testing…',null);
+    fetch(db+'/visits.json?shallow=true')
+      .then(function(r){
+        if(r.ok) r.json().then(function(j){
+          var n=j?Object.keys(j).length:0;
+          _ds('_vd_fb_read','📖 DB Read: '+n+' visit keys found',true);
+        });
+        else r.text().then(function(t){ _ds('_vd_fb_read','📖 DB Read: HTTP '+r.status+' — '+t.slice(0,60),false); });
+      })
+      .catch(function(e){ _ds('_vd_fb_read','📖 DB Read: failed — '+e.message,false); });
+  };
 
   /* ── Boot ──────────────────────────────────────────────── */
   /* Track after a short delay so it doesn't block initial render */
