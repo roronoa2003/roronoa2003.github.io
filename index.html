@@ -3678,32 +3678,84 @@ function backToProfiles(){
       ref        :document.referrer||'direct',
       ip:'',country:'',region:'',city:'',suburb:'',district:'',zip:'',lat:'',lon:'',isp:''
     };
-    /* Geo lookup — ipwho.is (HTTPS, free, no key) */
-    console.log('[Analytics] Firing geo lookup…');
-    fetch('https://ipwho.is/')
-      .then(function(r){return r.json();})
-      .then(function(g){
-        console.log('[Analytics] Geo response:', g);
-        if(g && g.success!==false){
-          v.ip      = g.ip                              ||'';
-          v.country = g.country                         ||'';
-          v.region  = g.region                          ||'';
-          v.city    = g.city                            ||'';
-          v.zip     = g.postal                          ||'';
-          v.lat     = g.latitude                        ||'';
-          v.lon     = g.longitude                       ||'';
-          v.isp     = (g.connection&&g.connection.isp)  ||'';
-          var pinSuburb = _pinToSuburb(g.postal);
-          v.suburb  = pinSuburb || '';
-        } else {
-          console.warn('[Analytics] Geo returned failure:', g);
-        }
+    /* ── Geo cascade: tries 3 APIs in order, stops at first success ── */
+    console.log('[Analytics] Starting geo lookup cascade…');
+
+    /* Normalise any API's response into a common shape */
+    function _geoNorm(g, src){
+      var r = {};
+      if(src==='ipapi'){
+        /* http://ip-api.com/json/ */
+        if(g.status!=='success') return null;
+        r.ip=g.query; r.country=g.country; r.region=g.regionName;
+        r.city=g.city; r.zip=g.zip; r.lat=g.lat; r.lon=g.lon; r.isp=g.isp;
+      } else if(src==='ipwho'){
+        /* https://ipwho.is/ */
+        if(g.success===false) return null;
+        r.ip=g.ip; r.country=g.country; r.region=g.region;
+        r.city=g.city; r.zip=g.postal; r.lat=g.latitude; r.lon=g.longitude;
+        r.isp=(g.connection&&g.connection.isp)||'';
+      } else if(src==='ipinfo'){
+        /* https://ipinfo.io/json */
+        if(!g.ip) return null;
+        var loc=(g.loc||'').split(',');
+        r.ip=g.ip; r.country=g.country; r.region=g.region;
+        r.city=g.city; r.zip=g.postal; r.lat=loc[0]||''; r.lon=loc[1]||'';
+        r.isp=g.org||'';
+      }
+      return (r.city||r.ip) ? r : null;
+    }
+
+    function _applyGeo(r){
+      v.ip     = String(r.ip     ||'');
+      v.country= String(r.country||'');
+      v.region = String(r.region ||'');
+      v.city   = String(r.city   ||'');
+      v.zip    = String(r.zip    ||'');
+      v.lat    = String(r.lat    ||'');
+      v.lon    = String(r.lon    ||'');
+      v.isp    = String(r.isp    ||'');
+      v.suburb = _pinToSuburb(r.zip) || '';
+      console.log('[Analytics] Geo resolved:', v.city, v.region, v.suburb||'(no suburb)');
+    }
+
+    /* API list — tried in order */
+    var _geoAPIs = [
+      /* 1. ip-api works over plain HTTP — perfect for HTTP-hosted sites */
+      { url:'http://ip-api.com/json/?fields=status,country,regionName,city,zip,lat,lon,isp,query', src:'ipapi' },
+      /* 2. ipwho.is — HTTPS, no key, generous limits */
+      { url:'https://ipwho.is/', src:'ipwho' },
+      /* 3. ipinfo.io — HTTPS, 50k/month free */
+      { url:'https://ipinfo.io/json?token=', src:'ipinfo' },
+    ];
+
+    function _tryGeo(idx){
+      if(idx >= _geoAPIs.length){
+        console.warn('[Analytics] All geo APIs failed — saving without location');
         _pushVisit(v);
-      })
-      .catch(function(err){
-        console.error('[Analytics] Geo fetch failed:', err);
-        _pushVisit(v); /* still log device/browser without geo */
-      });
+        return;
+      }
+      var api = _geoAPIs[idx];
+      console.log('[Analytics] Trying geo API #'+(idx+1)+': '+api.src);
+      fetch(api.url)
+        .then(function(r){ return r.json(); })
+        .then(function(g){
+          var norm = _geoNorm(g, api.src);
+          if(norm){
+            _applyGeo(norm);
+            _pushVisit(v);
+          } else {
+            console.warn('[Analytics] '+api.src+' returned no usable data, trying next…');
+            _tryGeo(idx+1);
+          }
+        })
+        .catch(function(err){
+          console.warn('[Analytics] '+api.src+' failed ('+err.message+'), trying next…');
+          _tryGeo(idx+1);
+        });
+    }
+
+    _tryGeo(0);
   }
 
   function _pushVisit(v){
@@ -3912,15 +3964,22 @@ function backToProfiles(){
       _ds('_vd_session','🔁 Session lock: not locked',true);
     }
 
-    /* 2. Geo test */
-    _ds('_vd_geo','🌐 Geo: testing…',null);
-    fetch('https://ipwho.is/')
-      .then(function(r){return r.json();})
-      .then(function(g){
-        if(g&&g.city) _ds('_vd_geo','🌐 Geo: '+g.city+', '+g.country+' / PIN '+g.postal,true);
-        else          _ds('_vd_geo','🌐 Geo: returned but no city field',false);
-      })
-      .catch(function(e){ _ds('_vd_geo','🌐 Geo: fetch failed — '+e.message,false); });
+    /* 2. Geo test — try all 3 APIs and report which ones work */
+    _ds('_vd_geo','🌐 Geo: testing 3 APIs…',null);
+    var _diagGeoResults=[];
+    function _diagGeoCheck(url,label,mapFn,remaining){
+      fetch(url).then(function(r){return r.json();}).then(function(g){
+        var city=mapFn(g);
+        _diagGeoResults.push(label+(city?(' ✓ '+city):' ✗ no data'));
+        if(--remaining===0) _ds('_vd_geo','🌐 Geo: '+_diagGeoResults.join(' | '),_diagGeoResults.some(function(s){return s.includes('✓');}));
+      }).catch(function(e){
+        _diagGeoResults.push(label+' ✗ blocked');
+        if(--remaining===0) _ds('_vd_geo','🌐 Geo: '+_diagGeoResults.join(' | '),_diagGeoResults.some(function(s){return s.includes('✓');}));
+      });
+    }
+    _diagGeoCheck('http://ip-api.com/json/?fields=status,city,query','ip-api',function(g){return g.status==='success'?g.city:null;},3);
+    _diagGeoCheck('https://ipwho.is/','ipwho',function(g){return g.city||null;},3);
+    _diagGeoCheck('https://ipinfo.io/json','ipinfo',function(g){return g.city||null;},3);
 
     /* 3. Firebase WRITE test */
     var db=(localStorage.getItem('_vi_db')||_FBDB).replace(/\/+$/,'');
