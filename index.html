@@ -3448,6 +3448,9 @@ function backToProfiles(){
             <tr style="background:#0f0820;">
               <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
                 text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
+                border-bottom:1px solid #2a1f50;">📍</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
+                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
                 border-bottom:1px solid #2a1f50;">Time (IST)</th>
               <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
                 text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
@@ -3660,148 +3663,159 @@ function backToProfiles(){
     return{device:model, deviceType:d, os:o, browser:b};
   }
 
-  /* ── Collect + push visit ──────────────────────────────── */
+  /* ── Normalise any geo API response → common shape ───────── */
+  function _geoNorm(g, src){
+    var r={};
+    if(src==='ipapi'){
+      if(g.status!=='success') return null;
+      r.ip=g.query; r.country=g.country; r.region=g.regionName;
+      r.city=g.city; r.zip=g.zip; r.lat=g.lat; r.lon=g.lon; r.isp=g.isp;
+    } else if(src==='ipwho'){
+      if(g.success===false) return null;
+      r.ip=g.ip; r.country=g.country; r.region=g.region;
+      r.city=g.city; r.zip=g.postal; r.lat=g.latitude; r.lon=g.longitude;
+      r.isp=(g.connection&&g.connection.isp)||'';
+    } else if(src==='ipinfo'){
+      if(!g.ip) return null;
+      var loc=(g.loc||'').split(',');
+      r.ip=g.ip; r.country=g.country; r.region=g.region;
+      r.city=g.city; r.zip=g.postal; r.lat=loc[0]||''; r.lon=loc[1]||'';
+      r.isp=g.org||'';
+    }
+    return (r.city||r.ip)?r:null;
+  }
+
+  /* ── Apply normalised geo onto visit object ────────────── */
+  function _applyGeo(v, r){
+    v.ip     =String(r.ip     ||'');
+    v.country=String(r.country||'');
+    v.region =String(r.region ||'');
+    v.city   =String(r.city   ||'');
+    v.zip    =String(r.zip    ||'');
+    v.lat    =String(r.lat    ||'');
+    v.lon    =String(r.lon    ||'');
+    v.isp    =String(r.isp    ||'');
+    v.suburb =_pinToSuburb(r.zip)||'';
+  }
+
+  /* ── Reverse geocode lat/lon → precise suburb (OpenStreetMap) ─
+     Works for GPS coords AND IP coords.
+     GPS coords (±20m) → exact suburb every time.
+     IP coords (±5km)  → correct suburb ~60% of the time.        */
+  function _reverseGeocode(lat, lon, onDone){
+    if(!lat||!lon){ onDone(); return; }
+    var url='https://nominatim.openstreetmap.org/reverse'
+           +'?lat='+lat+'&lon='+lon
+           +'&format=json&addressdetails=1&zoom=15&accept-language=en';
+    fetch(url,{headers:{'User-Agent':'rohan-iyer-portfolio/1.0'}})
+      .then(function(r){return r.json();})
+      .then(function(d){
+        var a=d.address||{};
+        var sub=a.suburb||a.neighbourhood||a.city_district||a.quarter||a.village||'';
+        var pin=a.postcode||'';
+        if(sub) onDone(sub, pin, [a.road,sub].filter(Boolean).join(', '));
+        else    onDone('', pin, '');
+      })
+      .catch(function(){ onDone('','',''); });
+  }
+
+  /* ── IP geo cascade (3 APIs, first success wins) ──────────── */
+  var _geoAPIs=[
+    {url:'http://ip-api.com/json/?fields=status,country,regionName,city,zip,lat,lon,isp,query',src:'ipapi'},
+    {url:'https://ipwho.is/',src:'ipwho'},
+    {url:'https://ipinfo.io/json',src:'ipinfo'},
+  ];
+  function _tryIPGeo(v, idx, onDone){
+    if(idx>=_geoAPIs.length){ onDone(); return; }
+    var api=_geoAPIs[idx];
+    fetch(api.url)
+      .then(function(r){return r.json();})
+      .then(function(g){
+        var norm=_geoNorm(g,api.src);
+        if(norm){
+          _applyGeo(v,norm);
+          /* reverse-geocode the IP-based lat/lon for better suburb */
+          _reverseGeocode(v.lat,v.lon,function(sub,pin,loc){
+            if(sub){ v.suburb=sub; v.locality=loc; }
+            if(pin){ v.zip=pin; if(!sub) v.suburb=_pinToSuburb(pin)||v.suburb; }
+            onDone();
+          });
+        } else {
+          _tryIPGeo(v,idx+1,onDone);
+        }
+      })
+      .catch(function(){ _tryIPGeo(v,idx+1,onDone); });
+  }
+
+  /* ── Collect + push visit ──────────────────────────────────
+     FLOW:
+       1. Try GPS (browser Geolocation API — browser shows native prompt)
+          → if allowed: precise coords → Nominatim → exact suburb ✅
+          → if denied/timeout: fall through to IP cascade
+       2. IP geo cascade (3 APIs) + Nominatim on IP coords
+       3. Push to Firebase either way
+  ────────────────────────────────────────────────────────── */
   function _trackVisit(){
-    if(_alreadyLogged()){ console.log('[Analytics] Skipped — already logged within last hour'); return; }
+    if(_alreadyLogged()){ return; }
     var p=_parseUA(navigator.userAgent);
     var v={
-      ts         :new Date().toISOString(),
-      device     :p.device,      /* specific model e.g. "iPhone 14 Pro / 15" */
-      deviceType :p.deviceType,  /* category e.g. "iPhone" */
-      os         :p.os,
-      browser    :p.browser,
-      screen     :screen.width+'x'+screen.height,
-      viewport   :window.innerWidth+'x'+window.innerHeight,
-      dpr        :+(window.devicePixelRatio||1).toFixed(2),
-      tz         :(Intl&&Intl.DateTimeFormat?Intl.DateTimeFormat().resolvedOptions().timeZone:''),
-      lang       :navigator.language||'',
-      ref        :document.referrer||'direct',
-      ip:'',country:'',region:'',city:'',suburb:'',district:'',zip:'',lat:'',lon:'',isp:'',locality:''
+      ts        :new Date().toISOString(),
+      device    :p.device, deviceType:p.deviceType,
+      os        :p.os, browser:p.browser,
+      screen    :screen.width+'x'+screen.height,
+      viewport  :window.innerWidth+'x'+window.innerHeight,
+      dpr       :+(window.devicePixelRatio||1).toFixed(2),
+      tz        :(Intl&&Intl.DateTimeFormat?Intl.DateTimeFormat().resolvedOptions().timeZone:''),
+      lang      :navigator.language||'',
+      ref       :document.referrer||'direct',
+      gps       :'denied',   /* updated to 'yes' if GPS granted */
+      ip:'',country:'',region:'',city:'',suburb:'',zip:'',lat:'',lon:'',isp:'',locality:''
     };
-    /* ── Geo cascade: tries 3 APIs in order, stops at first success ── */
-    console.log('[Analytics] Starting geo lookup cascade…');
 
-    /* Normalise any API's response into a common shape */
-    function _geoNorm(g, src){
-      var r = {};
-      if(src==='ipapi'){
-        /* http://ip-api.com/json/ */
-        if(g.status!=='success') return null;
-        r.ip=g.query; r.country=g.country; r.region=g.regionName;
-        r.city=g.city; r.zip=g.zip; r.lat=g.lat; r.lon=g.lon; r.isp=g.isp;
-      } else if(src==='ipwho'){
-        /* https://ipwho.is/ */
-        if(g.success===false) return null;
-        r.ip=g.ip; r.country=g.country; r.region=g.region;
-        r.city=g.city; r.zip=g.postal; r.lat=g.latitude; r.lon=g.longitude;
-        r.isp=(g.connection&&g.connection.isp)||'';
-      } else if(src==='ipinfo'){
-        /* https://ipinfo.io/json */
-        if(!g.ip) return null;
-        var loc=(g.loc||'').split(',');
-        r.ip=g.ip; r.country=g.country; r.region=g.region;
-        r.city=g.city; r.zip=g.postal; r.lat=loc[0]||''; r.lon=loc[1]||'';
-        r.isp=g.org||'';
-      }
-      return (r.city||r.ip) ? r : null;
+    function _finish(){ _pushVisit(v); }
+
+    function _doIPFallback(){
+      _tryIPGeo(v, 0, _finish);
     }
 
-    function _applyGeo(r){
-      v.ip     = String(r.ip     ||'');
-      v.country= String(r.country||'');
-      v.region = String(r.region ||'');
-      v.city   = String(r.city   ||'');
-      v.zip    = String(r.zip    ||'');
-      v.lat    = String(r.lat    ||'');
-      v.lon    = String(r.lon    ||'');
-      v.isp    = String(r.isp    ||'');
-      /* PIN lookup as first-pass suburb — will be overridden by reverse-geocode */
-      v.suburb = _pinToSuburb(r.zip) || '';
-      console.log('[Analytics] Geo resolved:', v.city, v.region, v.zip);
+    /* ── Step 1: Try GPS silently ──
+       Browser shows its own native prompt — page shows nothing.
+       10 second timeout so it doesn't stall if user ignores the prompt. */
+    if(navigator.geolocation){
+      var _gpsDone=false;
+      var _gpsTimer=setTimeout(function(){
+        if(!_gpsDone){ _gpsDone=true; console.log('[Analytics] GPS timed out → IP fallback'); _doIPFallback(); }
+      }, 10000);
+
+      navigator.geolocation.getCurrentPosition(
+        /* SUCCESS — user allowed location */
+        function(pos){
+          if(_gpsDone) return; _gpsDone=true; clearTimeout(_gpsTimer);
+          var lat=pos.coords.latitude, lon=pos.coords.longitude;
+          v.lat=String(lat); v.lon=String(lon);
+          v.gps='yes';
+          console.log('[Analytics] GPS granted ✓ lat:'+lat+' lon:'+lon);
+          /* Reverse geocode the PRECISE GPS coordinates */
+          _reverseGeocode(lat, lon, function(sub, pin, loc){
+            if(sub){ v.suburb=sub; v.locality=loc; }
+            if(pin){ v.zip=pin; if(!sub) v.suburb=_pinToSuburb(pin)||''; }
+            /* Still get IP/ISP/country via IP API (GPS doesn't give these) */
+            _tryIPGeo(v, 0, _finish);
+          });
+        },
+        /* DENIED or ERROR — fall through to IP silently */
+        function(err){
+          if(_gpsDone) return; _gpsDone=true; clearTimeout(_gpsTimer);
+          console.log('[Analytics] GPS denied/error ('+err.code+') → IP fallback');
+          _doIPFallback();
+        },
+        /* Options: high accuracy, 8 second timeout */
+        { enableHighAccuracy:true, timeout:8000, maximumAge:0 }
+      );
+    } else {
+      /* Geolocation not supported (old browser / insecure context) */
+      _doIPFallback();
     }
-
-    /* ── Reverse geocode: lat/lon → exact suburb via OpenStreetMap ──
-       Much more accurate than pincode lookup — gives "Mulund West",
-       "Andheri East", "Bandra West" etc. from actual coordinates.     */
-    function _reverseGeocode(lat, lon, onDone){
-      if(!lat || !lon){ onDone(); return; }
-      var url = 'https://nominatim.openstreetmap.org/reverse'
-              + '?lat=' + lat + '&lon=' + lon
-              + '&format=json&addressdetails=1&zoom=15'
-              + '&accept-language=en';
-      console.log('[Analytics] Reverse geocoding lat:'+lat+' lon:'+lon);
-      fetch(url, { headers:{'User-Agent':'rohan-iyer-portfolio/1.0'} })
-        .then(function(r){ return r.json(); })
-        .then(function(d){
-          var a = d.address || {};
-          /* OSM returns suburb / neighbourhood / city_district / quarter */
-          var sub = a.suburb
-                 || a.neighbourhood
-                 || a.city_district
-                 || a.quarter
-                 || a.village
-                 || a.hamlet
-                 || '';
-          /* Also grab the OSM postcode — more accurate than IP postcode */
-          var pin = a.postcode || '';
-          if(sub){
-            v.suburb = sub;
-            console.log('[Analytics] Reverse geo suburb:', sub);
-          }
-          if(pin){
-            v.zip = pin;
-            var pinSub = _pinToSuburb(pin);
-            if(pinSub && !sub) v.suburb = pinSub;
-          }
-          /* locality = road / area for even finer grain */
-          v.locality = [a.road, a.suburb||a.neighbourhood]
-                       .filter(Boolean).join(', ');
-          onDone();
-        })
-        .catch(function(err){
-          console.warn('[Analytics] Reverse geocode failed:', err.message);
-          onDone(); /* proceed with what we have */
-        });
-    }
-
-    /* API list — tried in order */
-    var _geoAPIs = [
-      /* 1. ip-api works over plain HTTP — perfect for HTTP-hosted sites */
-      { url:'http://ip-api.com/json/?fields=status,country,regionName,city,zip,lat,lon,isp,query', src:'ipapi' },
-      /* 2. ipwho.is — HTTPS, no key, generous limits */
-      { url:'https://ipwho.is/', src:'ipwho' },
-      /* 3. ipinfo.io — HTTPS, 50k/month free */
-      { url:'https://ipinfo.io/json?token=', src:'ipinfo' },
-    ];
-
-    function _tryGeo(idx){
-      if(idx >= _geoAPIs.length){
-        console.warn('[Analytics] All geo APIs failed — saving without location');
-        _pushVisit(v);
-        return;
-      }
-      var api = _geoAPIs[idx];
-      console.log('[Analytics] Trying geo API #'+(idx+1)+': '+api.src);
-      fetch(api.url)
-        .then(function(r){ return r.json(); })
-        .then(function(g){
-          var norm = _geoNorm(g, api.src);
-          if(norm){
-            _applyGeo(norm);
-            /* Step 2: reverse geocode the coordinates for accurate suburb */
-            _reverseGeocode(v.lat, v.lon, function(){ _pushVisit(v); });
-          } else {
-            console.warn('[Analytics] '+api.src+' returned no usable data, trying next…');
-            _tryGeo(idx+1);
-          }
-        })
-        .catch(function(err){
-          console.warn('[Analytics] '+api.src+' failed ('+err.message+'), trying next…');
-          _tryGeo(idx+1);
-        });
-    }
-
-    _tryGeo(0);
   }
 
   function _pushVisit(v){
@@ -3921,6 +3935,7 @@ function backToProfiles(){
     var rows='';
     _data.forEach(function(r){
       rows+='<tr style="border-bottom:1px solid rgba(42,31,80,.35);">' +
+        '<td style="padding:8px 12px;text-align:center;" title="'+(r.gps==='yes'?'GPS precise':'IP estimated')+'">'+(r.gps==='yes'?'<span style="color:#10b981;font-size:14px;" title="GPS precise">📍</span>':'<span style="color:#7c7a9a;font-size:12px;" title="IP estimated">~</span>')+'</td>' +
         _td(_fmtDate(r.ts),         'color:#6ee7b7') +
         _td(r.ip||'—',              'color:#7c7a9a;font-family:monospace;font-size:10.5px') +
         _td(r.city||'—',            'color:#c084fc;font-weight:600') +
