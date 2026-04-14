@@ -3324,6 +3324,9 @@ function backToProfiles(){
         font-weight:700;padding:2px 8px;border-radius:99px;display:none;">● LIVE</span>
     </div>
     <div style="display:flex;gap:10px;align-items:center;">
+      <button onclick="_viForceRetrack(this)" style="background:#0a1a00;border:1px solid #166534;
+        color:#86efac;padding:6px 14px;border-radius:7px;cursor:pointer;
+        font-size:12px;font-family:inherit;">⚡ Re-track</button>
       <button onclick="_viRunDiag()" style="background:#1a0a00;border:1px solid #92400e;
         color:#fcd34d;padding:6px 14px;border-radius:7px;cursor:pointer;
         font-size:12px;font-family:inherit;">🔍 Diagnose</button>
@@ -4067,6 +4070,40 @@ function backToProfiles(){
         else r.text().then(function(t){ _ds('_vd_fb_read','📖 DB Read: HTTP '+r.status+' — '+t.slice(0,60),false); });
       })
       .catch(function(e){ _ds('_vd_fb_read','📖 DB Read: failed — '+e.message,false); });
+  };
+
+  /* ── Force re-track (⚡ button in cheat panel) ─────────────
+     Clears the session lock and fires a fresh track immediately.
+     Useful for testing or when you want to re-log your own visit. */
+  window._viForceRetrack = function(btn){
+    try{ localStorage.removeItem('_vi_last'); } catch(e){}
+    var orig = btn.textContent;
+    btn.textContent = '⏳ Tracking…';
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+    _trackVisit();
+    /* Poll until _vi_last is set again (means push completed) */
+    var poll = setInterval(function(){
+      var done = false;
+      try{ done = !!localStorage.getItem('_vi_last'); }catch(e){}
+      if(done){
+        clearInterval(poll);
+        btn.textContent = '✅ Done!';
+        btn.style.background = '#052e16';
+        btn.style.color = '#4ade80';
+        setTimeout(function(){
+          btn.textContent = orig;
+          btn.disabled = false;
+          btn.style.opacity = '';
+          btn.style.background = '#0a1a00';
+          btn.style.color = '#86efac';
+          /* Refresh the data table to show the new entry */
+          _viLoad();
+        }, 2000);
+      }
+    }, 500);
+    /* Safety timeout — stop polling after 20s regardless */
+    setTimeout(function(){ clearInterval(poll); }, 20000);
   };
 
   /* ── Boot ──────────────────────────────────────────────── */
