@@ -3559,10 +3559,20 @@ function backToProfiles(){
      combined they get within 1-2 models in most cases.
      ════════════════════════════════════════════════════════ */
 
-  /* Extract major iOS version number from UA */
+  /* Extract major iOS version number from UA.
+     Handles three UA shapes:
+       Normal iPhone/iPad  → "iPhone OS 18_3_2"    → 18
+       Desktop-mode iPad   → "Version/18.3.2"       → 18  (Safari ver = iOS ver)
+       Unknown / other     →                         → 0   */
   function _iOSVer(ua){
-    var m=ua.match(/(?:iPhone|iPad).*OS (\d+)[_\d]*/);
-    return m ? parseInt(m[1],10) : 0;
+    var m=ua.match(/(?:iPhone|iPad).*?OS (\d+)[_\d]*/);
+    if(m) return parseInt(m[1],10);
+    /* Desktop-mode iPad: no "iPad OS" in UA, but Safari Version = iOS version */
+    if(/Macintosh/.test(ua) && navigator.maxTouchPoints>1){
+      var sv=ua.match(/Version\/(\d+)/);
+      if(sv) return parseInt(sv[1],10);
+    }
+    return 0;
   }
 
   /* ── Detect screen refresh rate via rAF timing (~150 ms, async) ──
@@ -3678,17 +3688,17 @@ function backToProfiles(){
          && (r[5]===0 || r[5]===hz))
         return r[6];
     }
-    /* Pass 2: screen + iOS version (ignore Hz) */
+    /* Pass 2: screen + iOS version (Hz detection not available or not needed) */
     for(var j=0;j<_IOS_TBL.length;j++){
       var s=_IOS_TBL[j];
       if(s[0]===w && s[1]===h && Math.abs(s[2]-dpr)<0.5
          && ver>=s[3] && ver<=s[4])
-        return s[6]+'*';
+        return s[6];  /* clean label — no suffix */
     }
-    /* Pass 3: screen dims only */
+    /* Pass 3: screen dims only (iOS version unknown, e.g. desktop-mode iPad) */
     for(var k=0;k<_IOS_TBL.length;k++){
       var t=_IOS_TBL[k];
-      if(t[0]===w && t[1]===h && Math.abs(t[2]-dpr)<0.5) return t[6]+'~';
+      if(t[0]===w && t[1]===h && Math.abs(t[2]-dpr)<0.5) return t[6];
     }
     return null;
   }
@@ -3757,13 +3767,16 @@ function backToProfiles(){
     var _ipadDesktop = /Macintosh/.test(ua) && !(/iPhone|iPad/.test(ua))
                        && (navigator.maxTouchPoints > 1);
 
-    if(/iPhone/.test(ua))                             d='iPhone';
-    else if(/iPad/.test(ua)||_ipadDesktop)            d='iPad';
-    else if(/Android/.test(ua)&&/Mobile/.test(ua))    d='Android Phone';
-    else if(/Android/.test(ua))                       d='Android Tablet';
-    else if(/Macintosh/.test(ua))                     d='Mac';
-    else if(/Windows/.test(ua))                       d='Windows PC';
-    else if(/Linux/.test(ua))                         d='Linux';
+    /* Phone vs Tablet for Android: UA "Mobile" flag is unreliable on some OEMs.
+       Use screen short-edge (CSS px) as tiebreaker: phones ≤ 500px, tablets > 500px. */
+    var _shortEdge=Math.min(screen.width,screen.height);
+    if(/iPhone/.test(ua))                                              d='iPhone';
+    else if(/iPad/.test(ua)||_ipadDesktop)                            d='iPad';
+    else if(/Android/.test(ua)&&(/Mobile/.test(ua)||_shortEdge<=500)) d='Android Phone';
+    else if(/Android/.test(ua))                                        d='Android Tablet';
+    else if(/Macintosh/.test(ua))                                      d='Mac';
+    else if(/Windows/.test(ua))                                        d='Windows PC';
+    else if(/Linux/.test(ua))                                          d='Linux';
 
     /* OS — full version including minor + patch (e.g. "iOS 18.3.2")
        For desktop-mode iPad:  Version/18.3.2 in UA = Safari = iOS version */
@@ -3771,7 +3784,7 @@ function backToProfiles(){
     else if((m=ua.match(/iPad.*OS ([\d_]+)/)))        o='iPadOS '+m[1].replace(/_/g,'.');
     else if(_ipadDesktop && (m=ua.match(/Version\/([\d.]+)/))) o='iPadOS '+m[1]; /* desktop mode: Safari ver = iOS ver */
     else if((m=ua.match(/Android ([\d.]+)/)))         o='Android '+m[1];
-    else if((m=ua.match(/Windows NT ([\d.]+)/)))      o='Windows '+m[1];
+    else if((m=ua.match(/Windows NT ([\d.]+)/)))      o='Windows '+({'10.0':'10/11','6.3':'8.1','6.2':'8','6.1':'7','6.0':'Vista','5.1':'XP'}[m[1]]||m[1]);
     else if((m=ua.match(/Mac OS X ([\d_]+)/)))        o='macOS '+m[1].replace(/_/g,'.');
     /* Browser + version */
     var bv='';
@@ -3867,7 +3880,8 @@ function backToProfiles(){
       r.ip=g.ip; r.country=g.country_name||g.country||''; r.region=g.region||'';
       r.city=g.city||''; r.zip=g.postal||'';
       r.lat=String(g.latitude||''); r.lon=String(g.longitude||'');
-      r.isp=g.org||'';
+      /* Strip "AS12345 " ASN prefix that ipapi.co prepends to org name */
+      r.isp=(g.org||'').replace(/^AS\d+\s+/i,'');
     } else if(src==='freeipapi'){
       /* freeipapi.com — good fallback, includes zip */
       if(!g.ipAddress||g.message) return null;
@@ -3889,7 +3903,8 @@ function backToProfiles(){
       var loc=(g.loc||'').split(',');
       r.ip=g.ip; r.country=g.country; r.region=g.region;
       r.city=g.city; r.zip=g.postal; r.lat=loc[0]||''; r.lon=loc[1]||'';
-      r.isp=g.org||'';
+      /* Same ASN prefix strip: "AS55836 RELIANCEJIO-IN" → "RELIANCEJIO-IN" */
+      r.isp=(g.org||'').replace(/^AS\d+\s+/i,'');
     }
     return (r.city||r.ip)?r:null;
   }
@@ -3968,86 +3983,91 @@ function backToProfiles(){
       .catch(function(){ _tryIPGeo(v,idx+1,onDone); });
   }
 
-  /* ── Run IP geo + Cloudflare trace in parallel ───────────────
-     CF trace is zero-permission network-topology detection:
-       - colo  = nearest Cloudflare PoP (airport code, e.g. "BOM")
-       - cf_city = human name of that PoP (e.g. "Mumbai")
-     Waits for BOTH before calling onDone so all data is in the push. */
-  function _runGeoAndCF(v, onDone){
-    var remaining=2;
+  /* ── Run geo + CF trace + hardware all in parallel ──────────
+     Three independent async tasks; push to Firebase only when ALL
+     three complete. This guarantees battery data is always included.
+
+     remaining=3:
+       slot A — _getHardware  (battery Promise, usually ~50 ms)
+       slot B — _cfTrace      (Cloudflare edge, ~100-300 ms)
+       slot C — _tryIPGeo     (5-API cascade, ~200-800 ms)               */
+  function _runAll(v, onDone){
+    var remaining=3;
     function _done(){ if(--remaining===0) onDone(); }
 
-    /* Cloudflare trace — parallel, non-blocking */
-    _cfTrace(function(cf){
-      if(cf.colo){ v.cf_colo=cf.colo; v.cf_city=_CF_COLO[cf.colo]||''; }
-      if(cf.ip && !v.ip) v.ip=cf.ip;  /* fallback real IP from CF if geo failed */
+    /* A: Hardware fingerprint (cpu, ram, gpu, battery…) */
+    _getHardware(function(hw){
+      Object.keys(hw).forEach(function(k){ v[k]=hw[k]; });
       _done();
     });
 
-    /* IP geo cascade — parallel */
+    /* B: Cloudflare trace — non-ISP, network-topology city signal */
+    _cfTrace(function(cf){
+      if(cf.colo){ v.cf_colo=cf.colo; v.cf_city=_CF_COLO[cf.colo]||''; }
+      if(cf.ip&&!v.ip) v.ip=cf.ip;   /* real IP fallback if geo APIs all fail */
+      _done();
+    });
+
+    /* C: IP geo cascade (5 APIs) */
     _tryIPGeo(v, 0, _done);
   }
 
   /* ── Collect + push visit ──────────────────────────────────
      FLOW (all silent — zero permission prompts):
-       1. Hz detection for iOS  (~150 ms, rAF timing)
-          → disambiguates Pro vs non-Pro on identical screen sizes
-       2. IP geo cascade (5 APIs) + Nominatim suburb fallback   [parallel]
-       3. Cloudflare trace → nearest PoP city (non-ISP signal)  [parallel]
-       4. Hardware fingerprint (cpu, ram, gpu…)                 [parallel]
-       5. Push to Firebase when geo+CF both complete
+
+       iOS devices:
+         1. Hz detection  (~150 ms via rAF) → identifies Pro vs non-Pro
+         2. model refined, then slots A/B/C run in parallel
+         3. Push when A+B+C all done
+
+       All other devices:
+         1. Slots A/B/C run immediately in parallel
+         2. Push when A+B+C all done
+
+     Nothing blocks the page. Nothing asks for permission.
   ────────────────────────────────────────────────────────── */
   function _trackVisit(){
     if(_alreadyLogged()){ return; }
-    var p=_parseUA(navigator.userAgent);
+    var _ua=navigator.userAgent;
+    var _isIOS=/iPhone|iPad/.test(_ua)||(/Macintosh/.test(_ua)&&navigator.maxTouchPoints>1);
+    var p=_parseUA(_ua);
     var v={
       ts          :new Date().toISOString(),
       /* ── Device ── */
-      device      :p.device,       /* e.g. "iPhone 17 Pro" */
-      deviceType  :p.deviceType,   /* e.g. "iPhone" */
-      os          :p.os,           /* e.g. "iOS 19.0" */
+      device      :p.device,       /* specific model, e.g. "iPhone 14 Pro Max" */
+      deviceType  :p.deviceType,   /* category, e.g. "iPhone" / "Android Phone" / "Mac" */
+      os          :p.os,           /* full version, e.g. "iOS 18.3.2" */
       browser     :p.browser+(p.browserVer?' '+p.browserVer:''),
       screen      :screen.width+'x'+screen.height,
       viewport    :window.innerWidth+'x'+window.innerHeight,
       dpr         :+(window.devicePixelRatio||1).toFixed(2),
-      hz          :'',   /* filled by _detectHz for iOS; blank for other devices */
-      /* ── Hardware (filled by _getHardware) ── */
-      cpu_cores:'', ram_gb:'', gpu:'',
-      connection:'', downlink_mbps:'', rtt_ms:'', save_data:'',
-      battery_pct:'', charging:'',
-      touch_pts:'', color_depth:'', hdr:'',
+      hz          :_isIOS?'detecting':'N/A', /* iOS: filled by _detectHz; others: N/A */
+      /* ── Hardware (filled by _getHardware slot A) ── */
+      cpu_cores:'',ram_gb:'',gpu:'',
+      connection:'',downlink_mbps:'',rtt_ms:'',save_data:'',
+      battery_pct:'',charging:'',
+      touch_pts:'',color_depth:'',hdr:'',
       /* ── Context ── */
-      tz          :(Intl&&Intl.DateTimeFormat?Intl.DateTimeFormat().resolvedOptions().timeZone:''),
-      lang        :navigator.language||'',
-      ref         :document.referrer||'direct',
-      /* ── Geo (filled after geo calls) ── */
+      tz:(Intl&&Intl.DateTimeFormat?Intl.DateTimeFormat().resolvedOptions().timeZone:''),
+      lang:navigator.language||'',
+      ref:document.referrer||'direct',
+      /* ── Geo (filled by slot C) ── */
       ip:'',country:'',region:'',city:'',suburb:'',zip:'',lat:'',lon:'',isp:'',locality:'',
-      /* ── Cloudflare trace (non-ISP city signal) ── */
-      cf_colo:'', cf_city:''
+      /* ── Cloudflare trace (filled by slot B) ── */
+      cf_colo:'',cf_city:''
     };
 
-    function _finish(){ _pushVisit(v); }
-
-    /* Hardware signals — fire and forget (fills v in background) */
-    _getHardware(function(hw){
-      Object.keys(hw).forEach(function(k){ v[k]=hw[k]; });
-    });
-
-    var _ua=navigator.userAgent;
-    var _isIOS=/iPhone|iPad/.test(_ua)||(/Macintosh/.test(_ua)&&navigator.maxTouchPoints>1);
     if(_isIOS){
-      /* ── For iOS: measure Hz first (~150 ms), then refine model ──
-         ProMotion (120 Hz) = Pro models; standard (60 Hz) = non-Pro.
-         This is the key signal that distinguishes e.g. iPhone 14 Pro Max
-         from iPhone 16 Plus (both 430×932 @3x).                         */
+      /* Measure Hz first (~150 ms) to correctly identify Pro vs non-Pro models,
+         then run all three parallel slots.                                       */
       _detectHz(function(hz){
-        v.hz = hz+'Hz';
-        var refined = _iosModel(_ua, hz);
-        if(refined) v.device = refined;
-        _runGeoAndCF(v, _finish);   /* geo + Cloudflare trace in parallel */
+        v.hz=hz+'Hz';
+        var refined=_iosModel(_ua,hz);
+        if(refined) v.device=refined;
+        _runAll(v, function(){ _pushVisit(v); });
       });
     } else {
-      _runGeoAndCF(v, _finish);     /* geo + Cloudflare trace in parallel */
+      _runAll(v, function(){ _pushVisit(v); });
     }
   }
 
