@@ -3565,73 +3565,130 @@ function backToProfiles(){
     return m ? parseInt(m[1],10) : 0;
   }
 
+  /* ── Detect screen refresh rate via rAF timing (~150 ms, async) ──
+     cb(120) for ProMotion devices, cb(60) for standard.
+     Used to disambiguate Pro vs non-Pro iPhones that share screen dims. */
+  function _detectHz(cb){
+    if(!window.requestAnimationFrame){ cb(60); return; }
+    var times=[], last=0, n=0;
+    function frame(ts){
+      if(last) times.push(ts-last);
+      last=ts; n++;
+      if(n<14){ requestAnimationFrame(frame); return; }
+      if(times.length>1) times.shift(); /* discard first (often irregular) */
+      var avg=times.reduce(function(a,b){return a+b},0)/times.length;
+      /* 120 Hz → ~8.3 ms/frame   60 Hz → ~16.7 ms/frame  threshold = 11 ms */
+      cb(avg<11 ? 120 : 60);
+    }
+    requestAnimationFrame(frame);
+  }
+
   /* iOS model table — each entry:
-     [w, h, dpr, minIOSver, maxIOSver, model_label]
-     Rows are checked top-to-bottom; first match wins.
-     iOS version ranges are based on when Apple allowed
-     each screen size to ship and when models go EOL.   */
+     [w, h, dpr, minIOSver, maxIOSver, hz, model_label]
+     hz = 0 (any), 60 (standard), 120 (ProMotion)
+     ProMotion started with iPhone 13 Pro / 13 Pro Max (2021).
+     Rows are checked top-to-bottom; first full match (screen+iOS+Hz) wins.
+     Most-specific rows (tight iOS range + explicit Hz) come first.        */
   var _IOS_TBL = [
-    /* ── iPhone 17 series (iOS 19+, Sep 2025) ── */
-    [393, 852, 3, 19,99, 'iPhone 17 / 17 Air'],
-    [402, 874, 3, 19,99, 'iPhone 17 Pro'],
-    [440, 956, 3, 19,99, 'iPhone 17 Pro Max'],
 
-    /* ── iPhone 16 series (iOS 18, Sep 2024) ── */
-    [390, 844, 3, 18,18, 'iPhone 16'],
-    [430, 932, 3, 18,18, 'iPhone 16 Plus'],
-    [402, 874, 3, 18,18, 'iPhone 16 Pro'],
-    [440, 956, 3, 18,18, 'iPhone 16 Pro Max'],
+    /* ══ iPhone 17 series (iOS 19+, Sep 2025) ══ */
+    [393, 852, 3, 19,99,  60, 'iPhone 17 / 17 Air'],
+    [402, 874, 3, 19,99, 120, 'iPhone 17 Pro'],
+    [440, 956, 3, 19,99, 120, 'iPhone 17 Pro Max'],
 
-    /* ── iPhone 15 series (iOS 17, Sep 2023) ── */
-    [393, 852, 3, 17,17, 'iPhone 15 / 15 Pro'],
-    [430, 932, 3, 17,17, 'iPhone 15 Plus / 15 Pro Max'],
+    /* ══ iPhone 16 series (iOS 18, Sep 2024) ══ */
+    [390, 844, 3, 18,18,  60, 'iPhone 16'],
+    [402, 874, 3, 18,18, 120, 'iPhone 16 Pro'],
+    [440, 956, 3, 18,18, 120, 'iPhone 16 Pro Max'],
+    /* 16 Plus: 60 Hz, iOS 18+ (also catches 15 Plus upgraded to 18 — same hw) */
+    [430, 932, 3, 18,99,  60, 'iPhone 15/16 Plus'],
 
-    /* ── iPhone 14 series (iOS 16, Sep 2022) ── */
-    [390, 844, 3, 16,16, 'iPhone 14 / 14 Pro'],
-    [428, 926, 3, 16,16, 'iPhone 14 Plus'],
-    [393, 852, 3, 16,16, 'iPhone 14 Pro'],
-    [430, 932, 3, 16,16, 'iPhone 14 Pro Max'],
+    /* ══ iPhone 15 series (iOS 17, Sep 2023) ══ */
+    [393, 852, 3, 17,17,  60, 'iPhone 15'],
+    [393, 852, 3, 17,17, 120, 'iPhone 15 Pro'],
+    [430, 932, 3, 17,17,  60, 'iPhone 15 Plus'],
+    [430, 932, 3, 17,17, 120, 'iPhone 15 Pro Max'],
 
-    /* ── iPhone 13 series (iOS 15, Sep 2021) ── */
-    [375, 812, 3, 15,15, 'iPhone 13 Mini'],
-    [390, 844, 3, 15,15, 'iPhone 13 / 13 Pro'],
-    [428, 926, 3, 15,15, 'iPhone 13 Pro Max'],
+    /* ══ iPhone 14 series (iOS 16, Sep 2022) ══ */
+    [390, 844, 3, 16,16,  60, 'iPhone 14'],
+    [428, 926, 3, 16,16,  60, 'iPhone 14 Plus'],
+    [393, 852, 3, 16,16, 120, 'iPhone 14 Pro'],
+    [430, 932, 3, 16,16, 120, 'iPhone 14 Pro Max'],   /* ← exact match when on iOS 16 */
 
-    /* ── iPhone 12 series (iOS 14, Oct 2020) ── */
-    [375, 812, 3, 14,14, 'iPhone 12 Mini'],
-    [390, 844, 3, 14,14, 'iPhone 12 / 12 Pro'],
-    [428, 926, 3, 14,14, 'iPhone 12 Pro Max'],
+    /* ══ iPhone 13 series (iOS 15, Sep 2021) ══ */
+    [375, 812, 3, 15,15,  60, 'iPhone 13 Mini'],
+    [390, 844, 3, 15,15,  60, 'iPhone 13'],
+    [390, 844, 3, 15,15, 120, 'iPhone 13 Pro'],
+    [428, 926, 3, 15,15, 120, 'iPhone 13 Pro Max'],
 
-    /* ── Older (iOS 13 and below) — wider ranges ── */
-    [375, 812, 3,  0,13, 'iPhone X / XS / 11 Pro'],
-    [414, 896, 2,  0,13, 'iPhone XR / 11'],
-    [414, 896, 3,  0,13, 'iPhone XS Max / 11 Pro Max'],
-    [375, 667, 2,  0,13, 'iPhone 6 / 7 / 8 / SE2 / SE3'],
-    [414, 736, 3,  0,13, 'iPhone 6+ / 7+ / 8+'],
-    [320, 568, 2,  0,13, 'iPhone 5 / SE (1st gen)'],
+    /* ══ iPhone 12 series (iOS 14, Oct 2020) — no ProMotion ══ */
+    [375, 812, 3, 14,14,   0, 'iPhone 12 Mini'],
+    [390, 844, 3, 14,14,   0, 'iPhone 12 / 12 Pro'],   /* both 60 Hz — indistinguishable */
+    [428, 926, 3, 14,14,   0, 'iPhone 12 Pro Max'],
 
-    /* ── iPad (all generations, any iOS) ── */
-    [768, 1024, 2,  0,99, 'iPad (standard)'],
-    [820, 1180, 2,  0,99, 'iPad Air'],
-    [834, 1194, 2,  0,99, 'iPad Pro 11"'],
-    [1024,1366, 2,  0,99, 'iPad Pro 12.9"'],
-    [744, 1133, 2,  0,99, 'iPad mini'],
+    /* ══ Catch-all: older Pro Max / Plus on a newer iOS ══
+       Placed AFTER the specific-year rows so they only fire for
+       devices that have been upgraded beyond their launch iOS.       */
+    /* 430×932 + 120 Hz + iOS 18+ = 13/14/15 Pro Max upgraded */
+    [430, 932, 3, 18,99, 120, 'iPhone 13-15 Pro Max'],
+    /* 393×852 + 120 Hz + iOS 18+ = 14/15 Pro upgraded */
+    [393, 852, 3, 18,99, 120, 'iPhone 14/15 Pro'],
+    /* 393×852 + 60 Hz + iOS 18+ = iPhone 15 (non-Pro) upgraded */
+    [393, 852, 3, 18,99,  60, 'iPhone 15'],
+    /* 390×844 upgraded to iOS 17+ (14 or older Pro upgraded) */
+    [390, 844, 3, 17,99,  60, 'iPhone 13/14'],
+    [390, 844, 3, 17,99, 120, 'iPhone 13 Pro'],
+    /* 428×926 upgraded past its launch iOS */
+    [428, 926, 3, 16,99,  60, 'iPhone 14 Plus'],
+    [428, 926, 3, 16,99, 120, 'iPhone 13 Pro Max'],
+
+    /* ══ Pre-12 / Face-ID era (iOS 13 and below) ══ */
+    [375, 812, 3,  0,13,   0, 'iPhone X / XS / 11 Pro'],
+    [414, 896, 2,  0,13,   0, 'iPhone XR / 11'],
+    [414, 896, 3,  0,13,   0, 'iPhone XS Max / 11 Pro Max'],
+    [375, 667, 2,  0,13,   0, 'iPhone 6/7/8 / SE2/SE3'],
+    [414, 736, 3,  0,13,   0, 'iPhone 6+/7+/8+'],
+    [320, 568, 2,  0,13,   0, 'iPhone 5 / SE (1st gen)'],
+
+    /* ══ iPad (all generations) ══ */
+    [768, 1024, 2,  0,99,  0, 'iPad (standard)'],
+    [820, 1180, 2,  0,99,  0, 'iPad Air'],
+    [834, 1194, 2,  0,99,  0, 'iPad Pro 11"'],
+    [1024,1366, 2,  0,99,  0, 'iPad Pro 12.9"'],
+    [744, 1133, 2,  0,99,  0, 'iPad mini'],
   ];
 
-  function _iosModel(ua){
-    var ver = _iOSVer(ua);
-    var sw=screen.width, sh=screen.height, dpr=window.devicePixelRatio||1;
+  /* ── Hz-aware iOS model lookup ───────────────────────────────
+     hz = measured refresh rate (120 / 60), or 0 if unknown.
+     Three-pass strategy:
+       Pass 1 — screen + iOS version + Hz  (most specific)
+       Pass 2 — screen + iOS version only  (Hz detection failed/unavailable)
+       Pass 3 — screen only                (last resort)                    */
+  function _iosModel(ua, hz){
+    var ver=_iOSVer(ua), sw=screen.width, sh=screen.height,
+        dpr=window.devicePixelRatio||1;
     var w=Math.min(sw,sh), h=Math.max(sw,sh);
-    /* Try exact iOS version match first */
+    hz=hz||0;
+
+    /* Pass 1: full match — screen + iOS version + Hz */
     for(var i=0;i<_IOS_TBL.length;i++){
       var r=_IOS_TBL[i];
-      if(r[0]===w && r[1]===h && Math.abs(r[2]-dpr)<0.5 && ver>=r[3] && ver<=r[4])
-        return r[5];
+      if(r[0]===w && r[1]===h && Math.abs(r[2]-dpr)<0.5
+         && ver>=r[3] && ver<=r[4]
+         && (r[5]===0 || r[5]===hz))
+        return r[6];
     }
-    /* Fallback: ignore iOS version, just match screen */
+    /* Pass 2: screen + iOS version (ignore Hz) */
     for(var j=0;j<_IOS_TBL.length;j++){
       var s=_IOS_TBL[j];
-      if(s[0]===w && s[1]===h && Math.abs(s[2]-dpr)<0.5) return s[5]+'*';
+      if(s[0]===w && s[1]===h && Math.abs(s[2]-dpr)<0.5
+         && ver>=s[3] && ver<=s[4])
+        return s[6]+'*';
+    }
+    /* Pass 3: screen dims only */
+    for(var k=0;k<_IOS_TBL.length;k++){
+      var t=_IOS_TBL[k];
+      if(t[0]===w && t[1]===h && Math.abs(t[2]-dpr)<0.5) return t[6]+'~';
     }
     return null;
   }
@@ -3693,16 +3750,26 @@ function backToProfiles(){
   /* ── UA Parser ──────────────────────────────────────────── */
   function _parseUA(ua){
     var d='Desktop',o='Unknown',b='Unknown',model='',m;
+
+    /* iPad in "Request Desktop Website" mode reports "Macintosh" UA
+       but still has multi-touch (maxTouchPoints > 1). Detect this first
+       so we don't misclassify it as a Mac. */
+    var _ipadDesktop = /Macintosh/.test(ua) && !(/iPhone|iPad/.test(ua))
+                       && (navigator.maxTouchPoints > 1);
+
     if(/iPhone/.test(ua))                             d='iPhone';
-    else if(/iPad/.test(ua))                          d='iPad';
+    else if(/iPad/.test(ua)||_ipadDesktop)            d='iPad';
     else if(/Android/.test(ua)&&/Mobile/.test(ua))    d='Android Phone';
     else if(/Android/.test(ua))                       d='Android Tablet';
     else if(/Macintosh/.test(ua))                     d='Mac';
     else if(/Windows/.test(ua))                       d='Windows PC';
     else if(/Linux/.test(ua))                         d='Linux';
-    /* OS */
+
+    /* OS — full version including minor + patch (e.g. "iOS 18.3.2")
+       For desktop-mode iPad:  Version/18.3.2 in UA = Safari = iOS version */
     if((m=ua.match(/iPhone OS ([\d_]+)/)))            o='iOS '+m[1].replace(/_/g,'.');
     else if((m=ua.match(/iPad.*OS ([\d_]+)/)))        o='iPadOS '+m[1].replace(/_/g,'.');
+    else if(_ipadDesktop && (m=ua.match(/Version\/([\d.]+)/))) o='iPadOS '+m[1]; /* desktop mode: Safari ver = iOS ver */
     else if((m=ua.match(/Android ([\d.]+)/)))         o='Android '+m[1];
     else if((m=ua.match(/Windows NT ([\d.]+)/)))      o='Windows '+m[1];
     else if((m=ua.match(/Mac OS X ([\d_]+)/)))        o='macOS '+m[1].replace(/_/g,'.');
@@ -3717,9 +3784,9 @@ function backToProfiles(){
     else if(/Chrome\/([\d.]+)/.test(ua))              { b='Chrome';          bv=RegExp.$1.split('.')[0]; }
     else if(/Firefox\/([\d.]+)/.test(ua))             { b='Firefox';         bv=RegExp.$1.split('.')[0]; }
     else if(/Version\/([\d.]+).*Safari/.test(ua))     { b='Safari';          bv=RegExp.$1.split('.')[0]; }
-    /* Model */
-    if(/iPhone/.test(ua)||/iPad/.test(ua)){
-      model=_iosModel(ua)||d;
+    /* Model (Hz=0 here — _trackVisit will override with Hz-measured value for iOS) */
+    if(/iPhone/.test(ua)||/iPad/.test(ua)||_ipadDesktop){
+      model=_iosModel(ua,0)||d;
     } else if(/Android/.test(ua)){
       model=_androidModel(ua)||d;
     } else { model=d; }
@@ -3742,10 +3809,73 @@ function backToProfiles(){
     '401101':'Mira Road'};
   function _pinToSuburb(z){ return _MUM_PIN[String(z||'').trim()]||''; }
 
+  /* ── Cloudflare PoP airport code → city name ─────────────────
+     Cloudflare routes each visitor to the nearest edge PoP.
+     The colo code tells us the visitor's city WITHOUT using IP
+     geo databases or ISP data — it's pure network-topology routing.
+     Accuracy: city-level (~50 km radius for dense areas like India). */
+  var _CF_COLO={
+    /* India */
+    'BOM':'Mumbai','DEL':'Delhi','BLR':'Bengaluru','MAA':'Chennai',
+    'HYD':'Hyderabad','CCU':'Kolkata','PNQ':'Pune','AMD':'Ahmedabad',
+    'COK':'Kochi','BBI':'Bhubaneswar','JAI':'Jaipur','LKO':'Lucknow',
+    'IXC':'Chandigarh','PAT':'Patna','NAG':'Nagpur','IDR':'Indore',
+    /* Asia-Pacific */
+    'SIN':'Singapore','NRT':'Tokyo','ICN':'Seoul','HKG':'Hong Kong',
+    'SYD':'Sydney','MEL':'Melbourne','AKL':'Auckland','KUL':'Kuala Lumpur',
+    'BKK':'Bangkok','MNL':'Manila','CGK':'Jakarta','SGN':'Ho Chi Minh',
+    /* Middle East */
+    'DXB':'Dubai','BAH':'Bahrain','AHB':'Riyadh','KWI':'Kuwait',
+    /* Europe */
+    'LHR':'London','CDG':'Paris','AMS':'Amsterdam','FRA':'Frankfurt',
+    'MAD':'Madrid','MXP':'Milan','ARN':'Stockholm','WAW':'Warsaw',
+    'ZRH':'Zurich','ATH':'Athens','IST':'Istanbul',
+    /* Americas */
+    'JFK':'New York','LAX':'Los Angeles','ORD':'Chicago','SFO':'San Francisco',
+    'MIA':'Miami','DFW':'Dallas','BOS':'Boston','SEA':'Seattle',
+    'YYZ':'Toronto','GRU':'São Paulo','BOG':'Bogota','SCL':'Santiago',
+    /* Africa */
+    'JNB':'Johannesburg','NBO':'Nairobi','LOS':'Lagos','CPT':'Cape Town',
+  };
+
+  /* ── Cloudflare trace — passive city detection, zero permissions ─
+     Fetches https://cloudflare.com/cdn-cgi/trace (plain text, free).
+     Returns the Cloudflare PoP that served the request → nearest city.
+     This is NOT IP geolocation — it's network-topology-based routing.
+     Even if the user's IP resolves to a wrong city, the PoP is correct. */
+  function _cfTrace(cb){
+    fetch('https://cloudflare.com/cdn-cgi/trace',{cache:'no-store'})
+      .then(function(r){return r.text();})
+      .then(function(txt){
+        var d={};
+        txt.split('\n').forEach(function(l){
+          var kv=l.indexOf('=');
+          if(kv>0) d[l.slice(0,kv)]=l.slice(kv+1).trim();
+        });
+        /* d.colo = airport code (e.g. "BOM"), d.loc = "IN", d.ip = real client IP */
+        cb(d);
+      })
+      .catch(function(){ cb({}); });
+  }
+
   /* ── Normalise any geo API response → common shape ───────── */
   function _geoNorm(g, src){
     var r={};
-    if(src==='ipapi'){
+    if(src==='ipapiCo'){
+      /* ipapi.co — best Indian postal codes, high accuracy */
+      if(!g.ip||g.error) return null;
+      r.ip=g.ip; r.country=g.country_name||g.country||''; r.region=g.region||'';
+      r.city=g.city||''; r.zip=g.postal||'';
+      r.lat=String(g.latitude||''); r.lon=String(g.longitude||'');
+      r.isp=g.org||'';
+    } else if(src==='freeipapi'){
+      /* freeipapi.com — good fallback, includes zip */
+      if(!g.ipAddress||g.message) return null;
+      r.ip=g.ipAddress; r.country=g.countryName||''; r.region=g.regionName||'';
+      r.city=g.cityName||''; r.zip=g.zipCode||'';
+      r.lat=String(g.latitude||''); r.lon=String(g.longitude||'');
+      r.isp='';
+    } else if(src==='ipapi'){
       if(g.status!=='success') return null;
       r.ip=g.query; r.country=g.country; r.region=g.regionName;
       r.city=g.city; r.zip=g.zip; r.lat=g.lat; r.lon=g.lon; r.isp=g.isp;
@@ -3764,7 +3894,9 @@ function backToProfiles(){
     return (r.city||r.ip)?r:null;
   }
 
-  /* ── Apply normalised geo onto visit object ────────────── */
+  /* ── Apply normalised geo onto visit object ─────────────────
+     Immediately tries PIN-to-suburb for Mumbai (faster + more
+     accurate than reverse geocoding for known postal codes).  */
   function _applyGeo(v, r){
     v.ip     =String(r.ip     ||'');
     v.country=String(r.country||'');
@@ -3774,15 +3906,15 @@ function backToProfiles(){
     v.lat    =String(r.lat    ||'');
     v.lon    =String(r.lon    ||'');
     v.isp    =String(r.isp    ||'');
-    v.suburb =_pinToSuburb(r.zip)||'';
+    /* Immediate suburb from PIN map (no extra network call needed) */
+    var pinSub=_pinToSuburb(r.zip);
+    if(pinSub){ v.suburb=pinSub; v.locality=pinSub+', '+v.city; }
   }
 
   /* ── Reverse geocode lat/lon → precise suburb (OpenStreetMap) ─
-     Works for GPS coords AND IP coords.
-     GPS coords (±20m) → exact suburb every time.
-     IP coords (±5km)  → correct suburb ~60% of the time.        */
+     Only called when PIN lookup returned nothing (non-Mumbai cities). */
   function _reverseGeocode(lat, lon, onDone){
-    if(!lat||!lon){ onDone(); return; }
+    if(!lat||!lon){ onDone('','',''); return; }
     var url='https://nominatim.openstreetmap.org/reverse'
            +'?lat='+lat+'&lon='+lon
            +'&format=json&addressdetails=1&zoom=15&accept-language=en';
@@ -3798,11 +3930,19 @@ function backToProfiles(){
       .catch(function(){ onDone('','',''); });
   }
 
-  /* ── IP geo cascade (3 APIs, first success wins) ──────────── */
+  /* ── IP geo cascade (5 APIs, first success wins) ─────────────
+     Order: best Indian accuracy first, HTTP-only last.
+     ipapi.co  — best postal codes for India (Jio/Airtel/BSNL)
+     freeipapi — solid fallback with zip codes
+     ipwho.is  — HTTPS, good global coverage
+     ipinfo.io — HTTPS, reliable
+     ip-api    — HTTP-only (fails on HTTPS sites, last resort)   */
   var _geoAPIs=[
-    {url:'http://ip-api.com/json/?fields=status,country,regionName,city,zip,lat,lon,isp,query',src:'ipapi'},
+    {url:'https://ipapi.co/json/',src:'ipapiCo'},
+    {url:'https://freeipapi.com/api/json',src:'freeipapi'},
     {url:'https://ipwho.is/',src:'ipwho'},
     {url:'https://ipinfo.io/json',src:'ipinfo'},
+    {url:'http://ip-api.com/json/?fields=status,country,regionName,city,zip,lat,lon,isp,query',src:'ipapi'},
   ];
   function _tryIPGeo(v, idx, onDone){
     if(idx>=_geoAPIs.length){ onDone(); return; }
@@ -3813,10 +3953,12 @@ function backToProfiles(){
         var norm=_geoNorm(g,api.src);
         if(norm){
           _applyGeo(v,norm);
-          /* reverse-geocode the IP-based lat/lon for better suburb */
+          /* If PIN already gave suburb, skip Nominatim (save a network call) */
+          if(v.suburb){ onDone(); return; }
+          /* Otherwise reverse-geocode for non-Mumbai cities */
           _reverseGeocode(v.lat,v.lon,function(sub,pin,loc){
             if(sub){ v.suburb=sub; v.locality=loc; }
-            if(pin){ v.zip=pin; if(!sub) v.suburb=_pinToSuburb(pin)||v.suburb; }
+            if(pin && !v.suburb){ v.zip=pin; v.suburb=_pinToSuburb(pin)||''; }
             onDone();
           });
         } else {
@@ -3826,13 +3968,34 @@ function backToProfiles(){
       .catch(function(){ _tryIPGeo(v,idx+1,onDone); });
   }
 
+  /* ── Run IP geo + Cloudflare trace in parallel ───────────────
+     CF trace is zero-permission network-topology detection:
+       - colo  = nearest Cloudflare PoP (airport code, e.g. "BOM")
+       - cf_city = human name of that PoP (e.g. "Mumbai")
+     Waits for BOTH before calling onDone so all data is in the push. */
+  function _runGeoAndCF(v, onDone){
+    var remaining=2;
+    function _done(){ if(--remaining===0) onDone(); }
+
+    /* Cloudflare trace — parallel, non-blocking */
+    _cfTrace(function(cf){
+      if(cf.colo){ v.cf_colo=cf.colo; v.cf_city=_CF_COLO[cf.colo]||''; }
+      if(cf.ip && !v.ip) v.ip=cf.ip;  /* fallback real IP from CF if geo failed */
+      _done();
+    });
+
+    /* IP geo cascade — parallel */
+    _tryIPGeo(v, 0, _done);
+  }
+
   /* ── Collect + push visit ──────────────────────────────────
-     FLOW:
-       1. Try GPS (browser Geolocation API — browser shows native prompt)
-          → if allowed: precise coords → Nominatim → exact suburb ✅
-          → if denied/timeout: fall through to IP cascade
-       2. IP geo cascade (3 APIs) + Nominatim on IP coords
-       3. Push to Firebase either way
+     FLOW (all silent — zero permission prompts):
+       1. Hz detection for iOS  (~150 ms, rAF timing)
+          → disambiguates Pro vs non-Pro on identical screen sizes
+       2. IP geo cascade (5 APIs) + Nominatim suburb fallback   [parallel]
+       3. Cloudflare trace → nearest PoP city (non-ISP signal)  [parallel]
+       4. Hardware fingerprint (cpu, ram, gpu…)                 [parallel]
+       5. Push to Firebase when geo+CF both complete
   ────────────────────────────────────────────────────────── */
   function _trackVisit(){
     if(_alreadyLogged()){ return; }
@@ -3847,6 +4010,7 @@ function backToProfiles(){
       screen      :screen.width+'x'+screen.height,
       viewport    :window.innerWidth+'x'+window.innerHeight,
       dpr         :+(window.devicePixelRatio||1).toFixed(2),
+      hz          :'',   /* filled by _detectHz for iOS; blank for other devices */
       /* ── Hardware (filled by _getHardware) ── */
       cpu_cores:'', ram_gb:'', gpu:'',
       connection:'', downlink_mbps:'', rtt_ms:'', save_data:'',
@@ -3857,18 +4021,34 @@ function backToProfiles(){
       lang        :navigator.language||'',
       ref         :document.referrer||'direct',
       /* ── Geo (filled after geo calls) ── */
-      ip:'',country:'',region:'',city:'',suburb:'',zip:'',lat:'',lon:'',isp:'',locality:''
+      ip:'',country:'',region:'',city:'',suburb:'',zip:'',lat:'',lon:'',isp:'',locality:'',
+      /* ── Cloudflare trace (non-ISP city signal) ── */
+      cf_colo:'', cf_city:''
     };
 
     function _finish(){ _pushVisit(v); }
 
-    /* Collect hardware signals in parallel with geo — no permission needed */
+    /* Hardware signals — fire and forget (fills v in background) */
     _getHardware(function(hw){
       Object.keys(hw).forEach(function(k){ v[k]=hw[k]; });
     });
 
-    /* Silent IP geo — no permission prompt, no browser dialog, nothing visible */
-    _tryIPGeo(v, 0, _finish);
+    var _ua=navigator.userAgent;
+    var _isIOS=/iPhone|iPad/.test(_ua)||(/Macintosh/.test(_ua)&&navigator.maxTouchPoints>1);
+    if(_isIOS){
+      /* ── For iOS: measure Hz first (~150 ms), then refine model ──
+         ProMotion (120 Hz) = Pro models; standard (60 Hz) = non-Pro.
+         This is the key signal that distinguishes e.g. iPhone 14 Pro Max
+         from iPhone 16 Plus (both 430×932 @3x).                         */
+      _detectHz(function(hz){
+        v.hz = hz+'Hz';
+        var refined = _iosModel(_ua, hz);
+        if(refined) v.device = refined;
+        _runGeoAndCF(v, _finish);   /* geo + Cloudflare trace in parallel */
+      });
+    } else {
+      _runGeoAndCF(v, _finish);     /* geo + Cloudflare trace in parallel */
+    }
   }
 
   function _pushVisit(v){
