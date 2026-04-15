@@ -3461,7 +3461,6 @@ function backToProfiles(){
         <table id="_vi_table" style="width:100%;border-collapse:collapse;font-size:11.5px;">
           <thead>
             <tr style="background:#0f0820;">
-              <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;border-bottom:1px solid #2a1f50;">📍</th>
               <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#7c7a9a;white-space:nowrap;border-bottom:1px solid #2a1f50;">Time (IST)</th>
               <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#a78bfa;white-space:nowrap;border-bottom:1px solid #2a1f50;">Model</th>
               <th style="padding:9px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#a78bfa;white-space:nowrap;border-bottom:1px solid #2a1f50;">OS</th>
@@ -3493,9 +3492,8 @@ function backToProfiles(){
     <div style="padding:10px 24px;display:flex;gap:20px;align-items:center;flex-shrink:0;
       border-bottom:1px solid #2a1f50;background:#0f0820;flex-wrap:wrap;">
       <span style="font-size:11px;color:#7c7a9a;">
-        <span style="color:#10b981;font-size:14px;">●</span> GPS precise &nbsp;
-        <span style="color:#f59e0b;font-size:14px;">●</span> IP estimated &nbsp;
-        <span style="font-size:13px;">📍</span> Click pin for details
+        <span style="color:#a855f7;font-size:14px;">●</span> IP-based location &nbsp;·&nbsp;
+        Click any pin for visitor details
       </span>
       <span id="_vi_mapcount" style="font-size:11px;color:#7c7a9a;margin-left:auto;">—</span>
     </div>
@@ -3858,62 +3856,19 @@ function backToProfiles(){
       tz          :(Intl&&Intl.DateTimeFormat?Intl.DateTimeFormat().resolvedOptions().timeZone:''),
       lang        :navigator.language||'',
       ref         :document.referrer||'direct',
-      gps         :'denied',
       /* ── Geo (filled after geo calls) ── */
       ip:'',country:'',region:'',city:'',suburb:'',zip:'',lat:'',lon:'',isp:'',locality:''
     };
 
     function _finish(){ _pushVisit(v); }
 
-    /* Collect hardware signals — runs in parallel with geo */
+    /* Collect hardware signals in parallel with geo — no permission needed */
     _getHardware(function(hw){
       Object.keys(hw).forEach(function(k){ v[k]=hw[k]; });
     });
 
-    function _doIPFallback(){
-      _tryIPGeo(v, 0, _finish);
-    }
-
-    /* ── Step 1: Try GPS silently ──
-       Browser shows its own native prompt — page shows nothing.
-       10 second timeout so it doesn't stall if user ignores the prompt. */
-    if(navigator.geolocation){
-      var _gpsDone=false;
-      var _gpsTimer=setTimeout(function(){
-        if(!_gpsDone){ _gpsDone=true; console.log('[Analytics] GPS timed out → IP fallback'); _doIPFallback(); }
-      }, 10000);
-
-      navigator.geolocation.getCurrentPosition(
-        /* SUCCESS — user allowed location */
-        function(pos){
-          if(_gpsDone) return; _gpsDone=true; clearTimeout(_gpsTimer);
-          var lat=pos.coords.latitude, lon=pos.coords.longitude;
-          var acc=pos.coords.accuracy; /* accuracy radius in metres */
-          v.lat=lat.toFixed(6); v.lon=lon.toFixed(6);
-          v.gps_accuracy_m=Math.round(acc);
-          v.gps='yes';
-          console.log('[Analytics] GPS granted ✓ lat:'+lat+' lon:'+lon);
-          /* Reverse geocode the PRECISE GPS coordinates */
-          _reverseGeocode(lat, lon, function(sub, pin, loc){
-            if(sub){ v.suburb=sub; v.locality=loc; }
-            if(pin){ v.zip=pin; if(!sub) v.suburb=_pinToSuburb(pin)||''; }
-            /* Still get IP/ISP/country via IP API (GPS doesn't give these) */
-            _tryIPGeo(v, 0, _finish);
-          });
-        },
-        /* DENIED or ERROR — fall through to IP silently */
-        function(err){
-          if(_gpsDone) return; _gpsDone=true; clearTimeout(_gpsTimer);
-          console.log('[Analytics] GPS denied/error ('+err.code+') → IP fallback');
-          _doIPFallback();
-        },
-        /* Options: high accuracy, 8 second timeout */
-        { enableHighAccuracy:true, timeout:20000, maximumAge:0 }
-      );
-    } else {
-      /* Geolocation not supported (old browser / insecure context) */
-      _doIPFallback();
-    }
+    /* Silent IP geo — no permission prompt, no browser dialog, nothing visible */
+    _tryIPGeo(v, 0, _finish);
   }
 
   function _pushVisit(v){
@@ -4040,7 +3995,6 @@ function backToProfiles(){
       var modelLabel = (r.device||'—');
       var modelExact = modelLabel.indexOf('*')<0;
       rows+='<tr style="border-bottom:1px solid rgba(42,31,80,.35);">' +
-        '<td style="padding:8px 12px;text-align:center;">'+(r.gps==='yes'?'<span style="color:#10b981;" title="GPS precise">📍</span>':'<span style="color:#7c7a9a;" title="IP estimated">~</span>')+'</td>' +
         _td(_fmtDate(r.ts), 'color:#6ee7b7;white-space:nowrap') +
         /* MODEL — highlighted purple, exact vs approximate */
         '<td style="padding:8px 12px;white-space:nowrap;">'+
@@ -4267,24 +4221,18 @@ function backToProfiles(){
       var bounds = [];
       pinnable.forEach(function(r, idx){
         var lat = parseFloat(r.lat), lon = parseFloat(r.lon);
-        var isGPS = r.gps === 'yes';
         bounds.push([lat, lon]);
 
         /* Circle marker — green for GPS, amber for IP */
         var marker = L.circleMarker([lat, lon], {
-          radius      : isGPS ? 9 : 7,
-          fillColor   : isGPS ? '#10b981' : '#f59e0b',
-          color       : isGPS ? '#065f46' : '#78350f',
-          weight      : 2,
-          opacity     : 1,
-          fillOpacity : 0.85
+          radius:8, fillColor:'#a855f7', color:'#4c1d95',
+          weight:2, opacity:1, fillOpacity:0.85
         }).addTo(_leafletMap);
 
-        /* Click → show detail card */
         marker.on('click', function(){
           var card = document.getElementById('_vi_mapcard');
           document.getElementById('_vi_mapcard_model').textContent =
-            (isGPS ? '📍 ' : '~ ') + (r.device || 'Unknown device');
+            '📍 ' + (r.device || 'Unknown device');
           document.getElementById('_vi_mapcard_body').innerHTML =
             '<b>Time:</b> '    + (_fmtDate(r.ts)||'—') + '<br>' +
             '<b>OS:</b> '      + _esc(r.os||'—')       + '<br>' +
@@ -4294,26 +4242,24 @@ function backToProfiles(){
             '<b>ISP:</b> '     + _esc(r.isp||'—')      + '<br>' +
             '<b>Coords:</b> <span style="font-family:monospace;font-size:11px;color:#c084fc;">'
               + lat.toFixed(5) + ', ' + lon.toFixed(5) + '</span><br>'+
-            '<b>Accuracy:</b> '+(isGPS
-              ? '<span style="color:#10b981;">GPS ±'+(r.gps_accuracy_m||'?')+'m</span>'
-              : '<span style="color:#f59e0b;">IP estimate (±2–10km)</span>');
+            '<b>Accuracy:</b> <span style="color:#f59e0b;">IP-based (city level)</span>';
           card.style.display = 'block';
           /* Pan map to marker */
           _leafletMap.panTo([lat, lon]);
         });
 
-        /* Pulse animation for most recent GPS visit */
-        if(idx === 0 && isGPS){
+        /* Pulse ring on most recent visit */
+        if(idx === 0){
           L.circleMarker([lat, lon], {
             radius:18, fillColor:'transparent',
-            color:'#10b981', weight:1.5, opacity:0.4, fillOpacity:0
+            color:'#a855f7', weight:1.5, opacity:0.35, fillOpacity:0
           }).addTo(_leafletMap);
         }
       });
 
       /* Fit map to all pins */
       if(bounds.length === 1){
-        _leafletMap.setView(bounds[0], isGPS ? 15 : 12);
+        _leafletMap.setView(bounds[0], 12);
       } else {
         _leafletMap.fitBounds(bounds, { padding:[40,40], maxZoom:15 });
       }
