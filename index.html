@@ -1386,14 +1386,14 @@ function buildFloor(){
 }
 function buildStars(){
   // ── Real photographed night-sky skybox, not a canvas-drawn one ──
-  // sky_dark_red.jpg is built from a genuine starfield photo (Poly
-  // Haven's CC0 "dikhololo_night" HDRI): a small strip cropped from its
-  // most uniformly-dark, glow-free band (real sky photos always brighten
-  // toward the horizon — stretching that band produced a visible gradient
-  // in an earlier version) is tiled to fill the full texture, mirroring
-  // alternate copies so the repeat isn't visible, giving even star
-  // coverage everywhere with no gradient and no seam. Colour-graded deep
-  // red/black offline with PIL; nothing here draws pixels at runtime.
+  // sky_dark_red.jpg is ambientCG's CC0 "NightSkyHDRI002"
+  // (https://ambientcg.com/view?id=NightSkyHDRI002) — a genuine all-sky
+  // Milky Way astrophoto with no ground/horizon in frame, so unlike an
+  // ordinary location HDRI it has star coverage in every direction with
+  // nothing to crop out. Used at its native 2048×1024 tonemapped JPG,
+  // colour-graded deep red/black offline with PIL (a gentle contrast
+  // curve to keep star highlights popping, then a red/black tint).
+  // Nothing here draws pixels at runtime.
   const skyGeo=new THREE.SphereGeometry(280,48,24);
   const skyMat=new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.BackSide,depthWrite:false,fog:false});
   const skySphere=new THREE.Mesh(skyGeo,skyMat);
