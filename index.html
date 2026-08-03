@@ -1385,15 +1385,17 @@ function buildFloor(){
   WS.userData.fissures=[fissure1,fissure2];
 }
 function buildStars(){
-  // ── Real photographed night-sky skybox, not a canvas-drawn one ──
-  // sky_dark_red.jpg is ambientCG's CC0 "NightSkyHDRI002"
-  // (https://ambientcg.com/view?id=NightSkyHDRI002) — a genuine all-sky
-  // Milky Way astrophoto with no ground/horizon in frame, so unlike an
-  // ordinary location HDRI it has star coverage in every direction with
-  // nothing to crop out. Used at its native 2048×1024 tonemapped JPG,
-  // colour-graded deep red/black offline with PIL (a gentle contrast
-  // curve to keep star highlights popping, then a red/black tint).
-  // Nothing here draws pixels at runtime.
+  // ── Baked skybox texture, not a canvas-drawn one ──
+  // sky_dark_red.jpg is a static image asset (like every other texture on
+  // this page) — the intent was Unity Asset Store's "Starfield Skybox"
+  // (assetstore.unity.com/packages/2d/textures-materials/sky/starfield-
+  // skybox-92717), but that's only distributed through Unity's account-
+  // gated Package Manager, so there was no way to fetch the actual file.
+  // Built an equivalent instead — smooth multi-octave Gaussian cloud
+  // noise (scipy, seamless left↔right) colour-graded red/black, plus a
+  // sparse scatter of small sharp stars — offline with PIL/numpy, matching
+  // that asset's soft-nebula-+ pinpoint-stars look rather than a grainy
+  // real photo. Nothing here draws pixels at runtime.
   const skyGeo=new THREE.SphereGeometry(280,48,24);
   const skyMat=new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.BackSide,depthWrite:false,fog:false});
   const skySphere=new THREE.Mesh(skyGeo,skyMat);
