@@ -713,7 +713,7 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     <div id="hud-hawkins">📍 HAWKINS, IN &nbsp;·&nbsp; 1983</div>
     <div id="hud-cv"><a href="https://drive.google.com/file/d/1PWbHZNDVtJUMyn4qVDJni3VnzaItRSyj/view?usp=sharing" target="_blank">↓ CV</a></div>
     <button id="hud-view-toggle" onclick="toggleViewMode()" title="Toggle FPP / TPP">FPP</button>
-    <button id="hud-mute" onclick="toggleThemeMute()" title="Toggle music">♫</button>
+    <button id="hud-mute" class="muted" onclick="toggleThemeMute()" title="Play music">♫</button>
   </div>
   <!-- Theme audio — loops across both worlds -->
   <audio id="theme-audio" src="./stranger_things.mp3" loop preload="auto"></audio>
@@ -927,7 +927,7 @@ function getContent(id){
   case 'education':return`
   <div class="c-grid-2">
     <div class="c-card"><div class="c-card-row">
-      <div class="c-logo">🏛️</div>
+      <div class="c-logo"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a6/University_of_Illinois_at_Urbana-Champaign_Wordmark.svg" alt="UIUC" onerror="this.outerHTML='🏛️'"/></div>
       <div><h3>Master of Computer Science</h3><div class="c-meta">University of Illinois Urbana-Champaign (UIUC) · Incoming Fall 2026</div><p>Graduate coursework in Computer Science, continuing focus on AI systems and automation.</p></div>
     </div></div>
     <div class="c-card"><div class="c-card-row">
@@ -3355,8 +3355,10 @@ function toggleThemeMute(){
   const a=document.getElementById('theme-audio');
   const btn=document.getElementById('hud-mute');
   if(!a)return;
-  if(a.muted){a.muted=false;if(btn)btn.classList.remove('muted');}
-  else{a.muted=true;if(btn)btn.classList.add('muted');}
+  // Music never autoplays — this button is what starts it the first time,
+  // and pauses/resumes it on every press after that.
+  if(a.paused){startTheme();if(btn)btn.classList.remove('muted');}
+  else{stopTheme();if(btn)btn.classList.add('muted');}
 }
 // ══════════════════════════════════════════════════════════════════════════════
 // CINEMATIC ENTRY SEQUENCE
@@ -3429,7 +3431,7 @@ function enterWorld(story){
   setTimeout(()=>{
     ps.classList.remove('show');ps.style.display='none';
     document.getElementById('world-screen').classList.add('show');
-    startTheme();// begin music when world appears
+    // Music stays off until the user presses the ♫ button — no autoplay.
     // Wait for ITC Benguiat Std to load before drawing canvas panel textures
     document.fonts.ready.then(()=>{
       initWorld();
