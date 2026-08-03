@@ -880,7 +880,7 @@ function getContent(id){
          onerror="this.style.display='none'"/>
     <div class="c-hero-name">Rohan <span>Iyer</span></div>
     <div class="c-hero-title">B.Tech IT · NMIMS University · Mumbai, India</div>
-    <p class="c-hero-desc">AI, ML &amp; NLP enthusiast with hands-on experience in cloud ML, computer vision, and product development. Circular economy advocate &amp; State-level tennis player.</p>
+    <p class="c-hero-desc">AI, ML &amp; NLP enthusiast with hands-on experience in cloud ML, computer vision, AI automations, and product development. Circular economy advocate &amp; State-level tennis player.</p>
     <div class="c-stats">
       <div class="c-stat"><div class="c-stat-n">9.575</div><div class="c-stat-l">GPA / 10</div></div>
       <div class="c-stat"><div class="c-stat-n">11+</div><div class="c-stat-l">Projects</div></div>
@@ -928,8 +928,9 @@ function getContent(id){
   case 'skills':return`
   <div class="c-skills">
     <div class="c-sk"><h3>Languages</h3><p>Python, Java, JavaScript, C, C++, HTML, CSS, SQL, C#</p></div>
-    <div class="c-sk"><h3>Frameworks &amp; Libraries</h3><p>Flask, NumPy, Pandas, Matplotlib, Seaborn, Sklearn, OpenCV, Roboflow, Flutter, Django</p></div>
-    <div class="c-sk"><h3>Concepts &amp; Tools</h3><p>OOP, DSA, OS, DBMS, ML, NLP, Software Engineering, GCP, AWS, Tableau, Power BI, Git, Android Studio, Shopify</p></div>
+    <div class="c-sk"><h3>Frameworks &amp; Libraries</h3><p>Flask, NumPy, Pandas, Matplotlib, Seaborn, Sklearn, OpenCV, Roboflow, Flutter, Django, LangChain, LangGraph</p></div>
+    <div class="c-sk"><h3>Concepts &amp; Tools</h3><p>OOP, DSA, OS, DBMS, ML, NLP, Software Engineering, GCP, AWS, Azure, Azure Postgres, Azure Blob Storage, Azure Container Instances, Azure DevOps, Tableau, Power BI, Git, Android Studio, Shopify</p></div>
+    <div class="c-sk"><h3>AI Agents &amp; Automation</h3><p>OpenClaw, Composio, NemoClaw, Claude Code, A2A Communication, Agentic Workflows</p></div>
   </div>`;
   case 'experience':return`
   <div class="c-grid-2">
@@ -1251,14 +1252,18 @@ function buildLights(){
 function getTerrainHeight(x,z){
   const r=Math.sqrt(x*x+z*z);
   let h=0;
-  h+=Math.sin(x*.10)*Math.cos(z*.09)*1.4;
-  h+=Math.sin(x*.23+z*.17)*Math.cos(z*.28-x*.08)*.75;
-  h+=Math.sin(x*.51+1.3)*Math.cos(z*.47+.7)*.35;
-  h+=Math.sin(x*1.1+z*1.3)*.16;
-  h+=Math.sin(x*2.2-z*1.9)*.07;
-  // skip Math.random() noise — it's per-vertex and tiny (.22 amp); omitting keeps sampling stable
-  h*=Math.min(1,Math.max(0,(r-8)/10));
-  if(r>20)h+=Math.abs(Math.sin(x*.16)*Math.cos(z*.19))*3.0*Math.min(1,(r-20)/14);
+  h+=Math.sin(x*.10)*Math.cos(z*.09)*1.6;
+  h+=Math.sin(x*.23+z*.17)*Math.cos(z*.28-x*.08)*.90;
+  h+=Math.sin(x*.51+1.3)*Math.cos(z*.47+.7)*.45;
+  h+=Math.sin(x*.80+z*.75)*Math.cos(z*.65-x*.55)*.28;
+  h+=Math.sin(x*1.1+z*1.3)*.20;
+  h+=Math.sin(x*2.2-z*1.9)*.10;
+  h+=Math.sin(x*3.8+z*2.7)*.05;
+  // skip Math.random() noise — it's per-vertex and tiny (.18 amp); omitting keeps sampling stable
+  const flat=Math.min(1,Math.max(0,(r-7)/12));
+  h*=flat;
+  if(r>18)h+=Math.abs(Math.sin(x*.16)*Math.cos(z*.19))*3.8*Math.min(1,(r-18)/12);
+  if(r>28)h+=Math.abs(Math.sin(x*.38)*Math.cos(z*.32))*2.0*Math.min(1,(r-28)/8);
   return h-.02;
 }
 function buildFloor(){
@@ -1419,10 +1424,14 @@ function buildPanels(){
   SECTIONS.forEach((sec,i)=>{
     const ang=sec.angle*Math.PI/180;
     const x=Math.sin(ang)*sec.dist,z=-Math.cos(ang)*sec.dist;
+    // Sample the real terrain contour under the panel so it sits at a
+    // consistent height above the ground rather than assuming flat Y=0.
+    const groundY=getTerrainHeight(x,z);
+    const panelY=groundY+sec.h;
     const geo=new THREE.PlaneGeometry(6,3.8);
     const panel=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({map:makePanelTex(sec),transparent:true,opacity:.97,side:THREE.DoubleSide,roughness:.75,metalness:.08}));
-    panel.position.set(x,sec.h,z);panel.lookAt(0,sec.h,0);panel.rotateY(Math.PI);
-    panel.userData={sec,idx:i,baseY:sec.h,fp:Math.random()*Math.PI*2};
+    panel.position.set(x,panelY,z);panel.lookAt(0,panelY,0);panel.rotateY(Math.PI);
+    panel.userData={sec,idx:i,baseY:panelY,fp:Math.random()*Math.PI*2};
     WS.add(panel);panelMeshes.push(panel);
     // Frame
     const frame=new THREE.LineSegments(new THREE.EdgesGeometry(geo),new THREE.LineBasicMaterial({color:0xe50914,transparent:true,opacity:.4}));
@@ -1431,10 +1440,11 @@ function buildPanels(){
     const glow=new THREE.Mesh(new THREE.PlaneGeometry(7.5,5),new THREE.MeshBasicMaterial({color:0xe50914,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
     glow.position.z=-.12;panel.add(glow);glowMeshes.push(glow);
     // Light
-    const pl=new THREE.PointLight(0xe50914,.7,14);pl.position.set(x,sec.h,z*.95);WS.add(pl);panelLights.push(pl);
+    const pl=new THREE.PointLight(0xe50914,.7,14);pl.position.set(x,panelY,z*.95);WS.add(pl);panelLights.push(pl);
     // ── Ground interaction zone (small, light, elegant) ──
     // Position: 80% radius toward centre so player walks naturally into it
     const zx=Math.sin(ang)*sec.dist*.80, zz=-Math.cos(ang)*sec.dist*.80;
+    const zGroundY=getTerrainHeight(zx,zz);
     // Core small circle — bright white/cream
     const zGeo=new THREE.CircleGeometry(0.85,36);zGeo.rotateX(-Math.PI/2);
     const zMat=new THREE.MeshBasicMaterial({
@@ -1442,14 +1452,14 @@ function buildPanels(){
       blending:THREE.AdditiveBlending,depthWrite:false
     });
     const zDisc=new THREE.Mesh(zGeo,zMat);
-    zDisc.position.set(zx,.04,zz);
-    zDisc.userData.panelIdx=i;zDisc.userData.cx=zx;zDisc.userData.cz=zz;
+    zDisc.position.set(zx,zGroundY+.04,zz);
+    zDisc.userData.panelIdx=i;zDisc.userData.cx=zx;zDisc.userData.cz=zz;zDisc.userData.groundY=zGroundY;
     WS.add(zDisc);panelZoneDiscs.push(zDisc);
     // Thin ring (steady halo around dot)
     const ringGeo=new THREE.RingGeometry(.90,1.05,36);ringGeo.rotateX(-Math.PI/2);
     const ringMat=new THREE.MeshBasicMaterial({color:0xfff0d0,transparent:true,opacity:.12,blending:THREE.AdditiveBlending,depthWrite:false});
     const ringMesh=new THREE.Mesh(ringGeo,ringMat);
-    ringMesh.position.set(zx,.04,zz);
+    ringMesh.position.set(zx,zGroundY+.04,zz);
     WS.add(ringMesh);zDisc.userData.haloRing=ringMesh;
     // Two animated expanding pulse rings (sonar ping effect)
     const pulseRings=[];
@@ -1457,14 +1467,14 @@ function buildPanels(){
       const pGeo=new THREE.RingGeometry(.88,1.02,36);pGeo.rotateX(-Math.PI/2);
       const pMat=new THREE.MeshBasicMaterial({color:0xffe8c0,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
       const pMesh=new THREE.Mesh(pGeo,pMat);
-      pMesh.position.set(zx,.05,zz);
+      pMesh.position.set(zx,zGroundY+.05,zz);
       pMesh.userData.phase=p/2;// offset so they alternate
       WS.add(pMesh);pulseRings.push(pMesh);
     }
     zDisc.userData.pulseRings=pulseRings;
     // Soft spotlight from above (intensifies when player enters)
     const spotUp=new THREE.PointLight(0xffe0b0,0,10);
-    spotUp.position.set(zx,6,zz);
+    spotUp.position.set(zx,zGroundY+6,zz);
     WS.add(spotUp);zDisc.userData.spotLight=spotUp;
   });
 }
@@ -2071,7 +2081,7 @@ function buildSecondWorld(){
       cm.scale.set(cScale,cScale,cScale);
       const cb2=new THREE.Box3().setFromObject(cm);
       const cBaseY=-cb2.min.y+0.05;
-      cm.position.set(18,cBaseY,18);// start far from player spawn (8,1.8,8)
+      cm.position.set(18,getTerrainHeight(18,18)+cBaseY,18);// start far from player spawn (8,1.8,8)
       cm.traverse(n=>{
         if(n.isMesh&&n.material){
           n.material.emissive=new THREE.Color(0x300005);
@@ -2093,7 +2103,7 @@ function buildSecondWorld(){
       // Fallback box stand-in so AI still runs
       const fb=new THREE.Mesh(new THREE.BoxGeometry(.6,2,.6),
         new THREE.MeshStandardMaterial({color:0x1a0005,emissive:0x550010,emissiveIntensity:.8}));
-      fb.position.set(18,1,18);WS2.add(fb);
+      fb.position.set(18,getTerrainHeight(18,18)+1,18);WS2.add(fb);
       WS2.userData.demoChaser=fb;WS2.userData.demoChaserBaseY=1;WS2.userData.demoChaserBobT=0;
     });
   }
@@ -2360,7 +2370,7 @@ function toggleViewMode(){
   }
   if(isTPP){
     // FPP→TPP: place player exactly where camera is, preserve yaw
-    playerPos.set(camPos.x,0,camPos.z);
+    playerPos.set(camPos.x,getTerrainHeight(camPos.x,camPos.z),camPos.z);
     playerVel.set(0,0,0);// clear momentum so no drift on spawn
     playerFacingYaw=camYaw;
     // Prime the smooth-cam so no sudden lurch on first frame
@@ -2380,7 +2390,7 @@ function toggleViewMode(){
   } else {
     // TPP→FPP: put camera exactly at player feet level, same yaw
     if(playerCharMesh&&playerCharScene){_removeGlasses();playerCharScene.remove(playerCharMesh);playerCharMesh=null;playerCharMixer=null;}
-    camPos.set(playerPos.x,1.8,playerPos.z);
+    camPos.set(playerPos.x,playerPos.y+1.8,playerPos.z);
     targetYaw=camYaw;targetPitch=camPitch;// sync inertia targets
     tppCamReady=false;
     // Hide all TPP HUD elements
@@ -2974,15 +2984,16 @@ function animLoop(now){
       if(ov)ov.style.opacity='1';
       if(!inSecondWorld){
         inSecondWorld=true;
-        camPos.set(8,1.8,8);camYaw=Math.PI+Math.PI/4;targetYaw=camYaw;camPitch=.06;targetPitch=.06;
+        const spawnGroundY=getTerrainHeight(8,8);
+        camPos.set(8,spawnGroundY+1.8,8);camYaw=Math.PI+Math.PI/4;targetYaw=camYaw;camPitch=.06;targetPitch=.06;
         hoveredPanel=null;const tt=document.getElementById('hud-tooltip');if(tt){tt.textContent='';tt.style.opacity='0';}
         const rh=document.getElementById('return-hint');if(rh)rh.style.opacity='1';
         // Switch to TPP and spawn player character
         isTPP=true;_setLookZoneActive(true);// enable mobile look-zone
-        playerPos.set(8,0,8);playerFacingYaw=camYaw;
+        playerPos.set(8,spawnGroundY,8);playerFacingYaw=camYaw;
         playerVel.set(0,0,0);// reset momentum on world entry
         // Prime smooth-cam at spawn so no lurch on first frame
-        {const CAM_DIST=5.5,CAM_H=3.2;tppCamLerped.set(8+Math.sin(camYaw)*CAM_DIST,CAM_H,8+Math.cos(camYaw)*CAM_DIST);tppCamVel.set(0,0,0);tppCamReady=true;}
+        {const CAM_DIST=5.5,CAM_H=3.2;tppCamLerped.set(8+Math.sin(camYaw)*CAM_DIST,spawnGroundY+CAM_H,8+Math.cos(camYaw)*CAM_DIST);tppCamVel.set(0,0,0);tppCamReady=true;}
         {const btn=document.getElementById('hud-view-toggle');if(btn){btn.textContent='TPP';btn.classList.add('tpp-active');}}
         if(WS2)loadPlayerChar(WS2);
         // ── Welcome to the Void ──
@@ -3080,7 +3091,8 @@ function animLoop(now){
       // Procedural running bob (always applied for extra life even with animation)
       WS2.userData.demoChaserBobT=(WS2.userData.demoChaserBobT||0)+dt*6.5;
       const bob=Math.abs(Math.sin(WS2.userData.demoChaserBobT))*0.28;
-      demoChaser.position.y=(demoChaserBaseY||0)+bob;
+      // Re-sample terrain at its live X/Z so it climbs/descends hills while chasing
+      demoChaser.position.y=getTerrainHeight(demoChaser.position.x,demoChaser.position.z)+(demoChaserBaseY||0)+bob;
       // Slight forward lean
       demoChaser.rotation.x=0.18+Math.sin(WS2.userData.demoChaserBobT*0.5)*0.05;
       // Side sway matching stride
