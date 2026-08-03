@@ -1387,11 +1387,12 @@ function buildFloor(){
 function buildStars(){
   // ── Real photographed night-sky skybox, not a canvas-drawn one ──
   // sky_dark_red.jpg is a genuine Milky Way photo (Poly Haven's CC0
-  // "dikhololo_night" HDRI, cropped to the starfield-only band well above
-  // its horizon/tree line, then colour-graded deep red/black) baked ahead
-  // of time with an offline image tool — nothing here draws pixels at
-  // runtime. That's the same "real texture, not a synthetic gradient"
-  // approach buildFloor()/buildVoidPlanet() use for the ground.
+  // "dikhololo_night" HDRI). The source crop was taken well above its
+  // horizon/tree line, then STRETCHED to fill the full texture height —
+  // starfield everywhere, no separate "capped band + flat fill" region —
+  // so there's no visible seam between a textured cap and a plain
+  // gradient lower down. Colour-graded deep red/black offline with PIL;
+  // nothing here draws pixels at runtime.
   const skyGeo=new THREE.SphereGeometry(280,48,24);
   const skyMat=new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.BackSide,depthWrite:false,fog:false});
   const skySphere=new THREE.Mesh(skyGeo,skyMat);
