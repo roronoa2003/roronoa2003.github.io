@@ -1420,6 +1420,21 @@ function buildDust(){
   const dustPts=new THREE.Points(dG,new THREE.PointsMaterial({color:0xe50914,size:.06,transparent:true,opacity:.35}));
   WS.add(dustPts);WS.userData.dustPts=dustPts;WS.userData.dustVel=dv;WS.userData.dustPos=dp;WS.userData.dustCnt=cnt;
 }
+// Bakes per-vertex terrain height into a flat, ground-hugging decal's geometry
+// (must be called on a geometry already rotated flat, i.e. local Y=0 for all
+// verts) so it follows the surface contour exactly instead of tilting/clipping
+// on sloped ground. cx/cz are the decal's world-space centre; lift raises it
+// a hair above the surface to avoid z-fighting with the terrain mesh.
+function _conformDecalToTerrain(geo,cx,cz,lift){
+  const p=geo.attributes.position;
+  for(let i=0;i<p.count;i++){
+    const wx=cx+p.getX(i),wz=cz+p.getZ(i);
+    p.setY(i,getTerrainHeight(wx,wz)+lift);
+  }
+  p.needsUpdate=true;
+  geo.computeVertexNormals();
+  return geo;
+}
 function buildPanels(){
   SECTIONS.forEach((sec,i)=>{
     const ang=sec.angle*Math.PI/180;
@@ -1447,27 +1462,30 @@ function buildPanels(){
     const zGroundY=getTerrainHeight(zx,zz);
     // Core small circle — bright white/cream
     const zGeo=new THREE.CircleGeometry(0.85,36);zGeo.rotateX(-Math.PI/2);
+    _conformDecalToTerrain(zGeo,zx,zz,.04);
     const zMat=new THREE.MeshBasicMaterial({
       color:0xfff8ee,transparent:true,opacity:.18,
       blending:THREE.AdditiveBlending,depthWrite:false
     });
     const zDisc=new THREE.Mesh(zGeo,zMat);
-    zDisc.position.set(zx,zGroundY+.04,zz);
+    zDisc.position.set(zx,0,zz);
     zDisc.userData.panelIdx=i;zDisc.userData.cx=zx;zDisc.userData.cz=zz;zDisc.userData.groundY=zGroundY;
     WS.add(zDisc);panelZoneDiscs.push(zDisc);
     // Thin ring (steady halo around dot)
     const ringGeo=new THREE.RingGeometry(.90,1.05,36);ringGeo.rotateX(-Math.PI/2);
+    _conformDecalToTerrain(ringGeo,zx,zz,.04);
     const ringMat=new THREE.MeshBasicMaterial({color:0xfff0d0,transparent:true,opacity:.12,blending:THREE.AdditiveBlending,depthWrite:false});
     const ringMesh=new THREE.Mesh(ringGeo,ringMat);
-    ringMesh.position.set(zx,zGroundY+.04,zz);
+    ringMesh.position.set(zx,0,zz);
     WS.add(ringMesh);zDisc.userData.haloRing=ringMesh;
     // Two animated expanding pulse rings (sonar ping effect)
     const pulseRings=[];
     for(let p=0;p<2;p++){
       const pGeo=new THREE.RingGeometry(.88,1.02,36);pGeo.rotateX(-Math.PI/2);
+      _conformDecalToTerrain(pGeo,zx,zz,.05);
       const pMat=new THREE.MeshBasicMaterial({color:0xffe8c0,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
       const pMesh=new THREE.Mesh(pGeo,pMat);
-      pMesh.position.set(zx,zGroundY+.05,zz);
+      pMesh.position.set(zx,0,zz);
       pMesh.userData.phase=p/2;// offset so they alternate
       WS.add(pMesh);pulseRings.push(pMesh);
     }
@@ -1642,14 +1660,21 @@ function buildDecorations(){
 }
 function buildRipples(){
   // ── Expanding lava ripple rings from ground centre ──
+  // Radius grows every frame (see animLoop), so unlike the static ground
+  // decals a one-time vertex bake won't track the surface — instead we
+  // keep each vertex's original unit-radius direction and re-sample
+  // getTerrainHeight at its *current* scaled world position every frame.
   const rings=[];const maxR=24;
   for(let i=0;i<5;i++){
     const geo=new THREE.RingGeometry(.85,1,.0,Math.PI*2,48);
     geo.rotateX(-Math.PI/2);
+    const pos=geo.attributes.position;
+    const baseX=new Float32Array(pos.count),baseZ=new Float32Array(pos.count);
+    for(let v=0;v<pos.count;v++){baseX[v]=pos.getX(v);baseZ[v]=pos.getZ(v);}
     const mat=new THREE.MeshBasicMaterial({color:0xff2808,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
     const mesh=new THREE.Mesh(geo,mat);
-    mesh.position.y=.06;
     mesh.userData.r=(i/5)*maxR; // stagger phases
+    mesh.userData.baseX=baseX;mesh.userData.baseZ=baseZ;
     WS.add(mesh);rings.push(mesh);
   }
   WS.userData.rippleRings=rings;
@@ -2920,7 +2945,16 @@ function animLoop(now){
       ring.userData.r=(ring.userData.r||0)+spd*dt;
       if(ring.userData.r>maxR)ring.userData.r=0;
       const r=Math.max(.1,ring.userData.r);
-      ring.scale.set(r,1,r);
+      // Re-sample terrain height at each vertex's current expanded
+      // position instead of scaling a flat ring (which would clip
+      // through hills/rim ridges as it grows).
+      const pos=ring.geometry.attributes.position;
+      const bx=ring.userData.baseX,bz=ring.userData.baseZ;
+      for(let v=0;v<pos.count;v++){
+        const nx=bx[v]*r,nz=bz[v]*r;
+        pos.setXYZ(v,nx,getTerrainHeight(nx,nz)+.06,nz);
+      }
+      pos.needsUpdate=true;
       ring.material.opacity=Math.max(0,(1-r/maxR)*.22);
     });
   }
