@@ -1385,63 +1385,35 @@ function buildFloor(){
   WS.userData.fissures=[fissure1,fissure2];
 }
 function buildStars(){
-  // ── Textured red/black dark sky — reuses the same rock_ground_rough
-  // diffuse photo as the ground terrain (tiled across the dome), darkened
-  // and tinted deep red/black, with warm ember-point highlights layered on
-  // top. Mirrors the exact "real texture, not a flat gradient" approach
-  // buildFloor()/buildVoidPlanet() already use, applied to the backdrop.
+  // ── Real photographed night-sky skybox, not a canvas-drawn one ──
+  // sky_dark_red.jpg is a genuine Milky Way photo (Poly Haven's CC0
+  // "dikhololo_night" HDRI, cropped to the starfield-only band well above
+  // its horizon/tree line, then colour-graded deep red/black) baked ahead
+  // of time with an offline image tool — nothing here draws pixels at
+  // runtime. That's the same "real texture, not a synthetic gradient"
+  // approach buildFloor()/buildVoidPlanet() use for the ground.
   const skyGeo=new THREE.SphereGeometry(280,48,24);
   const skyMat=new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.BackSide,depthWrite:false,fog:false});
   const skySphere=new THREE.Mesh(skyGeo,skyMat);
   WS.add(skySphere);WS.userData.skySphere=skySphere;
-  const ROCK_DIFF='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_ground_rough/rock_ground_rough_diff_2k.jpg';
-  function buildTexturedRedBlackSky(rockImg){
-    const W=2048,H=1024;
-    const c=document.createElement('canvas');c.width=W;c.height=H;
-    const ctx=c.getContext('2d');
-    ctx.fillStyle='#0a0202';ctx.fillRect(0,0,W,H);
-    if(rockImg){
-      // Tile the real rock photo across the dome so its cracked/grainy
-      // detail actually reads, instead of one image stretched paper-thin.
-      const cols=6,rows=3,tw=W/cols,th=H/rows;
-      try{
-        for(let y=0;y<rows;y++)for(let x=0;x<cols;x++)ctx.drawImage(rockImg,x*tw,y*th,tw,th);
-      }catch(e){/* tainted-canvas edge case — ember-only sky below still renders */}
-      // Multiply-tint it deep red/black so it reads as sky, not daylit rock
-      ctx.globalCompositeOperation='multiply';
-      const tint=ctx.createLinearGradient(0,0,0,H);
-      tint.addColorStop(0,'#2a0808');tint.addColorStop(.5,'#3a0a0a');tint.addColorStop(1,'#180404');
-      ctx.fillStyle=tint;ctx.fillRect(0,0,W,H);
-      ctx.globalCompositeOperation='source-over';
-      ctx.fillStyle='rgba(0,0,0,.4)';ctx.fillRect(0,0,W,H);// deepen further into "dark sky" range
-    }
-    // Warm ember/star points — reds, oranges, pale embers only (no blue/purple)
-    ctx.globalCompositeOperation='lighter';
-    for(let i=0;i<9000;i++){
-      const x=Math.random()*W,y=Math.random()*H,r=Math.random()*1.5+.15;
-      const v=Math.random();
-      let col;
-      if(v<.5)col=`rgba(255,90,50,${.35+Math.random()*.35})`;
-      else if(v<.82)col=`rgba(255,160,90,${.3+Math.random()*.3})`;
-      else col=`rgba(255,225,200,${.4+Math.random()*.35})`;
-      ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
-    }
-    // Smouldering horizon-band glows, like distant fires
-    [[300,560,220,140],[950,620,260,150],[1500,540,200,130],[1800,600,180,110]].forEach(([cx,cy,rx,ry])=>{
-      const g=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(rx,ry));
-      g.addColorStop(0,'rgba(255,70,20,.22)');g.addColorStop(1,'rgba(255,70,20,0)');
-      ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.fill();
-    });
-    ctx.globalCompositeOperation='source-over';
-    return new THREE.CanvasTexture(c);
-  }
   const txLoader=new THREE.TextureLoader();
   txLoader.crossOrigin='anonymous';
   txLoader.load(
-    ROCK_DIFF,
-    t=>{skyMat.map=buildTexturedRedBlackSky(t.image);skyMat.needsUpdate=true;},
+    './sky_dark_red.jpg',
+    t=>{skyMat.map=t;skyMat.needsUpdate=true;},
     undefined,
-    ()=>{skyMat.map=buildTexturedRedBlackSky(null);skyMat.needsUpdate=true;}// rock photo unavailable — ember-only sky
+    // Local asset missing for some reason — fall back to the same source
+    // HDRI's tonemapped photo straight from Poly Haven, tinted red/black
+    // via the material colour multiplier (still a real photo, no canvas).
+    ()=>{
+      skyMat.color.set(0x8a2a26);
+      txLoader.load(
+        'https://dl.polyhaven.org/file/ph-assets/HDRIs/extra/Tonemapped%20JPG/dikhololo_night.jpg',
+        t=>{skyMat.map=t;skyMat.needsUpdate=true;},
+        undefined,
+        ()=>{skyMat.color.set(0x140404);}// last resort: flat dark red-black, still no canvas
+      );
+    }
   );
 }
 // Shared soft radial-glow sprite for every ambient particle system — a
