@@ -927,6 +927,10 @@ function getContent(id){
   case 'education':return`
   <div class="c-grid-2">
     <div class="c-card"><div class="c-card-row">
+      <div class="c-logo">🏛️</div>
+      <div><h3>Master of Computer Science</h3><div class="c-meta">University of Illinois Urbana-Champaign (UIUC) · Incoming Fall 2026</div><p>Graduate coursework in Computer Science, continuing focus on AI systems and automation.</p></div>
+    </div></div>
+    <div class="c-card"><div class="c-card-row">
       <div class="c-logo"><img src="./college.png" alt="NMIMS" onerror="this.outerHTML='🎓'"/></div>
       <div><h3>B.Tech in Information Technology</h3><div class="c-meta">MPSTME, NMIMS University · 2021–2025</div><p>GPA: 3.83 / 4.0 &nbsp;·&nbsp; 9.575 / 10</p></div>
     </div></div>
@@ -1381,57 +1385,90 @@ function buildFloor(){
   WS.userData.fissures=[fissure1,fissure2];
 }
 function buildStars(){
-  // ── NASA real Milky Way equirectangular sky sphere ──
+  // ── Textured red/black dark sky — reuses the same rock_ground_rough
+  // diffuse photo as the ground terrain (tiled across the dome), darkened
+  // and tinted deep red/black, with warm ember-point highlights layered on
+  // top. Mirrors the exact "real texture, not a flat gradient" approach
+  // buildFloor()/buildVoidPlanet() already use, applied to the backdrop.
   const skyGeo=new THREE.SphereGeometry(280,48,24);
-  // color acts as a brightness multiplier on the texture: 0x333333 = ~20% brightness = very dark night sky
-  const skyMat=new THREE.MeshBasicMaterial({color:0x333333,side:THREE.BackSide,depthWrite:false,fog:false});
+  const skyMat=new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.BackSide,depthWrite:false,fog:false});
   const skySphere=new THREE.Mesh(skyGeo,skyMat);
   WS.add(skySphere);WS.userData.skySphere=skySphere;
-  function buildCanvasGalaxy(){
-    // Procedural fallback – deep space with colour-varied stars + milky band
+  const ROCK_DIFF='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_ground_rough/rock_ground_rough_diff_2k.jpg';
+  function buildTexturedRedBlackSky(rockImg){
     const W=2048,H=1024;
     const c=document.createElement('canvas');c.width=W;c.height=H;
     const ctx=c.getContext('2d');
-    ctx.fillStyle='#000005';ctx.fillRect(0,0,W,H);
-    // Milky way diffuse band — brighter since sky multiplier is dark
-    const band=ctx.createLinearGradient(0,260,0,H-260);
-    band.addColorStop(0,'rgba(0,0,0,0)');band.addColorStop(.35,'rgba(180,120,70,.18)');
-    band.addColorStop(.5,'rgba(255,160,80,.25)');band.addColorStop(.65,'rgba(180,120,70,.18)');band.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=band;ctx.fillRect(0,0,W,H);
-    // Stars — brighter since multiplier dims them
-    for(let i=0;i<16000;i++){
-      const x=Math.random()*W,y=Math.random()*H,r=Math.random()*1.8+.15;
+    ctx.fillStyle='#0a0202';ctx.fillRect(0,0,W,H);
+    if(rockImg){
+      // Tile the real rock photo across the dome so its cracked/grainy
+      // detail actually reads, instead of one image stretched paper-thin.
+      const cols=6,rows=3,tw=W/cols,th=H/rows;
+      try{
+        for(let y=0;y<rows;y++)for(let x=0;x<cols;x++)ctx.drawImage(rockImg,x*tw,y*th,tw,th);
+      }catch(e){/* tainted-canvas edge case — ember-only sky below still renders */}
+      // Multiply-tint it deep red/black so it reads as sky, not daylit rock
+      ctx.globalCompositeOperation='multiply';
+      const tint=ctx.createLinearGradient(0,0,0,H);
+      tint.addColorStop(0,'#2a0808');tint.addColorStop(.5,'#3a0a0a');tint.addColorStop(1,'#180404');
+      ctx.fillStyle=tint;ctx.fillRect(0,0,W,H);
+      ctx.globalCompositeOperation='source-over';
+      ctx.fillStyle='rgba(0,0,0,.4)';ctx.fillRect(0,0,W,H);// deepen further into "dark sky" range
+    }
+    // Warm ember/star points — reds, oranges, pale embers only (no blue/purple)
+    ctx.globalCompositeOperation='lighter';
+    for(let i=0;i<9000;i++){
+      const x=Math.random()*W,y=Math.random()*H,r=Math.random()*1.5+.15;
       const v=Math.random();
       let col;
-      if(v<.08)col=`rgba(255,140,120,${.85+Math.random()*.15})`;
-      else if(v<.16)col=`rgba(180,200,255,${.85+Math.random()*.15})`;
-      else if(v<.22)col=`rgba(255,235,150,${.75+Math.random()*.25})`;
-      else col=`rgba(255,255,255,${.55+Math.random()*.45})`;
+      if(v<.5)col=`rgba(255,90,50,${.35+Math.random()*.35})`;
+      else if(v<.82)col=`rgba(255,160,90,${.3+Math.random()*.3})`;
+      else col=`rgba(255,225,200,${.4+Math.random()*.35})`;
       ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
     }
-    // Nebula glows
-    [[400,350,200,200,'rgba(200,30,60,.18)'],[1200,500,260,160,'rgba(30,60,200,.14)'],[1700,300,180,140,'rgba(120,15,80,.14)'],[900,700,150,120,'rgba(80,180,255,.08)']].forEach(([cx,cy,rx,ry,col])=>{
+    // Smouldering horizon-band glows, like distant fires
+    [[300,560,220,140],[950,620,260,150],[1500,540,200,130],[1800,600,180,110]].forEach(([cx,cy,rx,ry])=>{
       const g=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(rx,ry));
-      g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');
+      g.addColorStop(0,'rgba(255,70,20,.22)');g.addColorStop(1,'rgba(255,70,20,0)');
       ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);ctx.fill();
     });
+    ctx.globalCompositeOperation='source-over';
     return new THREE.CanvasTexture(c);
   }
   const txLoader=new THREE.TextureLoader();
   txLoader.crossOrigin='anonymous';
   txLoader.load(
-    'https://svs.gsfc.nasa.gov/vis/a000000/a004800/a004851/starmap_2020_4k_print.jpg',
-    t=>{skyMat.map=t;skyMat.needsUpdate=true;},
+    ROCK_DIFF,
+    t=>{skyMat.map=buildTexturedRedBlackSky(t.image);skyMat.needsUpdate=true;},
     undefined,
-    ()=>{skyMat.map=buildCanvasGalaxy();skyMat.needsUpdate=true;}
+    ()=>{skyMat.map=buildTexturedRedBlackSky(null);skyMat.needsUpdate=true;}// rock photo unavailable — ember-only sky
   );
+}
+// Shared soft radial-glow sprite for every ambient particle system — a
+// plain THREE.Points dot renders as a hard flat square, which reads as
+// grit, not light. A round falloff sprite (tinted per-material via
+// material.color) makes each point look like a small glowing orb/molecule.
+let _glowSpriteCache=null;
+function _glowSprite(){
+  if(_glowSpriteCache)return _glowSpriteCache;
+  const S=64;
+  const c=document.createElement('canvas');c.width=c.height=S;
+  const ctx=c.getContext('2d');
+  const g=ctx.createRadialGradient(S/2,S/2,0,S/2,S/2,S/2);
+  g.addColorStop(0,'rgba(255,255,255,1)');
+  g.addColorStop(.3,'rgba(255,255,255,.9)');
+  g.addColorStop(.65,'rgba(255,255,255,.28)');
+  g.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(S/2,S/2,S/2,0,Math.PI*2);ctx.fill();
+  _glowSpriteCache=new THREE.CanvasTexture(c);
+  return _glowSpriteCache;
 }
 function buildDust(){
   const cnt=isMobile?500:1000;
   const dG=new THREE.BufferGeometry(),dp=new Float32Array(cnt*3),dv=[];
   for(let i=0;i<cnt;i++){const a=Math.random()*Math.PI*2,r=4+Math.random()*20;dp[i*3]=Math.cos(a)*r;dp[i*3+1]=Math.random()*18;dp[i*3+2]=Math.sin(a)*r;dv.push((Math.random()-.5)*.004,.007+Math.random()*.014,(Math.random()-.5)*.004);}
   dG.setAttribute('position',new THREE.BufferAttribute(dp,3));
-  const dustPts=new THREE.Points(dG,new THREE.PointsMaterial({color:0xe50914,size:.06,transparent:true,opacity:.35}));
+  const dustPts=new THREE.Points(dG,new THREE.PointsMaterial({color:0xe50914,size:.06,map:_glowSprite(),transparent:true,opacity:.5,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true}));
   WS.add(dustPts);WS.userData.dustPts=dustPts;WS.userData.dustVel=dv;WS.userData.dustPos=dp;WS.userData.dustCnt=cnt;
 }
 // Bakes per-vertex terrain height into a flat, ground-hugging decal's geometry
@@ -1531,7 +1568,7 @@ function buildSpores(){
   }
   geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
   geo.setAttribute('size',new THREE.BufferAttribute(sizes,1));
-  const mat=new THREE.PointsMaterial({color:0xfff0e8,size:.08,transparent:true,opacity:.55,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true});
+  const mat=new THREE.PointsMaterial({color:0xfff0e8,size:.08,map:_glowSprite(),transparent:true,opacity:.55,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true});
   const pts=new THREE.Points(geo,mat);
   WS.add(pts);
   WS.userData.sporesPts=pts;WS.userData.sporesVel=vel;WS.userData.sporesPos=pos;WS.userData.sporesCnt=cnt;
@@ -1584,7 +1621,7 @@ function buildVoidPlanet(){
     dp[i*3]=Math.cos(a)*r;dp[i*3+1]=tilt;dp[i*3+2]=Math.sin(a)*r;
   }
   debrisGeo.setAttribute('position',new THREE.BufferAttribute(dp,3));
-  const debrisMat=new THREE.PointsMaterial({color:0x661100,size:.55,transparent:true,opacity:.6,depthWrite:false,blending:THREE.AdditiveBlending});
+  const debrisMat=new THREE.PointsMaterial({color:0x661100,size:.55,map:_glowSprite(),transparent:true,opacity:.6,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true});
   grp.add(new THREE.Points(debrisGeo,debrisMat));
   // ── Down-beam: ghostly red light shaft connecting planet to ground ──
   const beamGeo=new THREE.CylinderGeometry(.5,6,90,16,1,true);
@@ -2035,7 +2072,7 @@ function buildSecondWorld(){
   const sp2pos=new Float32Array(sc2*3),sp2vel=new Float32Array(sc2*3);
   for(let i=0;i<sc2;i++){const a=Math.random()*Math.PI*2,r=2+Math.random()*22;sp2pos[i*3]=Math.cos(a)*r;sp2pos[i*3+1]=Math.random()*16;sp2pos[i*3+2]=Math.sin(a)*r;sp2vel[i*3]=(Math.random()-.5)*.004;sp2vel[i*3+1]=.005+Math.random()*.012;sp2vel[i*3+2]=(Math.random()-.5)*.004;}
   sp2geo.setAttribute('position',new THREE.BufferAttribute(sp2pos,3));
-  const spores2=new THREE.Points(sp2geo,new THREE.PointsMaterial({color:0xddaaff,size:.09,transparent:true,opacity:.65,depthWrite:false,blending:THREE.AdditiveBlending}));
+  const spores2=new THREE.Points(sp2geo,new THREE.PointsMaterial({color:0xddaaff,size:.09,map:_glowSprite(),transparent:true,opacity:.65,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true}));
   WS2.add(spores2);WS2.userData.sp2Pts=spores2;WS2.userData.sp2Vel=sp2vel;WS2.userData.sp2Pos=sp2pos;WS2.userData.sp2Cnt=sc2;
   // ── Purple ground fissures ──
   const fp2=[];
