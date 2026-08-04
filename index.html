@@ -1128,6 +1128,8 @@ let tppNearPanel=null;// panel currently in proximity zone (TPP mode)
 let storyModeActive=false,storyTraveling=false,storyIdx=-1;
 const storyTarget=new THREE.Vector3();
 const STORY_ARRIVE_R=1.4;// distance from zone centre counted as "arrived"
+const STORY_EASE_R=5.5;// start slowing down within this distance of the target
+let storyWanderPhase=0,storyWanderFreq=1;// per-leg organic weave (randomized in storyNext)
 let _lookZoneEl=null;// cached ref — toggled pointer-events with TPP state
 let _speechTyper=null,_speechHoldTimer=null;// typewriter handles
 let isFlying=false,flyT=0;
@@ -1385,40 +1387,57 @@ function buildFloor(){
   WS.userData.fissures=[fissure1,fissure2];
 }
 function buildStars(){
-  // ── Baked skybox texture, not a canvas-drawn one ──
-  // sky_dark_red.jpg is a static image asset (like every other texture on
-  // this page) — the intent was Unity Asset Store's "Starfield Skybox"
-  // (assetstore.unity.com/packages/2d/textures-materials/sky/starfield-
-  // skybox-92717), but that's only distributed through Unity's account-
-  // gated Package Manager, so there was no way to fetch the actual file.
-  // Built an equivalent instead — smooth multi-octave Gaussian cloud
-  // noise (scipy, seamless left↔right) colour-graded red/black, plus a
-  // sparse scatter of small sharp stars — offline with PIL/numpy, matching
-  // that asset's soft-nebula-+ pinpoint-stars look rather than a grainy
-  // real photo. Nothing here draws pixels at runtime.
-  const skyGeo=new THREE.SphereGeometry(280,48,24);
-  const skyMat=new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.BackSide,depthWrite:false,fog:false});
-  const skySphere=new THREE.Mesh(skyGeo,skyMat);
-  WS.add(skySphere);WS.userData.skySphere=skySphere;
-  const txLoader=new THREE.TextureLoader();
-  txLoader.crossOrigin='anonymous';
-  txLoader.load(
-    './sky_dark_red.jpg',
-    t=>{skyMat.map=t;skyMat.needsUpdate=true;},
-    undefined,
-    // Local asset missing for some reason — fall back to the same source
-    // HDRI's tonemapped photo straight from Poly Haven, tinted red/black
-    // via the material colour multiplier (still a real photo, no canvas).
-    ()=>{
-      skyMat.color.set(0x8a2a26);
-      txLoader.load(
-        'https://dl.polyhaven.org/file/ph-assets/HDRIs/extra/Tonemapped%20JPG/dikhololo_night.jpg',
-        t=>{skyMat.map=t;skyMat.needsUpdate=true;},
-        undefined,
-        ()=>{skyMat.color.set(0x140404);}// last resort: flat dark red-black, still no canvas
-      );
+  // ── Vector 3D starfield — no image, no texture, no network fetch ──
+  // Real THREE.Points geometry scattered across a sphere shell instead of
+  // any baked/loaded image: stars are actual 3D vertices, so they stay
+  // perfectly crisp at any resolution (nothing to pixelate or compress),
+  // and there's no decode/upload wait — the whole sky exists the instant
+  // this function returns. Three cheap draw calls total (one per star
+  // "magnitude" layer) plus one plain vertex-coloured backdrop sphere —
+  // far less GPU work than sampling a 2048×1024 photo across the dome.
+  const skyGroup=new THREE.Group();
+  WS.add(skyGroup);WS.userData.skySphere=skyGroup;// name kept — existing slow-rotation animation targets this
+
+  // Backdrop: flat geometry, no texture — a soft per-vertex colour ramp
+  // (warm dark red near the "equator" band, fading to near-black at the
+  // poles) gives depth using nothing but vertex colours.
+  const bgGeo=new THREE.SphereGeometry(280,32,16);
+  const bgPos=bgGeo.attributes.position;
+  const bgCol=new Float32Array(bgPos.count*3);
+  for(let i=0;i<bgPos.count;i++){
+    const band=1-Math.min(1,Math.abs(bgPos.getY(i))/280);// 1 at equator, 0 at poles
+    bgCol[i*3]=0.035+band*0.09;bgCol[i*3+1]=0.008+band*0.014;bgCol[i*3+2]=0.008+band*0.013;
+  }
+  bgGeo.setAttribute('color',new THREE.BufferAttribute(bgCol,3));
+  const bgMat=new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.BackSide,depthWrite:false,fog:false});
+  skyGroup.add(new THREE.Mesh(bgGeo,bgMat));
+
+  // Stars: three magnitude layers (many dim, fewer bright) using the same
+  // shared soft-glow sprite as the ambient particle systems, so points
+  // render as small round stars instead of hard flat squares.
+  const R=270,glow=_glowSprite();
+  function starLayer(count,size,opacity,warmFrac){
+    const pos=new Float32Array(count*3),col=new Float32Array(count*3);
+    for(let i=0;i<count;i++){
+      const u=Math.random(),v=Math.random();
+      const theta=2*Math.PI*u,phi=Math.acos(2*v-1);
+      pos[i*3]=R*Math.sin(phi)*Math.cos(theta);
+      pos[i*3+1]=R*Math.cos(phi);
+      pos[i*3+2]=R*Math.sin(phi)*Math.sin(theta);
+      const b=0.55+Math.random()*0.45;
+      if(Math.random()<warmFrac){col[i*3]=b;col[i*3+1]=.7*b;col[i*3+2]=.55*b;}
+      else{col[i*3]=b;col[i*3+1]=.97*b;col[i*3+2]=.94*b;}
     }
-  );
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+    const mat=new THREE.PointsMaterial({size,map:glow,vertexColors:true,transparent:true,opacity,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:false});
+    skyGroup.add(new THREE.Points(geo,mat));
+  }
+  const dense=isMobile?1800:4000;
+  starLayer(dense,1.6,.55,.12);// small dim background stars
+  starLayer(Math.round(dense*.18),2.6,.85,.15);// brighter mid layer
+  starLayer(Math.round(dense*.03),4.0,1,.2);// a few standout bright stars
 }
 // Shared soft radial-glow sprite for every ambient particle system — a
 // plain THREE.Points dot renders as a hard flat square, which reads as
@@ -2492,8 +2511,19 @@ function _tppUpdate(dt,t){
       const sdx=storyTarget.x-playerPos.x,sdz=storyTarget.z-playerPos.z;
       const sdist=Math.sqrt(sdx*sdx+sdz*sdz);
       if(sdist>0.05){
-        inputVec.set(sdx/sdist,0,sdz/sdist);
-        targetYaw=Math.atan2(-sdx,-sdz);
+        const dirX=sdx/sdist,dirZ=sdz/sdist;
+        // Ease speed down on approach instead of walking at full pace right
+        // up to the mark and snapping to a stop — real footsteps slow
+        // before they arrive. Floor keeps a slow final approach rather
+        // than fully halting short of the target.
+        const speedScale=Math.min(1,Math.max(0.16,sdist/STORY_EASE_R));
+        // Subtle organic weave perpendicular to the direct line, fading
+        // out with speedScale so the path curves gently rather than
+        // beelining, while still homing in on the exact target each frame.
+        const wander=Math.sin(t*storyWanderFreq+storyWanderPhase)*0.32*speedScale;
+        const perpX=-dirZ,perpZ=dirX;
+        inputVec.set(dirX*speedScale+perpX*wander,0,dirZ*speedScale+perpZ*wander);
+        targetYaw=Math.atan2(-dirX,-dirZ);
       }
       if(sdist<STORY_ARRIVE_R){storyTraveling=false;_storyArrive();}
     }
@@ -3285,6 +3315,10 @@ function storyNext(){
   // arriving here lines up exactly with where ENTER would normally work.
   storyTarget.set(Math.sin(ang)*sec.dist*.80,0,-Math.cos(ang)*sec.dist*.80);
   storyTraveling=true;
+  // Randomize the organic weave per leg so every walk doesn't repeat the
+  // exact same wobble — small human-like variation, not a robotic beeline.
+  storyWanderPhase=Math.random()*Math.PI*2;
+  storyWanderFreq=0.55+Math.random()*0.35;
   const hh=document.getElementById('hud-hint');
   if(hh)hh.innerHTML=`<span>WALKING</span> to ${sec.title} &nbsp;·&nbsp; ${storyIdx+1}/${SECTIONS.length}`;
   showCharSpeech(`Next stop — ${sec.title}.`,2600);
