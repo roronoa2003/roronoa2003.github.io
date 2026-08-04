@@ -74,9 +74,7 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 .profile-item:hover .profile-name{color:#fff;}
 .manage-btn{margin-top:3rem;border:1px solid #333;color:#555;background:none;padding:.4rem 1.3rem;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;cursor:none;transition:all .2s;font-family:'Outfit',sans-serif;}
 .manage-btn:hover{border-color:#888;color:#888;}
-.story-btn{margin-top:1.1rem;border:1px solid var(--red);color:var(--red);background:rgba(229,9,20,.06);padding:.55rem 1.6rem;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:none;transition:all .22s;font-family:'Outfit',sans-serif;border-radius:3px;}
-.story-btn:hover{background:var(--red);color:#fff;box-shadow:0 0 24px rgba(229,9,20,.45);}
-@media(pointer:coarse){.manage-btn,.story-btn{cursor:pointer;}}
+@media(pointer:coarse){.manage-btn{cursor:pointer;}}
 @keyframes fadeInUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 /* WORLD SCREEN */
 #world-screen{display:none;position:fixed;inset:0;z-index:5000;}
@@ -535,12 +533,9 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 @keyframes panIn{from{transform:perspective(900px) rotateX(6deg) translateY(36px) scale(.96);opacity:0}to{transform:perspective(900px) rotateX(0) translateY(0) scale(1);opacity:1}}
 #content-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid rgba(229,9,20,.18);flex-shrink:0;gap:1rem;}
 #content-section-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.1em;color:#fff;text-shadow:0 0 18px rgba(229,9,20,.4);white-space:nowrap;}
-#content-header-actions{display:flex;align-items:center;gap:.6rem;flex-shrink:0;}
 #content-close{background:transparent;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.55);font-family:'Outfit',sans-serif;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;padding:.3rem .9rem;border-radius:3px;cursor:none;transition:all .22s;white-space:nowrap;flex-shrink:0;}
 #content-close:hover{border-color:var(--red);color:#fff;background:rgba(229,9,20,.15);}
-#content-next{display:none;background:var(--red);border:1px solid var(--red);color:#fff;font-family:'Outfit',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:.3rem 1rem;border-radius:3px;cursor:none;transition:all .22s;white-space:nowrap;flex-shrink:0;}
-#content-next:hover{background:#ff1a25;box-shadow:0 0 18px rgba(229,9,20,.5);}
-@media(pointer:coarse){#content-close,#content-next{cursor:pointer;}}
+@media(pointer:coarse){#content-close{cursor:pointer;}}
 #content-body{overflow-y:auto;padding:1.4rem;flex:1;overscroll-behavior:contain;}
 #content-body::-webkit-scrollbar{width:3px;}
 #content-body::-webkit-scrollbar-track{background:transparent;}
@@ -659,7 +654,6 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
         </div>
       </li>
     </ul>
-    <button class="story-btn" onclick="enterWorld(true)">▶ STORY MODE — GUIDED TOUR</button>
     <button class="manage-btn">MANAGE PROFILES</button>
   </main>
 </div>
@@ -746,14 +740,11 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
   </div>
   <!-- Content Overlay -->
   <div id="content-overlay">
-    <div id="content-bg" onclick="handleContentClose()"></div>
+    <div id="content-bg" onclick="closeContent()"></div>
     <div id="content-panel">
       <div id="content-header">
         <div id="content-section-title"></div>
-        <div id="content-header-actions">
-          <button id="content-next" onclick="storyNext()">NEXT ▶</button>
-          <button id="content-close" onclick="handleContentClose()">✕ BACK TO WORLD</button>
-        </div>
+        <button id="content-close" onclick="closeContent()">✕ BACK TO WORLD</button>
       </div>
       <div id="content-body"></div>
     </div>
@@ -1125,12 +1116,6 @@ let savedCamPos=new THREE.Vector3(),savedCamYaw=0,savedCamPitch=0;
 let panelMeshes=[],glowMeshes=[],panelLights=[],panelZoneDiscs=[];
 let hoveredPanel=null,focusedPanel=null;
 let tppNearPanel=null;// panel currently in proximity zone (TPP mode)
-// ── STORY MODE: guided auto-walk tour through every section ──────────────
-let storyModeActive=false,storyTraveling=false,storyIdx=-1;
-const storyTarget=new THREE.Vector3();
-const STORY_ARRIVE_R=1.4;// distance from zone centre counted as "arrived"
-const STORY_EASE_R=5.5;// start slowing down within this distance of the target
-let storyWanderPhase=0,storyWanderFreq=1;// per-leg organic weave (randomized in storyNext)
 let _lookZoneEl=null;// cached ref — toggled pointer-events with TPP state
 let _speechTyper=null,_speechHoldTimer=null;// typewriter handles
 let isFlying=false,flyT=0;
@@ -1950,7 +1935,7 @@ function bindControls(){
   cv.addEventListener('mousedown',e=>{if(e.target!==cv)return;isDragging=true;dLastX=e.clientX;dLastY=e.clientY;autoOrbit=false;});
   document.addEventListener('mouseup',()=>isDragging=false);
   document.addEventListener('mousemove',e=>{
-    if(isDragging&&!storyModeActive){targetYaw-=e.movementX*.0025;targetPitch-=e.movementY*.002;targetPitch=Math.max(-Math.PI/2.1,Math.min(Math.PI/2.1,targetPitch));}
+    if(isDragging){targetYaw-=e.movementX*.0025;targetPitch-=e.movementY*.002;targetPitch=Math.max(-Math.PI/2.1,Math.min(Math.PI/2.1,targetPitch));}
     // Hover tooltip
     const r=cv.getBoundingClientRect();
     const nmx=((e.clientX-r.left)/r.width)*2-1,nmy=-((e.clientY-r.top)/r.height)*2+1;
@@ -1960,7 +1945,7 @@ function bindControls(){
   let lastTX=0,lastTY=0,lastDist=0;
   cv.addEventListener('touchstart',e=>{lastTX=e.touches[0].clientX;lastTY=e.touches[0].clientY;if(e.touches.length===2)lastDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);autoOrbit=false;},{passive:true});
   cv.addEventListener('touchmove',e=>{
-    if(e.touches.length===1&&!storyModeActive){targetYaw-=(e.touches[0].clientX-lastTX)*.003;targetPitch-=(e.touches[0].clientY-lastTY)*.002;targetPitch=Math.max(-Math.PI/2.1,Math.min(Math.PI/2.1,targetPitch));lastTX=e.touches[0].clientX;lastTY=e.touches[0].clientY;}
+    if(e.touches.length===1){targetYaw-=(e.touches[0].clientX-lastTX)*.003;targetPitch-=(e.touches[0].clientY-lastTY)*.002;targetPitch=Math.max(-Math.PI/2.1,Math.min(Math.PI/2.1,targetPitch));lastTX=e.touches[0].clientX;lastTY=e.touches[0].clientY;}
   },{passive:true});
   // Click on panels
   cv.addEventListener('click',e=>{
@@ -1987,11 +1972,11 @@ function bindControls(){
   document.addEventListener('keydown',e=>{
     if(e.code==='KeyW')keys.w=true;if(e.code==='KeyA')keys.a=true;
     if(e.code==='KeyS')keys.s=true;if(e.code==='KeyD')keys.d=true;
-    if(e.key==='Escape'){closeContent();hideCharSpeech();if(storyModeActive)endStoryMode();}
+    if(e.key==='Escape'){closeContent();hideCharSpeech();}
     if(e.code==='Space'){autoOrbit=!autoOrbit;}
     if(e.code==='KeyW'||e.code==='KeyA'||e.code==='KeyS'||e.code==='KeyD')autoOrbit=false;
     // ── ENTER key: open nearest panel when standing in zone ──
-    if(e.key==='Enter'&&!e.repeat&&isTPP&&!storyModeActive&&tppNearPanel&&!document.getElementById('content-overlay')?.classList.contains('active')){
+    if(e.key==='Enter'&&!e.repeat&&isTPP&&tppNearPanel&&!document.getElementById('content-overlay')?.classList.contains('active')){
       e.preventDefault();
       openContent(tppNearPanel.userData.sec);
     }
@@ -2033,9 +2018,9 @@ function bindControls(){
     lz.addEventListener('touchend',()=>{lzActive=false;});
     // Tap right side: near panel → open it; otherwise → trigger next ambient line
     lz.addEventListener('click',()=>{
-      if(isTPP&&!storyModeActive&&tppNearPanel&&!document.getElementById('content-overlay')?.classList.contains('active')){
+      if(isTPP&&tppNearPanel&&!document.getElementById('content-overlay')?.classList.contains('active')){
         openContent(tppNearPanel.userData.sec);
-      } else if(isTPP&&!storyModeActive&&!document.getElementById('char-speech')?.classList.contains('visible')){
+      } else if(isTPP&&!document.getElementById('char-speech')?.classList.contains('visible')){
         // Double-tap anywhere on look zone fires character speech
         const arr=inSecondWorld?AMBIENT_W2:AMBIENT_W1;
         const idx=inSecondWorld?_ambientIdx.w2:_ambientIdx.w1;
@@ -2566,9 +2551,8 @@ function toggleViewMode(){
     tppCamReady=true;
     const scene=inSecondWorld&&WS2?WS2:WS;
     loadPlayerChar(scene);
-    // Greet player on entering TPP in World 1 (not world 2 — it has its own
-    // dialogue; story mode has its own welcome line too, so skip this one).
-    if(!inSecondWorld&&!storyModeActive){
+    // Greet player on entering TPP in World 1 (not world 2 — it has its own dialogue)
+    if(!inSecondWorld){
       setTimeout(()=>showCharSpeech(
         "Hawkins, Indiana — 1983.\nWalk toward any glowing panel and stand in the light.\nPress ENTER to explore each chapter of my story.",
         7500
@@ -2617,32 +2601,7 @@ function _tppUpdate(dt,t){
   const fw=_fwScratch.set(-Math.sin(camYaw),0,-Math.cos(camYaw));
   const rt=_rtScratch.set(-Math.cos(camYaw),0,Math.sin(camYaw));
   const inputVec=_inputVecScratch.set(0,0,0);
-  if(storyModeActive){
-    // ── Story mode drives the character itself — no WASD/joystick input.
-    // Walk straight (in world space, not camera-relative) toward the
-    // current section's zone centre, and ease the chase-cam to trail
-    // behind the travel direction as it goes.
-    if(storyTraveling){
-      const sdx=storyTarget.x-playerPos.x,sdz=storyTarget.z-playerPos.z;
-      const sdist=Math.sqrt(sdx*sdx+sdz*sdz);
-      if(sdist>0.05){
-        const dirX=sdx/sdist,dirZ=sdz/sdist;
-        // Ease speed down on approach instead of walking at full pace right
-        // up to the mark and snapping to a stop — real footsteps slow
-        // before they arrive. Floor keeps a slow final approach rather
-        // than fully halting short of the target.
-        const speedScale=Math.min(1,Math.max(0.16,sdist/STORY_EASE_R));
-        // Subtle organic weave perpendicular to the direct line, fading
-        // out with speedScale so the path curves gently rather than
-        // beelining, while still homing in on the exact target each frame.
-        const wander=Math.sin(t*storyWanderFreq+storyWanderPhase)*0.32*speedScale;
-        const perpX=-dirZ,perpZ=dirX;
-        inputVec.set(dirX*speedScale+perpX*wander,0,dirZ*speedScale+perpZ*wander);
-        targetYaw=Math.atan2(-dirX,-dirZ);
-      }
-      if(sdist<STORY_ARRIVE_R){storyTraveling=false;_storyArrive();}
-    }
-  } else if(!autoOrbit){
+  if(!autoOrbit){
     if(keys.w)inputVec.addScaledVector(fw,1);
     if(keys.s)inputVec.addScaledVector(fw,-1);
     if(keys.a)inputVec.addScaledVector(rt,-1);
@@ -2677,7 +2636,14 @@ function _tppUpdate(dt,t){
   const maxR=inSecondWorld?20:21;
   if(pr>maxR){playerPos.x*=maxR/pr;playerPos.z*=maxR/pr;playerVel.x*=0.15;playerVel.z*=0.15;}
   // ── TERRAIN Y + SLOPE NORMALS ────────────────────────────
-  const terrY=getTerrainHeight(playerPos.x,playerPos.z);
+  // getTerrainHeight() is analytic-only — the real mesh adds per-vertex
+  // noise on top that no function of (x,z) can predict (see DECAL_LIFT).
+  // Without a margin the character's feet can sink slightly into the
+  // real surface. DECAL_LIFT (not the larger RIPPLE_LIFT) is deliberate
+  // here — it clears the noise term with a visually negligible lift;
+  // going bigger would make the character noticeably float above the
+  // ground during ordinary walking instead of just fixing the sink.
+  const terrY=getTerrainHeight(playerPos.x,playerPos.z)+DECAL_LIFT;
   playerPos.y+=(terrY-playerPos.y)*Math.min(1,dt*13);// 13 ≈ 0.12s settle, no ridge-snap
   // Numerical terrain gradient (for slope tilt)
   const eps=0.5;
@@ -2690,16 +2656,13 @@ function _tppUpdate(dt,t){
   // Y:  SPK=42, damping=12 → ~0.28s settle — floats over terrain bumps
   // (Separate Y tuning is the key trick used in AAA TPC cameras to hide
   //  terrain micro-jitter without making the camera feel sluggish laterally)
-  // Story mode uses a softer, slower-settling spring — this is an
-  // automated cutscene-style pan with no input latency to protect, so it
-  // can afford to float rather than snap, which reads as far smoother.
   const CAM_DIST=5.5,CAM_H=3.2;
   const tgtCX=playerPos.x+Math.sin(camYaw)*CAM_DIST;
   const tgtCY=playerPos.y+CAM_H;
   const tgtCZ=playerPos.z+Math.cos(camYaw)*CAM_DIST;
   if(!tppCamReady){tppCamLerped.set(tgtCX,tgtCY,tgtCZ);tppCamVel.set(0,0,0);tppCamReady=true;}
-  const SPK_XZ=storyModeActive?38:95,SPD_XZ=storyModeActive?13:18;
-  const SPK_Y =storyModeActive?20:42,SPD_Y =storyModeActive?9:12;
+  const SPK_XZ=95,SPD_XZ=18;
+  const SPK_Y =42,SPD_Y =12;
   tppCamVel.x+=(-(tppCamLerped.x-tgtCX)*SPK_XZ-tppCamVel.x*SPD_XZ)*dt;
   tppCamVel.y+=(-(tppCamLerped.y-tgtCY)*SPK_Y -tppCamVel.y*SPD_Y )*dt;
   tppCamVel.z+=(-(tppCamLerped.z-tgtCZ)*SPK_XZ-tppCamVel.z*SPD_XZ)*dt;
@@ -2765,7 +2728,7 @@ function _tppUpdate(dt,t){
       const sid=tppNearPanel.userData.sec.id;
       // Reset dwell timer whenever we enter a new zone
       _zoneEntryT=t;_zoneEntryPanel=tppNearPanel;
-      if(!storyModeActive&&!_panelDialogueSeen.has(sid)&&PANEL_DIALOGUES[sid]){
+      if(!_panelDialogueSeen.has(sid)&&PANEL_DIALOGUES[sid]){
         _panelDialogueSeen.add(sid);
         showCharSpeech(PANEL_DIALOGUES[sid],6800);
         _lastDialogueT=t;// reset ambient timer so it doesn't fire on top
@@ -2776,7 +2739,7 @@ function _tppUpdate(dt,t){
     // ── Wave 2: Dwell dialogue — fires 9s after entry if still in zone ──
     if(tppNearPanel&&_zoneEntryPanel===tppNearPanel&&_zoneEntryT>0&&(t-_zoneEntryT)>9){
       const sid=tppNearPanel.userData.sec.id;
-      if(!storyModeActive&&!_panelDwellSeen.has(sid)&&PANEL_DIALOGUES_DWELL[sid]&&
+      if(!_panelDwellSeen.has(sid)&&PANEL_DIALOGUES_DWELL[sid]&&
          !document.getElementById('char-speech')?.classList.contains('visible')){
         _panelDwellSeen.add(sid);
         _zoneEntryT=0;// prevent re-trigger
@@ -3057,11 +3020,8 @@ function animLoop(now){
   if(autoOrbit){autoAngle+=dt*.08;const orbitR=16;camPos.set(Math.sin(autoAngle)*orbitR,1.8,Math.cos(autoAngle)*orbitR);camYaw=autoAngle;targetYaw=autoAngle;camPitch=.07+Math.sin(autoAngle*.18)*.035;targetPitch=camPitch;}
   // ── Smooth look inertia (always) ──
   if(!suckupActive&&!returnActive){
-    // .005 → τ≈0.19s, responsive with just enough inertia to feel smooth.
-    // Story mode uses a slower τ≈0.33s float — no input latency to protect
-    // during an automated pan, so it can turn like a cinematic camera
-    // instead of snapping toward wherever the walk direction points.
-    const ll=1-Math.pow(storyModeActive?.05:.005,dt);
+    // .005 → τ≈0.19s, responsive with just enough inertia to feel smooth
+    const ll=1-Math.pow(.005,dt);
     camYaw+=(targetYaw-camYaw)*ll;
     camPitch+=(targetPitch-camPitch)*ll;
   }
@@ -3324,7 +3284,9 @@ function animLoop(now){
       WS2.userData.demoChaserBobT=(WS2.userData.demoChaserBobT||0)+dt*6.5;
       const bob=Math.abs(Math.sin(WS2.userData.demoChaserBobT))*0.28;
       // Re-sample terrain at its live X/Z so it climbs/descends hills while chasing
-      demoChaser.position.y=getTerrainHeight(demoChaser.position.x,demoChaser.position.z)+(demoChaserBaseY||0)+bob;
+      // +DECAL_LIFT for the same reason as the player's own terrain-follow —
+      // clears the real mesh's per-vertex noise without a visible float.
+      demoChaser.position.y=getTerrainHeight(demoChaser.position.x,demoChaser.position.z)+DECAL_LIFT+(demoChaserBaseY||0)+bob;
       // Slight forward lean
       demoChaser.rotation.x=0.18+Math.sin(WS2.userData.demoChaserBobT*0.5)*0.05;
       // Side sway matching stride
@@ -3380,7 +3342,7 @@ function openContent(sec){
 function closeContent(){
   const overlay=document.getElementById('content-overlay');
   // Wave 3: post-panel reaction dialogue (fires 0.8s after close)
-  if(overlay.classList.contains('active')&&isTPP&&tppNearPanel&&!storyModeActive){
+  if(overlay.classList.contains('active')&&isTPP&&tppNearPanel){
     const sid=tppNearPanel.userData.sec.id;
     if(!_panelPostSeen.has(sid)&&PANEL_DIALOGUES_POST[sid]){
       _panelPostSeen.add(sid);
@@ -3393,9 +3355,7 @@ function closeContent(){
   }
   overlay.classList.remove('active');
   focusedPanel=null;
-  // Story mode drives its own camera/travel — skip the FPP fly-back-to-
-  // orbit behaviour entirely so it can't fight the guided-tour camera.
-  if(!isFlying&&!storyModeActive){
+  if(!isFlying){
     flyFP.copy(WC.position);
     const backAngle=autoAngle;
     flyTP.set(Math.sin(backAngle)*13,1.8,Math.cos(backAngle)*13);
@@ -3404,76 +3364,6 @@ function closeContent(){
     flyT=0;isFlying=true;
     setTimeout(()=>{autoOrbit=true;},1500);
   }
-}
-function handleContentClose(){
-  // The plain ✕/background click always closes the panel; if that happens
-  // mid-tour it also means "let me out" — end the guided tour entirely
-  // rather than leaving it half-active waiting on a Next click that will
-  // never come.
-  const wasStory=storyModeActive;
-  closeContent();
-  if(wasStory)endStoryMode();
-}
-// ══════════════════════════════════════════════════════
-// STORY MODE — guided auto-walk tour through every resume section
-// ══════════════════════════════════════════════════════
-function beginStoryMode(){
-  storyModeActive=true;storyTraveling=false;storyIdx=-1;
-  autoOrbit=false;
-  if(!isTPP)toggleViewMode();// switches to TPP, loads character, primes follow-cam
-  const hh=document.getElementById('hud-hint');
-  if(hh)hh.innerHTML='<span>STORY MODE</span> — sit back, I\'ll take you through it';
-  setTimeout(()=>showCharSpeech(
-    "Welcome to the guided tour — let me walk you through my story, chapter by chapter.",
-    3100
-  ),500);
-  setTimeout(storyNext,3400);
-}
-function storyNext(){
-  closeContent();
-  const nb=document.getElementById('content-next');if(nb)nb.style.display='none';
-  if(!storyModeActive)return;// tour was exited while this was queued
-  storyIdx++;
-  if(storyIdx>=SECTIONS.length){endStoryMode();return;}
-  const sec=SECTIONS[storyIdx];
-  const ang=sec.angle*Math.PI/180;
-  // Same 80%-radius zone centre the panel's own proximity disc uses, so
-  // arriving here lines up exactly with where ENTER would normally work.
-  storyTarget.set(Math.sin(ang)*sec.dist*.80,0,-Math.cos(ang)*sec.dist*.80);
-  storyTraveling=true;
-  // Randomize the organic weave per leg so every walk doesn't repeat the
-  // exact same wobble — small human-like variation, not a robotic beeline.
-  storyWanderPhase=Math.random()*Math.PI*2;
-  storyWanderFreq=0.55+Math.random()*0.35;
-  const hh=document.getElementById('hud-hint');
-  if(hh)hh.innerHTML=`<span>WALKING</span> to ${sec.title} &nbsp;·&nbsp; ${storyIdx+1}/${SECTIONS.length}`;
-  showCharSpeech(`Next stop — ${sec.title}.`,2600);
-}
-function _storyArrive(){
-  const sec=SECTIONS[storyIdx];
-  const hh=document.getElementById('hud-hint');
-  if(hh)hh.innerHTML=`<span>${storyIdx+1}/${SECTIONS.length}</span> ${sec.title}`;
-  const line=PANEL_DIALOGUES[sec.id];
-  if(line)showCharSpeech(line,5200);
-  setTimeout(()=>{
-    if(!storyModeActive)return;// tour was exited during the walk-in delay
-    openContent(sec);
-    const nb=document.getElementById('content-next');
-    if(nb){
-      nb.style.display='inline-flex';
-      nb.textContent=storyIdx===SECTIONS.length-1?'✓ FINISH TOUR':'NEXT ▶';
-    }
-  },900);
-}
-function endStoryMode(){
-  storyModeActive=false;storyTraveling=false;storyIdx=-1;
-  const nb=document.getElementById('content-next');if(nb)nb.style.display='none';
-  const hh=document.getElementById('hud-hint');
-  if(hh)hh.innerHTML='<span>WASD</span> move &nbsp;·&nbsp; <span>MOUSE</span> look &nbsp;·&nbsp; <span>ENTER</span> explore panel';
-  setTimeout(()=>showCharSpeech(
-    "That's the whole story. Feel free to explore on your own now — walk up to any panel and press ENTER.",
-    7000
-  ),300);
 }
 // ══════════════════════════════════════════════════════
 // MOBILE MENU
@@ -3586,7 +3476,7 @@ function _startIntroCamSwoop(){
   introCamT=0;introCamDur=2.8;introCamActive=true;
   autoOrbit=false;// prevent orbit from overriding
 }
-function enterWorld(story){
+function enterWorld(){
   const audio=new Audio('./mixkit-mouse-click-close-1113.mp3');audio.play().catch(()=>{});
   const ps=document.getElementById('profiles-screen');
   ps.style.transition='opacity .4s';ps.style.opacity='0';
@@ -3595,23 +3485,11 @@ function enterWorld(story){
     document.getElementById('world-screen').classList.add('show');
     // Music stays off until the user presses the ♫ button — no autoplay.
     // Wait for ITC Benguiat Std to load before drawing canvas panel textures
-    document.fonts.ready.then(()=>{
-      initWorld();
-      if(story){
-        // Let the existing intro swoop + panel-ignite sequence finish
-        // (≈2.8s swoop + panel stagger) before handing control to the tour,
-        // so the guided walk never fights the cinematic camera.
-        setTimeout(beginStoryMode,4600);
-      } else {
-        autoOrbit=true;
-      }
-    });
+    document.fonts.ready.then(()=>{initWorld();autoOrbit=true;});
   },400);
 }
 function backToProfiles(){
   isTPP=false;_setLookZoneActive(false);// disable look-zone on exit
-  storyModeActive=false;storyTraveling=false;storyIdx=-1;// reset tour state
-  const nb=document.getElementById('content-next');if(nb)nb.style.display='none';
   stopTheme();// fade out music before leaving world
   const ws=document.getElementById('world-screen');
   ws.style.transition='opacity .4s';ws.style.opacity='0';
