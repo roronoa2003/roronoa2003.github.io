@@ -1414,9 +1414,15 @@ function buildStars(){
 
   // Stars: three magnitude layers (many dim, fewer bright) using the same
   // shared soft-glow sprite as the ambient particle systems, so points
-  // render as small round stars instead of hard flat squares.
-  const R=270,glow=_glowSprite();
-  function starLayer(count,size,opacity,warmFrac){
+  // render as small round stars instead of hard flat squares. With
+  // sizeAttenuation:false, `size` is in *framebuffer* pixels — on a
+  // high-DPI screen (pixelRatio 2+, common on both phones and desktop
+  // retina displays) an unscaled small size collapses to under a single
+  // CSS pixel and the soft glow sprite gets crushed into a hard aliased
+  // speck. Scale by the renderer's actual pixel ratio so stars read as
+  // the same soft, smooth size everywhere.
+  const R=270,glow=_glowSprite(),pr=WR.getPixelRatio();
+  function starLayer(count,cssSize,opacity,warmFrac){
     const pos=new Float32Array(count*3),col=new Float32Array(count*3);
     for(let i=0;i<count;i++){
       const u=Math.random(),v=Math.random();
@@ -1431,13 +1437,13 @@ function buildStars(){
     const geo=new THREE.BufferGeometry();
     geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
     geo.setAttribute('color',new THREE.BufferAttribute(col,3));
-    const mat=new THREE.PointsMaterial({size,map:glow,vertexColors:true,transparent:true,opacity,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:false});
+    const mat=new THREE.PointsMaterial({size:cssSize*pr,map:glow,vertexColors:true,transparent:true,opacity,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:false});
     skyGroup.add(new THREE.Points(geo,mat));
   }
   const dense=isMobile?1800:4000;
-  starLayer(dense,1.6,.55,.12);// small dim background stars
-  starLayer(Math.round(dense*.18),2.6,.85,.15);// brighter mid layer
-  starLayer(Math.round(dense*.03),4.0,1,.2);// a few standout bright stars
+  starLayer(dense,2.2,.55,.12);// small dim background stars
+  starLayer(Math.round(dense*.18),3.6,.85,.15);// brighter mid layer
+  starLayer(Math.round(dense*.03),5.5,1,.2);// a few standout bright stars
 }
 // Shared soft radial-glow sprite for every ambient particle system — a
 // plain THREE.Points dot renders as a hard flat square, which reads as
@@ -2575,13 +2581,16 @@ function _tppUpdate(dt,t){
   // Y:  SPK=42, damping=12 → ~0.28s settle — floats over terrain bumps
   // (Separate Y tuning is the key trick used in AAA TPC cameras to hide
   //  terrain micro-jitter without making the camera feel sluggish laterally)
+  // Story mode uses a softer, slower-settling spring — this is an
+  // automated cutscene-style pan with no input latency to protect, so it
+  // can afford to float rather than snap, which reads as far smoother.
   const CAM_DIST=5.5,CAM_H=3.2;
   const tgtCX=playerPos.x+Math.sin(camYaw)*CAM_DIST;
   const tgtCY=playerPos.y+CAM_H;
   const tgtCZ=playerPos.z+Math.cos(camYaw)*CAM_DIST;
   if(!tppCamReady){tppCamLerped.set(tgtCX,tgtCY,tgtCZ);tppCamVel.set(0,0,0);tppCamReady=true;}
-  const SPK_XZ=95,SPD_XZ=18;
-  const SPK_Y =42,SPD_Y =12;
+  const SPK_XZ=storyModeActive?38:95,SPD_XZ=storyModeActive?13:18;
+  const SPK_Y =storyModeActive?20:42,SPD_Y =storyModeActive?9:12;
   tppCamVel.x+=(-(tppCamLerped.x-tgtCX)*SPK_XZ-tppCamVel.x*SPD_XZ)*dt;
   tppCamVel.y+=(-(tppCamLerped.y-tgtCY)*SPK_Y -tppCamVel.y*SPD_Y )*dt;
   tppCamVel.z+=(-(tppCamLerped.z-tgtCZ)*SPK_XZ-tppCamVel.z*SPD_XZ)*dt;
@@ -2939,8 +2948,11 @@ function animLoop(now){
   if(autoOrbit){autoAngle+=dt*.08;const orbitR=16;camPos.set(Math.sin(autoAngle)*orbitR,1.8,Math.cos(autoAngle)*orbitR);camYaw=autoAngle;targetYaw=autoAngle;camPitch=.07+Math.sin(autoAngle*.18)*.035;targetPitch=camPitch;}
   // ── Smooth look inertia (always) ──
   if(!suckupActive&&!returnActive){
-    // .005 → τ≈0.19s, responsive with just enough inertia to feel smooth
-    const ll=1-Math.pow(.005,dt);
+    // .005 → τ≈0.19s, responsive with just enough inertia to feel smooth.
+    // Story mode uses a slower τ≈0.33s float — no input latency to protect
+    // during an automated pan, so it can turn like a cinematic camera
+    // instead of snapping toward wherever the walk direction points.
+    const ll=1-Math.pow(storyModeActive?.05:.005,dt);
     camYaw+=(targetYaw-camYaw)*ll;
     camPitch+=(targetPitch-camPitch)*ll;
   }
