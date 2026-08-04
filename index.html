@@ -973,7 +973,8 @@ function getContent(id){
   </div>
   <div class="c-grid">
     <div class="c-card"><div class="c-card-row"><div class="c-logo"><img src="./uppercelestials.png" alt="Upper Celestials" onerror="this.outerHTML='📦'"/></div><div><h3>Upper Celestials Ops Dashboard</h3><div class="c-meta">2026 · Full-Stack + Logistics</div><p>Central shipping ops dashboard integrating Shiprocket &amp; Wefast APIs — unified order routing, tracking, and fulfillment from one repo.</p><div class="c-tags"><span class="c-tag">Shiprocket</span><span class="c-tag">Wefast</span><span class="c-tag">API Integration</span><span class="c-tag">Shopify</span></div></div></div></div>
-    <div class="c-card"><div class="c-card-row"><div class="c-logo">🤖</div><div><h3>Sales Agent Digital Twin</h3><div class="c-meta">2026 · AI Agents</div><p>Autonomous sales agent wired into Zoho CRM &amp; Microsoft 365 — auto-generates PPT proposal decks and coordinates via agent-to-agent (A2A) communication.</p><div class="c-tags"><span class="c-tag">Zoho</span><span class="c-tag">Microsoft 365</span><span class="c-tag">A2A</span><span class="c-tag">GenAI</span></div></div></div></div>
+    <div class="c-card"><div class="c-card-row"><div class="c-logo">🤖</div><div><h3>Organisational Agentic Digital Twin Platform</h3><div class="c-meta">2026 · AI Agents</div><p>Org-wide digital twin spanning CEO, CFO, CMO, CHRO, CPO &amp; Delivery — 68+ agents across a 350+ subagent hierarchy, orchestrated via A2A to cut cross-functional TAT.</p><div class="c-tags"><span class="c-tag">A2A</span><span class="c-tag">Multi-Agent</span><span class="c-tag">Zoho CRM</span><span class="c-tag">GenAI</span></div></div></div></div>
+    <div class="c-card"><div class="c-card-row"><div class="c-logo">🧩</div><div><h3>Setu — Project Allocation Tool</h3><div class="c-meta">2026 · RAG + Staffing</div><p>RAG chatbot indexing employee skills, certifications &amp; live availability to recommend optimal teams for client deployments.</p><div class="c-tags"><span class="c-tag">RAG</span><span class="c-tag">Azure Functions</span><span class="c-tag">Postgres</span><span class="c-tag">Microsoft 365</span></div></div></div></div>
     <div class="c-card"><div class="c-card-row"><div class="c-logo"><img src="./Paytm-Logo.png" alt="Paytm" onerror="this.outerHTML='🏏'"/></div><div><h3>Paytm Logo Detection in Cricket</h3><div class="c-meta">2025 · Computer Vision</div><p>YOLOv8 on ICC highlights — 92.3% mAP@0.5.</p></div></div></div>
     <div class="c-card"><div class="c-card-row"><div class="c-logo"><img src="./stocks.png" alt="Stocks" onerror="this.outerHTML='📈'"/></div><div><h3>Stock Price Analyzer &amp; Forecasting</h3><div class="c-meta">2025 · ML + AWS</div><p>Dashboard correlating news with market data.</p></div></div></div>
     <div class="c-card"><div class="c-card-row"><div class="c-logo"><img src="https://upload.wikimedia.org/wikipedia/commons/6/69/IMDB_Logo_2016.svg" alt="IMDB" onerror="this.outerHTML='🎬'"/></div><div><h3>IMDB Movie Analyzer</h3><div class="c-meta">2024 · NLP</div><p>Sentiment analysis with custom Python dashboard.</p></div></div></div>
@@ -1146,6 +1147,15 @@ let targetYaw=Math.PI,targetPitch=0.06;// smooth look inertia targets
 let camBobT=0,camBobAmp=0;// walking bob timer + smoothed amplitude
 const camPos=new THREE.Vector3(0,1.8,-16);
 const keys={w:false,a:false,s:false,d:false};
+// ── Reusable scratch vectors for the per-frame hot path ──────────────────
+// Allocating a fresh THREE.Vector3 every animation frame (this loop runs
+// 60x/sec) creates steady garbage-collection pressure, which shows up as
+// periodic micro-stutter — especially noticeable on mobile CPUs with less
+// headroom. These are mutated in place via .set() instead of re-allocated.
+const _fwScratch=new THREE.Vector3(),_rtScratch=new THREE.Vector3();
+const _inputVecScratch=new THREE.Vector3();
+const _speechProjScratch=new THREE.Vector3();
+const _helmetPosScratch=new THREE.Vector3();
 // ── TPP system ──────────────────────────────────────
 let isTPP=false;
 const playerPos=new THREE.Vector3(8,0,8);// char world position
@@ -1178,7 +1188,10 @@ function initWorld(){
   WR.toneMappingExposure=1.35;
   // ── PCF Soft Shadows (Unity-quality contact shadows) ──
   WR.shadowMap.enabled=true;
-  WR.shadowMap.type=THREE.PCFSoftShadowMap;
+  // Soft (PCF) shadows sample multiple times per fragment — noticeably
+  // costlier on mobile GPUs than the plain PCF filter, for a difference
+  // that's hard to notice on a small screen anyway.
+  WR.shadowMap.type=isMobile?THREE.PCFShadowMap:THREE.PCFSoftShadowMap;
   WS=new THREE.Scene();
   WS.fog=new THREE.FogExp2(0x0a0002,.022);
   WC=new THREE.PerspectiveCamera(isMobile?80:70,innerWidth/innerHeight,.05,500);
@@ -1186,7 +1199,11 @@ function initWorld(){
   WC.rotation.order='YXZ';
   // ── EffectComposer with Unreal Bloom (main world) ─────
   if(THREE.EffectComposer){
-    const sz=new THREE.Vector2(innerWidth,innerHeight);
+    // Bloom's internal downsample/blur chain runs at this resolution —
+    // it's an inherently blurry, low-frequency effect, so halving it on
+    // mobile cuts that chain's cost roughly 4x with almost no visible
+    // quality loss (a standard bloom optimization in real-time engines).
+    const sz=isMobile?new THREE.Vector2(innerWidth*0.5,innerHeight*0.5):new THREE.Vector2(innerWidth,innerHeight);
     WComposer=new THREE.EffectComposer(WR);
     WComposer.addPass(new THREE.RenderPass(WS,WC));
     const bloom=new THREE.UnrealBloomPass(sz,
@@ -1573,7 +1590,7 @@ function buildPanels(){
 // STRANGER THINGS: UPSIDE DOWN SPORES
 // ══════════════════════════════════════════════════════
 function buildSpores(){
-  const cnt=600;
+  const cnt=isMobile?300:600;
   const geo=new THREE.BufferGeometry();
   const pos=new Float32Array(cnt*3);
   const vel=new Float32Array(cnt*3);
@@ -1635,7 +1652,7 @@ function buildVoidPlanet(){
   grp.add(new THREE.Mesh(coronaGeo,coronaMat));
   // ── Ring of debris (asteroid belt look) ──
   const debrisGeo=new THREE.BufferGeometry();
-  const debrisCnt=300;const dp=new Float32Array(debrisCnt*3);
+  const debrisCnt=isMobile?150:300;const dp=new Float32Array(debrisCnt*3);
   for(let i=0;i<debrisCnt;i++){
     const a=Math.random()*Math.PI*2;
     const r=32+Math.random()*6;
@@ -1738,15 +1755,20 @@ function buildRipples(){
   // keep each vertex's original unit-radius direction and re-sample
   // getTerrainHeight at its *current* scaled world position every frame.
   const rings=[];const maxR=24;
-  for(let i=0;i<5;i++){
-    const geo=new THREE.RingGeometry(.85,1,.0,Math.PI*2,48);
+  // Each ring re-samples getTerrainHeight (a ~7-term trig function) at
+  // every vertex, every frame, while it's expanding — fewer rings and
+  // fewer segments on mobile cuts that per-frame CPU cost proportionally.
+  const RING_COUNT=isMobile?3:5;
+  const SEGS=isMobile?24:48;
+  for(let i=0;i<RING_COUNT;i++){
+    const geo=new THREE.RingGeometry(.85,1,.0,Math.PI*2,SEGS);
     geo.rotateX(-Math.PI/2);
     const pos=geo.attributes.position;
     const baseX=new Float32Array(pos.count),baseZ=new Float32Array(pos.count);
     for(let v=0;v<pos.count;v++){baseX[v]=pos.getX(v);baseZ[v]=pos.getZ(v);}
     const mat=new THREE.MeshBasicMaterial({color:0xff2808,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
     const mesh=new THREE.Mesh(geo,mat);
-    mesh.userData.r=(i/5)*maxR; // stagger phases
+    mesh.userData.r=(i/RING_COUNT)*maxR; // stagger phases
     mesh.userData.baseX=baseX;mesh.userData.baseZ=baseZ;
     WS.add(mesh);rings.push(mesh);
   }
@@ -1981,6 +2003,14 @@ function bindControls(){
     // Also resize composers so bloom doesn't render at stale resolution
     if(WComposer)WComposer.setSize(innerWidth,innerHeight);
     if(WComposer2)WComposer2.setSize(innerWidth,innerHeight);
+    // EffectComposer.setSize() resizes every pass (incl. bloom) to full
+    // resolution — re-apply the mobile half-res bloom target afterward so
+    // an orientation change/resize doesn't silently undo that saving.
+    if(isMobile){
+      const bw=innerWidth*0.5,bh=innerHeight*0.5;
+      WS.userData._bloomPass?.setSize(bw,bh);
+      WS2?.userData._bloomPass2?.setSize(bw,bh);
+    }
   });
 }
 function doRaycast(nmx,nmy){
@@ -2034,11 +2064,14 @@ function buildSecondWorld(){
   if(THREE.EffectComposer){
     WComposer2=new THREE.EffectComposer(WR);
     WComposer2.addPass(new THREE.RenderPass(WS2,WC));
-    WComposer2.addPass(new THREE.UnrealBloomPass(
-      new THREE.Vector2(innerWidth,innerHeight),
+    const sz2=isMobile?new THREE.Vector2(innerWidth*0.5,innerHeight*0.5):new THREE.Vector2(innerWidth,innerHeight);
+    const bloom2=new THREE.UnrealBloomPass(
+      sz2,
       isMobile?0.7:0.9,// slightly stronger bloom in the Upside Down
       0.42,0.78
-    ));
+    );
+    WComposer2.addPass(bloom2);
+    WS2.userData._bloomPass2=bloom2;
   }
   // ── Ground — same heightmap as world 1, purple tint, shadow receive ──
   const segs=isMobile?120:280;
@@ -2090,7 +2123,7 @@ function buildSecondWorld(){
   const sky2=new THREE.Mesh(skyGeo2,skyMat2);
   WS2.add(sky2);WS2.userData.sky2=sky2;
   // ── Lavender spores ──
-  const sc2=600;const sp2geo=new THREE.BufferGeometry();
+  const sc2=isMobile?300:600;const sp2geo=new THREE.BufferGeometry();
   const sp2pos=new Float32Array(sc2*3),sp2vel=new Float32Array(sc2*3);
   for(let i=0;i<sc2;i++){const a=Math.random()*Math.PI*2,r=2+Math.random()*22;sp2pos[i*3]=Math.cos(a)*r;sp2pos[i*3+1]=Math.random()*16;sp2pos[i*3+2]=Math.sin(a)*r;sp2vel[i*3]=(Math.random()-.5)*.004;sp2vel[i*3+1]=.005+Math.random()*.012;sp2vel[i*3+2]=(Math.random()-.5)*.004;}
   sp2geo.setAttribute('position',new THREE.BufferAttribute(sp2pos,3));
@@ -2526,9 +2559,9 @@ function _tppUpdate(dt,t){
   }
   // ── INPUT → DESIRED VELOCITY ─────────────────────────────
   const MAX_SPD=5.8;
-  const fw=new THREE.Vector3(-Math.sin(camYaw),0,-Math.cos(camYaw));
-  const rt=new THREE.Vector3(-Math.cos(camYaw),0,Math.sin(camYaw));
-  const inputVec=new THREE.Vector3();
+  const fw=_fwScratch.set(-Math.sin(camYaw),0,-Math.cos(camYaw));
+  const rt=_rtScratch.set(-Math.cos(camYaw),0,Math.sin(camYaw));
+  const inputVec=_inputVecScratch.set(0,0,0);
   if(storyModeActive){
     // ── Story mode drives the character itself — no WASD/joystick input.
     // Walk straight (in world space, not camera-relative) toward the
@@ -2730,7 +2763,7 @@ function _tppUpdate(dt,t){
   if(_cs&&_cs.classList.contains('visible')){
     if(!isMobile&&playerCharMesh){
       // Project character head to screen space (desktop only)
-      const _sp=new THREE.Vector3(playerPos.x,playerPos.y+2.8,playerPos.z);
+      const _sp=_speechProjScratch.set(playerPos.x,playerPos.y+2.8,playerPos.z);
       _sp.project(WC);
       if(_sp.z<1.0){
         _cs.style.left=((_sp.x*0.5+0.5)*100).toFixed(2)+'%';
@@ -2984,8 +3017,8 @@ function animLoop(now){
     // ── FPP: move camera directly ──
     if(!autoOrbit){
       const spd=4.5*dt;
-      const fw=new THREE.Vector3(-Math.sin(camYaw),0,-Math.cos(camYaw));
-      const rt=new THREE.Vector3(-Math.cos(camYaw),0,Math.sin(camYaw));
+      const fw=_fwScratch.set(-Math.sin(camYaw),0,-Math.cos(camYaw));
+      const rt=_rtScratch.set(-Math.cos(camYaw),0,Math.sin(camYaw));
       if(keys.w)camPos.addScaledVector(fw,spd);if(keys.s)camPos.addScaledVector(fw,-spd);
       if(keys.a)camPos.addScaledVector(rt,-spd);if(keys.d)camPos.addScaledVector(rt,spd);
       const hr=Math.sqrt(camPos.x*camPos.x+camPos.z*camPos.z);
@@ -3009,7 +3042,8 @@ function animLoop(now){
   panelMeshes.forEach((p,i)=>{
     p.position.y=p.userData.baseY+Math.sin(t*.55+p.userData.fp)*.16;
     const h=p===hoveredPanel;
-    const tgtS=h?1.06:1;p.scale.lerp(new THREE.Vector3(tgtS,tgtS,tgtS),.07);
+    const tgtS=h?1.06:1;
+    p.scale.x+=(tgtS-p.scale.x)*.07;p.scale.y+=(tgtS-p.scale.y)*.07;p.scale.z+=(tgtS-p.scale.z)*.07;
     const frame=p.children[0];if(frame?.material)frame.material.opacity+=(h?.75:.35-frame.material.opacity)*.1;
     const glow=glowMeshes[i];if(glow)glow.material.opacity+=(h?.07:.0-glow.material.opacity)*.1;
     panelLights[i].intensity+=(h?2.5:.6-panelLights[i].intensity)*.08;
@@ -3094,7 +3128,7 @@ function animLoop(now){
   // ══ SUCK-UP / PORTAL SYSTEM ═════════════════════════
   const suckOverlay=document.getElementById('suck-overlay');
   const _cy=WS.userData.glbCentreY||2.1;
-  const helmetPos=new THREE.Vector3(0,_cy,0);
+  const helmetPos=_helmetPosScratch.set(0,_cy,0);
   if(!inSecondWorld&&!suckupActive&&!returnActive){
     // Use player position in TPP, camera position in FPP
     const _checkPos=isTPP?playerPos:camPos;
