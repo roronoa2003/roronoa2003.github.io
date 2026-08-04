@@ -1172,7 +1172,20 @@ let prevCamYaw=Math.PI;// for turn-banking angular velocity
 const _pbQ=new THREE.Quaternion();// reusable quaternion for procedural bone overlays (avoids GC)
 const _glassesWP=new THREE.Vector3();// reusable world-pos for glasses update
 const _glassesMat=new THREE.Matrix4();// reusable matrix for glasses
-const isMobile='ontouchstart' in window;
+const isMobile='ontouchstart' in window;// touch detection — drives INPUT/UI, not quality
+// ── Real capability detection, separate from touch ──────────────────────
+// isMobile only tells us the input modality — a touchscreen ultrabook can
+// have a great GPU, and plenty of non-touch laptops (old ThinkPads, budget
+// desktops with integrated graphics) have weak ones. navigator.hardware-
+// Concurrency (core count) and navigator.deviceMemory (RAM in GB, Chrome/
+// Edge only — undefined elsewhere) are the actual signals for "can this
+// machine handle full quality," so isLowEnd scales down shadows/bloom/
+// geometry detail for genuinely weak hardware regardless of touch support.
+const _perfCores=navigator.hardwareConcurrency||4;
+const _perfMem=navigator.deviceMemory;// undefined on Safari/Firefox
+let _perfScore=(_perfCores>=8?2:_perfCores>=4?1:0)+(_perfMem===undefined?1:_perfMem>=8?2:_perfMem>=4?1:0);
+if(isMobile)_perfScore-=1;// phones/tablets skew weaker than a desktop with the same core/RAM readout
+const isLowEnd=_perfScore<=1;
 // Joystick
 let jActive=false,jX=0,jY=0;
 let jXS=0,jYS=0;// smoothed joystick (k=14 gives ~0.07s lag, eliminates thumb jitter)
@@ -1187,7 +1200,10 @@ function initWorld(){
   WR.toneMapping=THREE.ACESFilmicToneMapping;
   WR.toneMappingExposure=1.35;
   // ── PCF Soft Shadows (Unity-quality contact shadows) ──
-  WR.shadowMap.enabled=true;
+  // Shadow mapping costs an entire extra depth-render pass per shadow-
+  // casting light, every frame — skip it outright on detected low-end
+  // hardware rather than just cheapening the filter.
+  WR.shadowMap.enabled=!isLowEnd;
   // Soft (PCF) shadows sample multiple times per fragment — noticeably
   // costlier on mobile GPUs than the plain PCF filter, for a difference
   // that's hard to notice on a small screen anyway.
@@ -1197,8 +1213,12 @@ function initWorld(){
   WC=new THREE.PerspectiveCamera(isMobile?80:70,innerWidth/innerHeight,.05,500);
   WC.position.set(0,38,4);
   WC.rotation.order='YXZ';
-  // ── EffectComposer with Unreal Bloom (main world) ─────
-  if(THREE.EffectComposer){
+  // ── EffectComposer with Unreal Bloom (main world) ──── skipped
+  // entirely on low-end hardware — bloom's multi-pass blur chain is one
+  // of the single costliest things in this scene, and the render loop
+  // already falls back to a plain WR.render() call when WComposer is
+  // unset, so there's nothing else to change to support this.
+  if(THREE.EffectComposer&&!isLowEnd){
     // Bloom's internal downsample/blur chain runs at this resolution —
     // it's an inherently blurry, low-frequency effect, so halving it on
     // mobile cuts that chain's cost roughly 4x with almost no visible
@@ -1244,6 +1264,14 @@ function initWorld(){
   // Camera: high & offset — will swoop down via bezier during runIntroSequence
   WC.position.set(26,52,26);
   WC.lookAt(0,2,0);
+  // ── Pre-compile every material's shader now, while the loading overlay
+  // still fully covers the screen, instead of letting WebGL compile them
+  // lazily on first use — which would otherwise land mid-way through the
+  // camera swoop / panel-ignite sequence and show up as a stutter right
+  // when the "smooth" cinematic intro is supposed to be running. compile()
+  // walks the whole scene including currently-invisible objects (the
+  // panels, hidden until they ignite), so those don't hitch later either.
+  WR.compile(WS,WC);
   requestAnimationFrame(animLoop);
   runIntroSequence();
 }
@@ -1314,7 +1342,7 @@ function buildFloor(){
   const FALL_NOR  ='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_rocks_02/aerial_rocks_02_nor_gl_2k.jpg';
   const FALL_ROUGH='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_rocks_02/aerial_rocks_02_rough_2k.jpg';
   // Higher res for desktop = sharper ridges visible at walk distance
-  const segs=isMobile?120:280;
+  const segs=isLowEnd?70:isMobile?120:280;
   const geo=new THREE.PlaneGeometry(260,260,segs,segs);
   geo.rotateX(-Math.PI/2);
   const pos=geo.attributes.position;
@@ -1373,12 +1401,19 @@ function buildFloor(){
     txLoader.load(nor,  t=>{terrMat.normalMap=tile(t,28);terrMat.normalScale.set(NRM_SCALE,NRM_SCALE);terrMat.needsUpdate=true;},undefined,()=>{});
     txLoader.load(rough,t=>{terrMat.roughnessMap=tile(t,28);terrMat.needsUpdate=true;},undefined,()=>{});
   }
-  // Attempt primary; if diff fails, switch to confirmed fallback
+  // Attempt primary; if diff fails, switch to confirmed fallback.
+  // Assigning .map is what flips this material's USE_MAP shader define,
+  // forcing a recompile the next time it's rendered — signal the loading
+  // gate as soon as that outcome (success or fallback) is known, so
+  // dismissLoading() waits for it instead of racing it.
+  let _diffSignaled=false;
+  function _signalDiffReady(){if(!_diffSignaled){_diffSignaled=true;_worldAssetReady();}}
   txLoader.load(PRIM_DIFF,
-    t=>{terrMat.map=tile(t,28);terrMat.needsUpdate=true;loadSet(PRIM_DIFF,PRIM_NOR,PRIM_ROUGH);},
+    t=>{terrMat.map=tile(t,28);terrMat.needsUpdate=true;_signalDiffReady();loadSet(PRIM_DIFF,PRIM_NOR,PRIM_ROUGH);},
     undefined,
-    ()=>{loadSet(FALL_DIFF,FALL_NOR,FALL_ROUGH);}
+    ()=>{_signalDiffReady();loadSet(FALL_DIFF,FALL_NOR,FALL_ROUGH);}
   );
+  setTimeout(_signalDiffReady,5000);// safety net if even the network request itself hangs
   // ── Glowing lava fissures ────────────────────────────
   const fPts=[];
   for(let i=0;i<55;i++){
@@ -1457,7 +1492,7 @@ function buildStars(){
     const mat=new THREE.PointsMaterial({size:cssSize*pr,map:glow,vertexColors:true,transparent:true,opacity,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:false});
     skyGroup.add(new THREE.Points(geo,mat));
   }
-  const dense=isMobile?1800:4000;
+  const dense=isLowEnd?900:isMobile?1800:4000;
   starLayer(dense,2.2,.55,.12);// small dim background stars
   starLayer(Math.round(dense*.18),3.6,.85,.15);// brighter mid layer
   starLayer(Math.round(dense*.03),5.5,1,.2);// a few standout bright stars
@@ -1482,7 +1517,7 @@ function _glowSprite(){
   return _glowSpriteCache;
 }
 function buildDust(){
-  const cnt=isMobile?500:1000;
+  const cnt=isLowEnd?250:isMobile?500:1000;
   const dG=new THREE.BufferGeometry(),dp=new Float32Array(cnt*3),dv=[];
   for(let i=0;i<cnt;i++){const a=Math.random()*Math.PI*2,r=4+Math.random()*20;dp[i*3]=Math.cos(a)*r;dp[i*3+1]=Math.random()*18;dp[i*3+2]=Math.sin(a)*r;dv.push((Math.random()-.5)*.004,.007+Math.random()*.014,(Math.random()-.5)*.004);}
   dG.setAttribute('position',new THREE.BufferAttribute(dp,3));
@@ -1590,7 +1625,7 @@ function buildPanels(){
 // STRANGER THINGS: UPSIDE DOWN SPORES
 // ══════════════════════════════════════════════════════
 function buildSpores(){
-  const cnt=isMobile?300:600;
+  const cnt=isLowEnd?150:isMobile?300:600;
   const geo=new THREE.BufferGeometry();
   const pos=new Float32Array(cnt*3);
   const vel=new Float32Array(cnt*3);
@@ -1652,7 +1687,7 @@ function buildVoidPlanet(){
   grp.add(new THREE.Mesh(coronaGeo,coronaMat));
   // ── Ring of debris (asteroid belt look) ──
   const debrisGeo=new THREE.BufferGeometry();
-  const debrisCnt=isMobile?150:300;const dp=new Float32Array(debrisCnt*3);
+  const debrisCnt=isLowEnd?80:isMobile?150:300;const dp=new Float32Array(debrisCnt*3);
   for(let i=0;i<debrisCnt;i++){
     const a=Math.random()*Math.PI*2;
     const r=32+Math.random()*6;
@@ -1758,8 +1793,8 @@ function buildRipples(){
   // Each ring re-samples getTerrainHeight (a ~7-term trig function) at
   // every vertex, every frame, while it's expanding — fewer rings and
   // fewer segments on mobile cuts that per-frame CPU cost proportionally.
-  const RING_COUNT=isMobile?3:5;
-  const SEGS=isMobile?24:48;
+  const RING_COUNT=isLowEnd?2:isMobile?3:5;
+  const SEGS=isLowEnd?16:isMobile?24:48;
   for(let i=0;i<RING_COUNT;i++){
     const geo=new THREE.RingGeometry(.85,1,.0,Math.PI*2,SEGS);
     geo.rotateX(-Math.PI/2);
@@ -1875,7 +1910,7 @@ function loadGLBModel(){
     const finalBox=new THREE.Box3().setFromObject(model);
     const centre=new THREE.Vector3();finalBox.getCenter(centre);
     WS.userData.glbCentreY=centre.y;
-    setTimeout(dismissLoading,400);
+    setTimeout(_worldAssetReady,400);
   },undefined,()=>{buildFallbackModel();});
   setTimeout(()=>{if(!WS.userData.glbLoaded){buildFallbackModel();}},8000);
 }
@@ -1887,7 +1922,20 @@ function buildFallbackModel(){
   const m3=new THREE.Mesh(new THREE.TorusGeometry(1.35,.04,12,60),new THREE.MeshStandardMaterial({color:0xe50914,emissive:0xe50914,emissiveIntensity:.6,roughness:.3,metalness:.9}));m3.rotation.x=Math.PI/2;grp.add(m3);
   const m4=new THREE.Mesh(new THREE.TorusGeometry(1.55,.02,12,60),new THREE.MeshStandardMaterial({color:0xe50914,emissive:0xe50914,emissiveIntensity:.4,roughness:.3,metalness:.9}));m4.rotation.x=Math.PI/3;grp.add(m4);
   WS.add(grp);WS.userData.glbModel=grp;
-  setTimeout(dismissLoading,200);
+  setTimeout(_worldAssetReady,200);
+}
+// The loading overlay used to dismiss purely on GLB-model readiness,
+// completely independent of whether the terrain's PBR texture had
+// actually finished loading — on a slow connection the texture (and the
+// shader recompile that happens the instant .map gets assigned) could
+// easily still be in flight after the overlay drops, landing that hitch
+// visibly during the "smooth" intro instead of hidden behind a black
+// screen. Both signals now gate the same dismissal, each with its own
+// timeout safety net so a slow/failed asset can never wedge it open.
+let _worldPending=2;// GLB model, terrain primary texture
+function _worldAssetReady(){
+  _worldPending=Math.max(0,_worldPending-1);
+  if(_worldPending===0)dismissLoading();
 }
 function dismissLoading(){
   const l=document.getElementById('world-loading');
@@ -2060,8 +2108,9 @@ function buildSecondWorld(){
   const p2=new THREE.PointLight(0xff44aa,1.6,32);p2.position.set(-5,3,5);WS2.add(p2);
   const p3=new THREE.PointLight(0x8822ff,1.2,36);p3.position.set(5,5,-8);WS2.add(p3);
   WS2.userData._w2FlickerLight=p1;
-  // ── Build EffectComposer for world 2 (same bloom settings) ──
-  if(THREE.EffectComposer){
+  // ── Build EffectComposer for world 2 (same bloom settings) ── skipped
+  // on low-end hardware, same reasoning as world 1's composer above.
+  if(THREE.EffectComposer&&!isLowEnd){
     WComposer2=new THREE.EffectComposer(WR);
     WComposer2.addPass(new THREE.RenderPass(WS2,WC));
     const sz2=isMobile?new THREE.Vector2(innerWidth*0.5,innerHeight*0.5):new THREE.Vector2(innerWidth,innerHeight);
@@ -2074,7 +2123,7 @@ function buildSecondWorld(){
     WS2.userData._bloomPass2=bloom2;
   }
   // ── Ground — same heightmap as world 1, purple tint, shadow receive ──
-  const segs=isMobile?120:280;
+  const segs=isLowEnd?70:isMobile?120:280;
   const geo2=new THREE.PlaneGeometry(260,260,segs,segs);
   geo2.rotateX(-Math.PI/2);
   const pos2=geo2.attributes.position;
@@ -2123,7 +2172,7 @@ function buildSecondWorld(){
   const sky2=new THREE.Mesh(skyGeo2,skyMat2);
   WS2.add(sky2);WS2.userData.sky2=sky2;
   // ── Lavender spores ──
-  const sc2=isMobile?300:600;const sp2geo=new THREE.BufferGeometry();
+  const sc2=isLowEnd?150:isMobile?300:600;const sp2geo=new THREE.BufferGeometry();
   const sp2pos=new Float32Array(sc2*3),sp2vel=new Float32Array(sc2*3);
   for(let i=0;i<sc2;i++){const a=Math.random()*Math.PI*2,r=2+Math.random()*22;sp2pos[i*3]=Math.cos(a)*r;sp2pos[i*3+1]=Math.random()*16;sp2pos[i*3+2]=Math.sin(a)*r;sp2vel[i*3]=(Math.random()-.5)*.004;sp2vel[i*3+1]=.005+Math.random()*.012;sp2vel[i*3+2]=(Math.random()-.5)*.004;}
   sp2geo.setAttribute('position',new THREE.BufferAttribute(sp2pos,3));
@@ -2238,6 +2287,12 @@ function buildSecondWorld(){
       WS2.userData.demoChaser=fb;WS2.userData.demoChaserBaseY=1;WS2.userData.demoChaserBobT=0;
     });
   }
+  // Pre-compile world 2's shaders now, during the suck-up transition
+  // (spiral zoom + white flash covers the screen for ~2.8s) rather than
+  // letting them compile lazily the moment inSecondWorld flips true and
+  // this scene is first actually rendered — same reasoning as world 1's
+  // WR.compile() call in initWorld().
+  WR.compile(WS2,WC);
   WS2built=true;
 }
 // ── Procedural Glasses (Spectacles) ─────────────────────────────────────────────
