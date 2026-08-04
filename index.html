@@ -15,16 +15,21 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@200;300;400;500;600;700;900&display=swap" rel="stylesheet"/>
 <link href="https://fonts.cdnfonts.com/css/itc-benguiat-std" rel="stylesheet"/>
-<!-- Three.js r128 core -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<!-- Three.js r128 core — deferred: none of this is needed for the splash
+     screen/profile picker (plain HTML+CSS), and these were previously
+     render-blocking, holding up first paint until all 8 finished
+     downloading. defer preserves their relative execution order (each
+     addon extends the global THREE object the previous script created,
+     so order matters), it just runs them after parsing instead of during. -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script defer src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <!-- Post-processing: Bloom pipeline -->
-<script src="https://unpkg.com/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
-<script src="https://unpkg.com/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
-<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
-<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
-<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
-<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script defer src="https://unpkg.com/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script defer src="https://unpkg.com/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script defer src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script defer src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script defer src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script defer src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <style>
 :root{--red:#E50914;--red2:#ff3d3d;--black:#03000a;--surf:#0d000f;--text:#e5e5e5;--muted:#666;--gold:#f5c842;
   --font-st:'ITC Benguiat Std',Georgia,'Times New Roman',serif;}
@@ -52,10 +57,14 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
 @keyframes gl2{0%,87%,100%{transform:translate(0)}88%{transform:translate(3px,2px)}89%{transform:translate(-3px,-2px)}90%{transform:translate(0)}}
 #splash-sub{font-size:.72rem;font-weight:300;letter-spacing:.45em;text-transform:uppercase;color:#333;opacity:0;transform:translateY(10px);animation:fadeUp .6s ease 1.2s forwards;}
 #splash-bar{width:100%;max-width:780px;height:2px;background:#111;border-radius:2px;margin-top:1.8rem;overflow:hidden;opacity:0;animation:fadeUp .4s ease 1.4s forwards;}
-#splash-progress{height:100%;width:0;background:linear-gradient(to right,var(--red),#ff6b35);animation:loadBar 1.2s cubic-bezier(.4,0,.2,1) 1.5s forwards;box-shadow:0 0 12px rgba(229,9,20,.8);}
+/* width:0→100% used to animate here — that's a layout-triggering property,
+   so the browser was doing a full layout+paint on every animation frame
+   instead of compositing it on the GPU. transform:scaleX() produces the
+   identical "fills left to right" look but is compositor-only. */
+#splash-progress{height:100%;width:100%;transform:scaleX(0);transform-origin:0 50%;background:linear-gradient(to right,var(--red),#ff6b35);animation:loadBar 1.2s cubic-bezier(.4,0,.2,1) 1.5s forwards;box-shadow:0 0 12px rgba(229,9,20,.8);}
 @keyframes splIn{to{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
-@keyframes loadBar{to{width:100%}}
+@keyframes loadBar{to{transform:scaleX(1)}}
 #splash.fade-out{animation:splFade .8s ease forwards;}
 @keyframes splFade{to{opacity:0;pointer-events:none}}
 /* PROFILES */
@@ -750,7 +759,11 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     </div>
   </div>
 </div>
-<script>
+<!-- defer keeps this in the same execution queue/order as the now-deferred
+     THREE.js library tags up in the head (this script contains the splash
+     mini-scene, which uses THREE immediately), while letting the HTML
+     above parse and paint without waiting on any of it. -->
+<script defer>
 // ══════════════════════════════════════════════════════
 // CURSOR
 // ══════════════════════════════════════════════════════
