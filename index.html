@@ -759,11 +759,20 @@ body{background:var(--black);color:var(--text);font-family:'Outfit',sans-serif;c
     </div>
   </div>
 </div>
-<!-- defer keeps this in the same execution queue/order as the now-deferred
-     THREE.js library tags up in the head (this script contains the splash
-     mini-scene, which uses THREE immediately), while letting the HTML
-     above parse and paint without waiting on any of it. -->
-<script defer>
+<!-- defer has no effect here (the spec ignores it on scripts without a
+     src attribute) — this would still run synchronously at parse time,
+     same as always. But the THREE.js library tags up in the head ARE now
+     genuinely deferred, so they no longer execute until after the whole
+     document has parsed — meaning THREE would not yet be defined if this
+     ran immediately (this script constructs THREE.Vector3/Scene/etc. at
+     the top level in dozens of places, not just inside functions). The
+     whole body below is wrapped in a DOMContentLoaded listener so it
+     runs after those deferred tags have executed instead of racing them.
+     Functions invoked from onclick="" attributes in the HTML above are
+     re-exposed on window at the bottom of the wrapper, since attributes
+     resolve identifiers globally, not through this listener's closure. -->
+<script>
+document.addEventListener('DOMContentLoaded',function(){
 // ══════════════════════════════════════════════════════
 // CURSOR
 // ══════════════════════════════════════════════════════
@@ -3514,6 +3523,15 @@ function backToProfiles(){
     setTimeout(()=>{ps.style.transition='opacity .5s';ps.style.opacity='1';},30);
   },400);
 }
+// onclick="" attributes in the HTML resolve identifiers on window, not
+// through this listener's closure — re-expose everything they call.
+window.backToProfiles=backToProfiles;
+window.closeContent=closeContent;
+window.enterWorld=enterWorld;
+window.toggleMobMenu=toggleMobMenu;
+window.toggleThemeMute=toggleThemeMute;
+window.toggleViewMode=toggleViewMode;
+});
 </script>
 
 <!-- ═══════════════════════════════════════════════════════════════════
