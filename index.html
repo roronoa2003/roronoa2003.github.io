@@ -104,6 +104,21 @@
       <div class="board-center holo-panel three-panel transit-panel">
         <div class="panel-header"><span>PROJECT JOURNEY // TRANSIT MAP</span><span>THREE.JS + GLB // 2024 → 2026</span></div>
         <div class="three-stage transit-stage" id="projectTransitStage">
+          <div class="transit-fallback" id="transitFallback" aria-hidden="true">
+            <svg viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid meet">
+              <path class="fallback-route-shadow" d="M70 310 C170 70 260 90 340 220 S520 80 610 210 S790 330 930 105"/>
+              <path class="fallback-route" d="M70 310 C170 70 260 90 340 220 S520 80 610 210 S790 330 930 105"/>
+              <g class="fallback-stops">
+                <circle cx="70" cy="310" r="11"/><circle cx="220" cy="105" r="11"/><circle cx="365" cy="220" r="11"/>
+                <circle cx="535" cy="105" r="11"/><circle cx="705" cy="265" r="11"/><circle cx="930" cy="105" r="11"/>
+              </g>
+              <g class="fallback-bus" id="fallbackBusGraphic" transform="translate(45 285)">
+                <rect x="0" y="0" rx="6" width="52" height="28"/><rect x="8" y="5" width="11" height="8"/><rect x="23" y="5" width="11" height="8"/><rect x="38" y="5" width="8" height="8"/>
+                <circle cx="14" cy="29" r="5"/><circle cx="40" cy="29" r="5"/>
+              </g>
+            </svg>
+            <div class="fallback-note">3D PROJECT TRANSIT INITIALISING // FALLBACK MAP ACTIVE</div>
+          </div>
           <canvas id="projectTransitCanvas" aria-label="Interactive Three.js project journey transit map"></canvas>
           <div class="transit-grid" aria-hidden="true"></div>
           <div class="transit-legend"><b>RI // BUILD LINE</b><span>OLD PROJECTS → LATEST SYSTEMS // GLB VEHICLE</span></div>
@@ -282,7 +297,9 @@
     <div><a href="mailto:rohan.iyer5603@gmail.com">EMAIL</a><a href="https://www.linkedin.com/in/rohan-iyer-461787264" target="_blank" rel="noopener">LINKEDIN</a><a href="https://github.com/roronoa2003" target="_blank" rel="noopener">GITHUB</a><a href="https://www.rohaniyer.com" target="_blank" rel="noopener">PORTFOLIO</a></div>
   </footer>
 
-  <script src="https://unpkg.com/three@0.166.1/build/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="transit.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
