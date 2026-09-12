@@ -2,303 +2,161 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Rohan Iyer — holographic terminal portfolio and resume system." />
-  <meta name="theme-color" content="#000000" />
-  <title>Rohan Iyer Portfolio // Holographic Terminal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#050505" />
+  <meta name="description" content="Rohan Iyer — UIUC MCS, Applied AI, Agentic AI, RAG, Multi-Agent Systems, AI Security and production ML systems." />
+  <meta property="og:title" content="Rohan Iyer — AI Engineer Portfolio" />
+  <meta property="og:description" content="Recruiter-first portfolio: resume, experience, projects, research and AI systems work." />
+  <title>Rohan Iyer — AI Engineer Portfolio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="boot-screen" id="bootScreen" aria-live="polite">
-    <div class="boot-grid">
-      <div class="boot-brand">ROHAN IYER // PORTFOLIO</div>
-      <div class="boot-code">OS | 026</div>
-      <div class="boot-title">HOLOGRAPHIC PORTFOLIO DATALINK</div>
-      <div class="boot-rule"></div>
-      <div id="bootLog" class="boot-log"></div>
-      <div class="boot-progress"><span id="bootProgress"></span></div>
-      <div class="boot-footer"><span>WEBGL</span><span>DATALINK</span><span>VOICE SYNTHESIS</span><span>RESUME QR</span></div>
-    </div>
-  </div>
-
-  <canvas id="holoCanvas" aria-hidden="true"></canvas>
-  <div class="world-grid" aria-hidden="true"></div>
+  <canvas id="ambientCanvas" aria-hidden="true"></canvas>
   <div class="scanlines" aria-hidden="true"></div>
-  <div class="screen-glow" aria-hidden="true"></div>
 
-  <button class="jarvis-fab" id="jarvisFab" type="button" aria-label="Toggle JARVIS voice system">
-    <span class="jarvis-core"><i></i></span>
-    <span>VOICE</span>
-  </button>
-
-  <aside class="voice-console holo-panel" id="voiceConsole" aria-hidden="true">
-    <div class="panel-header">
-      <span>VOICE SYNTHESIS .SYS</span>
-      <button id="voiceClose" type="button" aria-label="Close voice console">X CLOSE</button>
+  <header class="site-header" id="top">
+    <div class="nav-shell">
+      <a class="brand" href="#top" aria-label="Rohan Iyer portfolio home"><span class="brand-prompt">ri@uiuc</span><b>ROHAN IYER</b></a>
+      <nav class="desktop-nav" aria-label="Primary navigation">
+        <a href="#experience">Experience</a><a href="#projects">Projects</a><a href="#research">Research</a><a href="#about">About</a>
+      </nav>
+      <a class="nav-resume" href="https://drive.google.com/file/d/1Y54fF6NSf7t-7F6C4zBrXlQfCAeIgNY-/view?usp=sharing" target="_blank" rel="noopener">RESUME ↗</a>
     </div>
-    <div class="voice-body">
-      <div class="voice-radar" id="voiceOrb"><span></span><span></span><span></span><b>RI</b></div>
-      <div class="voice-lines">
-        <p><b>STATUS</b> <span id="voiceStatus">STANDBY</span></p>
-        <p><b>PROFILE</b> LOW-PITCH CINEMATIC</p>
-        <p><b>ENGINE</b> BROWSER SPEECH SYNTHESIS</p>
-      </div>
-      <div class="panel-actions">
-        <button class="sys-button" id="speakIntro" type="button">▶ SPEAK INTRO</button>
-        <button class="sys-button" id="stopVoice" type="button">■ STOP</button>
-      </div>
-    </div>
-  </aside>
-
-  <header class="system-header">
-    <div class="system-strip container">
-      <div class="system-id"><strong>ROHAN IYER PORTFOLIO</strong><span>OS 026</span></div>
-      <div class="system-mid">PORTFOLIO VISUALIZATION // SECURE DATALINK</div>
-      <div class="system-state"><i></i> ONLINE</div>
-    </div>
-    <nav class="system-nav container" aria-label="Primary navigation">
-      <a href="#home"><span>01</span>IDENTITY</a>
-      <a href="#about"><span>02</span>PROFILE</a>
-      <a href="#experience"><span>03</span>EXPERIENCE</a>
-      <a href="#projects"><span>04</span>PROJECT STREAM</a>
-      <a href="#research"><span>05</span>RESEARCH</a>
-      <a href="#community"><span>06</span>COMMUNITY</a>
-      <a href="#certifications"><span>07</span>CERTIFICATE</a>
-      <a href="#resume"><span>08</span>RESUME</a>
-    </nav>
   </header>
 
   <main>
-    <section id="home" class="boardroom container reveal">
-      <div class="board-left">
-        <article class="holo-panel identity-panel">
-          <div class="panel-header"><span>IDENTITY .DAT</span><span>RID | 001</span></div>
-          <button class="speaker-btn" type="button" data-speak-target="heroSpeech" aria-label="Read introduction aloud">◖))</button>
-          <div class="panel-body" id="heroSpeech">
-            <div class="cmd-row"><span class="prompt">rohan@uiuc:~$</span> <span class="typed-command" data-type="whoami --verbose"></span><span class="cursor">_</span></div>
-            <div class="micro-label">AUTHENTICATED USER</div>
-            <h1>ROHAN<br><span>IYER</span></h1>
-            <p class="hero-role">MCS @ UIUC // AI SYSTEMS // MULTI-AGENT AUTOMATION // NLP // AI SECURITY</p>
-            <p class="hero-copy">Graduate Computer Science student building production-oriented AI systems, multi-agent workflows, retrieval pipelines, cloud-backed automation, and enterprise software.</p>
-            <div class="identity-links">
-              <a href="#projects">[ OPEN PROJECT STREAM ]</a>
-              <a href="#resume">[ RESUME DATALINK ]</a>
-              <a href="https://github.com/roronoa2003" target="_blank" rel="noopener">[ GITHUB ]</a>
-              <a href="https://www.linkedin.com/in/rohan-iyer-461787264" target="_blank" rel="noopener">[ LINKEDIN ]</a>
-              <a href="https://www.rohaniyer.com" target="_blank" rel="noopener">[ ROHANIYER.COM ]</a>
-              <a href="mailto:rohan.iyer5603@gmail.com">[ EMAIL ]</a>
-            </div>
-          </div>
-        </article>
-
-        <div class="telemetry-row">
-          <article class="holo-panel metric-panel"><div class="panel-header"><span>PROJECTS</span><span>LIVE</span></div><strong>10+</strong><div class="mini-bars"><i></i><i></i><i></i><i></i><i></i><i></i></div></article>
-          <article class="holo-panel metric-panel"><div class="panel-header"><span>PAPERS</span><span>IDX</span></div><strong>02</strong><div class="mini-wave"><i></i><i></i><i></i><i></i><i></i></div></article>
-          <article class="holo-panel metric-panel"><div class="panel-header"><span>GPA</span><span>10.0</span></div><strong>9.575</strong><div class="meter"><span style="width:95.75%"></span></div></article>
+    <section class="hero section-shell" id="home">
+      <div class="hero-copy reveal-block">
+        <div class="terminal-line"><span class="prompt">recruiter@portfolio:~$</span> <span data-type-scroll="cat candidate_profile.txt">cat candidate_profile.txt</span></div>
+        <div class="availability"><i></i> OPEN TO AI / ML / FORWARD-DEPLOYED ENGINEERING ROLES</div>
+        <h1><span>ROHAN</span><span class="outline">IYER</span></h1>
+        <p class="hero-role">UIUC MCS · Applied AI · Agentic AI · RAG · Multi-Agent Systems · AI Security</p>
+        <p class="hero-summary">I build production-oriented AI systems that connect models, tools, enterprise data and people — from hierarchical multi-agent platforms to RAG staffing systems, resume intelligence and cloud-backed ML workflows.</p>
+        <div class="hero-actions">
+          <a class="btn primary" href="https://drive.google.com/file/d/1Y54fF6NSf7t-7F6C4zBrXlQfCAeIgNY-/view?usp=sharing" target="_blank" rel="noopener">OPEN RESUME ↗</a>
+          <a class="btn" href="#projects">VIEW PROJECTS ↓</a>
+          <button class="btn ghost" id="speakIntro" type="button">VOICE INTRO</button>
+        </div>
+        <div class="social-inline" aria-label="Contact links">
+          <a href="mailto:rohan.iyer5603@gmail.com">EMAIL</a><a href="https://www.linkedin.com/in/rohan-iyer-461787264" target="_blank" rel="noopener">LINKEDIN</a><a href="https://github.com/roronoa2003" target="_blank" rel="noopener">GITHUB</a>
         </div>
       </div>
 
-      <div class="board-center holo-panel three-panel transit-panel">
-        <div class="panel-header"><span>PROJECT JOURNEY // TRANSIT MAP</span><span>THREE.JS + GLB // 2024 → 2026</span></div>
-        <div class="three-stage transit-stage" id="projectTransitStage">
-          <div class="transit-fallback" id="transitFallback" aria-hidden="true">
-            <svg viewBox="0 0 1000 420" preserveAspectRatio="xMidYMid meet">
-              <path class="fallback-route-shadow" d="M70 310 C170 70 260 90 340 220 S520 80 610 210 S790 330 930 105"/>
-              <path class="fallback-route" d="M70 310 C170 70 260 90 340 220 S520 80 610 210 S790 330 930 105"/>
-              <g class="fallback-stops">
-                <circle cx="70" cy="310" r="11"/><circle cx="220" cy="105" r="11"/><circle cx="365" cy="220" r="11"/>
-                <circle cx="535" cy="105" r="11"/><circle cx="705" cy="265" r="11"/><circle cx="930" cy="105" r="11"/>
-              </g>
-              <g class="fallback-bus" id="fallbackBusGraphic" transform="translate(45 285)">
-                <rect x="0" y="0" rx="6" width="52" height="28"/><rect x="8" y="5" width="11" height="8"/><rect x="23" y="5" width="11" height="8"/><rect x="38" y="5" width="8" height="8"/>
-                <circle cx="14" cy="29" r="5"/><circle cx="40" cy="29" r="5"/>
-              </g>
-            </svg>
-            <div class="fallback-note">3D PROJECT TRANSIT INITIALISING // FALLBACK MAP ACTIVE</div>
-          </div>
-          <canvas id="projectTransitCanvas" aria-label="Interactive Three.js project journey transit map"></canvas>
-          <div class="transit-grid" aria-hidden="true"></div>
-          <div class="transit-legend"><b>RI // BUILD LINE</b><span>OLD PROJECTS → LATEST SYSTEMS // GLB VEHICLE</span></div>
-          <div class="transit-status" id="transitStatus"><span>BUS 01</span><b>DEPARTING: KUBERA</b><small>2024 // PROJECT 01 OF 06</small></div>
-          <div class="station-labels" id="stationLabels" aria-label="Project journey stops"></div>
-          <div class="transit-mobile-card" id="transitMobileCard" aria-live="polite"></div>
+      <aside class="resume-priority reveal-block" aria-label="Resume quick access">
+        <div class="resume-head"><span>HIRING MODE</span><span class="status-dot">RESUME ONLINE</span></div>
+        <a class="hero-qr" href="https://drive.google.com/file/d/1Y54fF6NSf7t-7F6C4zBrXlQfCAeIgNY-/view?usp=sharing" target="_blank" rel="noopener">
+          <img src="resume-qr.png" alt="QR code that opens Rohan Iyer's resume" />
+        </a>
+        <div class="resume-copy">
+          <span class="eyebrow">SCAN FIRST</span>
+          <h2>Resume ready for review.</h2>
+          <p>One scan opens the exact Google Drive resume used for this portfolio.</p>
+          <a href="https://drive.google.com/file/d/1Y54fF6NSf7t-7F6C4zBrXlQfCAeIgNY-/view?usp=sharing" target="_blank" rel="noopener">OPEN PDF ↗</a>
         </div>
-        <div class="three-controls transit-controls" aria-label="Project journey controls">
-          <button class="active" id="transitPause" type="button">[ PAUSE ]</button>
-          <button id="transitReplay" type="button">[ REPLAY ]</button>
-          <button id="transitNext" type="button">[ NEXT STOP ]</button>
-          <span id="runtimeClock">00:00:00:00</span>
-        </div>
-      </div>
+        <div class="resume-trust"><span><b>UIUC</b> MCS</span><span><b>NMIMS</b> 3.83 / 4.00</span><span><b>FOCUS</b> AI SYSTEMS</span></div>
+      </aside>
+    </section>
 
-      <div class="board-right">
-        <article class="holo-panel stream-panel">
-          <div class="panel-header"><span>DATA STREAM</span><span>GITHUB</span></div>
-          <div class="stream-list">
-            <div><i></i><span>Repositories audited</span><b>19</b></div>
-            <div><i></i><span>Root README detected</span><b>17</b></div>
-            <div><i></i><span>Portfolio project titles</span><b>SYNC</b></div>
-            <div><i></i><span>Repo hyperlinks</span><b>MAP</b></div>
-          </div>
-          <svg class="stream-svg" viewBox="0 0 340 90" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,70 22,62 45,66 68,43 95,48 120,24 147,35 176,18 205,28 235,16 264,31 292,12 340,20"/></svg>
+    <section class="quick-proof section-shell reveal-block" aria-label="Recruiter highlights">
+      <article><span>01</span><b>68+</b><p>top-level agents in an organisation-wide agentic digital twin</p></article>
+      <article><span>02</span><b>350+</b><p>subagents across hierarchical, cross-functional AI workflows</p></article>
+      <article><span>03</span><b>RAG</b><p>Setu workforce intelligence across skills, experience and availability</p></article>
+      <article><span>04</span><b>Cloud</b><p>Microsoft 365 · PostgreSQL · Azure Functions · GCP · AWS</p></article>
+    </section>
+
+    <section class="content-section section-shell" id="experience">
+      <div class="section-heading reveal-block"><span class="section-index">01 / EXPERIENCE</span><h2 data-type-scroll="Experience">Experience</h2><p>Three roles, presented as a clean operating timeline instead of compressed cards.</p></div>
+      <div class="timeline">
+        <article class="timeline-row reveal-block">
+          <div class="timeline-meta"><span>MAR 2026 — AUG 2026</span><b>MUMBAI</b></div>
+          <div class="timeline-main"><div class="role-line"><h3>AI Automation Analyst</h3><span>Practus</span></div><p>Architected a production-oriented multi-agent AI platform in Python/FastAPI using LangChain/LangGraph-style ReAct orchestration and Claude, routing enterprise requests across specialized consulting agents while supporting tool execution, delegation and role-specific reasoning.</p><p>Engineered model routing, Langfuse tracing, token/cost accounting, spend guards, health checks, and REST connectors for Setu, Zoho CRM, Microsoft 365 and A2A workflows; standardized Docker/Railway deployment.</p><div class="chips"><span>Python</span><span>FastAPI</span><span>LangChain</span><span>LangGraph</span><span>Claude</span><span>Langfuse</span><span>A2A</span></div></div>
         </article>
-        <article class="holo-panel terminal-feed">
-          <div class="panel-header"><span>TERMINAL STREAM</span><span>BASH</span></div>
-          <div class="feed-lines" id="feedLines">
-            <p><b>[OK]</b> identity loaded</p>
-            <p><b>[OK]</b> project index mounted</p>
-            <p><b>[OK]</b> speech subsystem ready</p>
-            <p><b>[OK]</b> resume endpoint locked</p>
-          </div>
-          <div class="cmd-row feed-cmd"><span class="prompt">ri-sh:root$</span> <span class="typed-command" data-type="launch portfolio --stream=github"></span><span class="cursor">_</span></div>
+        <article class="timeline-row reveal-block">
+          <div class="timeline-meta"><span>JAN 2025 — AUG 2025</span><b>MUMBAI</b></div>
+          <div class="timeline-main"><div class="role-line"><h3>Machine Learning & Data Engineering Intern</h3><span>Quantiphi Analytics Solutions</span></div><p>Developed end-to-end financial forecasting and budgeting ML workflows in Python across GCP and AWS, covering data preparation, feature engineering, model training/evaluation and reproducible cloud execution.</p><div class="chips"><span>Python</span><span>ML</span><span>Forecasting</span><span>GCP</span><span>AWS</span></div></div>
+        </article>
+        <article class="timeline-row reveal-block">
+          <div class="timeline-meta"><span>AUG 2025 — AUG 2026</span><b>MUMBAI</b></div>
+          <div class="timeline-main"><div class="role-line"><h3>Co-Founder</h3><span>Upper Celestials</span></div><p>Re-engineered internal operations into a stateful client-server platform using Express and Supabase PostgreSQL, with bcrypt authentication, httpOnly sessions, server-side RBAC, parameterized SQL, persistent task/production data, scheduled email digests, audit logging and Chart.js analytics.</p><div class="chips"><span>Express</span><span>Supabase</span><span>PostgreSQL</span><span>RBAC</span><span>Chart.js</span></div></div>
         </article>
       </div>
     </section>
 
-    <section id="socials" class="social-terminal container reveal" aria-label="Social links">
-      <div class="social-prompt"><span class="prompt">rohan@portfolio:~$</span> ./connect --all</div>
-      <div class="social-grid">
-        <a class="social-link social-github" href="https://github.com/roronoa2003" target="_blank" rel="noopener"><span>01</span><b>GITHUB</b><small>github.com/roronoa2003</small><em>↗</em></a>
-        <a class="social-link social-linkedin" href="https://www.linkedin.com/in/rohan-iyer-461787264" target="_blank" rel="noopener"><span>02</span><b>LINKEDIN</b><small>rohan-iyer-461787264</small><em>↗</em></a>
-        <a class="social-link social-web" href="https://www.rohaniyer.com" target="_blank" rel="noopener"><span>03</span><b>PORTFOLIO</b><small>rohaniyer.com</small><em>↗</em></a>
-        <a class="social-link social-email" href="mailto:rohan.iyer5603@gmail.com"><span>04</span><b>EMAIL</b><small>rohan.iyer5603@gmail.com</small><em>@</em></a>
+    <section class="journey-section section-shell" id="journey">
+      <div class="section-heading reveal-block"><span class="section-index">02 / PROJECT JOURNEY</span><h2 data-type-scroll="Build history in 3D">Build history in 3D</h2><p>Drag to inspect the route. The bus moves through major portfolio milestones from earlier work to current agentic systems.</p></div>
+      <div class="transit-shell reveal-block">
+        <div class="transit-top"><span>PROJECT TRANSIT // THREE.JS</span><span id="transitStatus">INITIALISING 3D ROUTE</span></div>
+        <div class="transit-stage" id="projectTransitStage">
+          <canvas id="projectTransitCanvas" aria-label="Interactive 3D project journey"></canvas>
+          <div class="station-labels" id="stationLabels"></div>
+          <div class="transit-mobile-card" id="transitMobileCard"></div>
+        </div>
+        <div class="transit-controls"><button id="transitPause" type="button">PAUSE</button><button id="transitReplay" type="button">REPLAY</button><button id="transitNext" type="button">NEXT STOP</button><span>DRAG TO ORBIT · SCROLL TO ZOOM</span></div>
       </div>
     </section>
 
-    <section id="about" class="content-section container reveal">
-      <div class="section-rail"><span>PRO | 002</span><h2>PROFILE MATRIX</h2><span>ABOUT</span></div>
-      <div class="profile-grid">
-        <article class="holo-panel content-panel"><div class="panel-header"><span>PROFILE SUMMARY</span><span>READOUT</span></div><button class="speaker-btn" type="button" data-speak-target="aboutSpeech" aria-label="Read profile aloud">◖))</button><div class="panel-body" id="aboutSpeech"><div class="cmd-row"><span class="prompt">ri@profile:~$</span> cat about.txt</div><p>I am an MCS student at the University of Illinois Urbana-Champaign focused on AI systems, NLP, databases, and security of AI agents. My work combines software engineering, multi-agent architectures, ML, cloud systems, product thinking, and practical automation.</p><div class="code-block"><span>focus</span> = ["AI Systems", "Agentic Automation", "NLP", "Data Infrastructure"]<br><span>stack</span> = ["Python", "FastAPI", "LangChain", "React", "PostgreSQL", "Cloud"]<br><span>mode</span> = "build + ship + research"</div></div></article>
-        <article class="holo-panel signal-panel"><div class="panel-header"><span>EDUCATION SIGNAL</span><span>UIUC</span></div><div class="signal-visual"><div class="signal-ring"><span>MCS</span></div><div><b>UNIVERSITY OF ILLINOIS URBANA-CHAMPAIGN</b><p>Master of Computer Science · 2026 — Present</p><p>AI systems · NLP · Databases · Security of AI Agents</p></div></div></article>
+    <section class="content-section section-shell" id="projects">
+      <div class="section-heading reveal-block"><span class="section-index">03 / SELECTED PROJECTS</span><h2 data-type-scroll="Systems I've built">Systems I've built</h2><p>Resume-aligned naming, fuller context, exact GitHub links where a verified repository exists.</p></div>
+      <div class="featured-projects">
+        <article class="project feature reveal-block" id="project-digital-twin"><div class="project-num">P01</div><div class="project-body"><div class="project-topline"><span>2026 · AGENTIC AI</span><span>LANGCHAIN · CLAUDE · A2A</span></div><h3>Organisation-as-a-Service – Agentic Digital Twin</h3><p>Architected an organisation-wide hierarchical agentic digital twin spanning Delivery and executive functions, scaling to <strong>68+ top-level agents</strong> and <strong>350+ subagents</strong> capable of cross-functional task handoff and autonomous workflow execution.</p><p>Designed meta-orchestration that maps work to the right agent/function, coordinates multi-hop delegation and grounds Claude agents on live Zoho CRM and Microsoft 365 context.</p><div class="project-actions"><a href="https://github.com/roronoa2003/directors" target="_blank" rel="noopener">DIRECTOR COMPONENT ↗</a><a href="https://github.com/roronoa2003/CEO-Agent-board-review" target="_blank" rel="noopener">CEO BOARD AGENT ↗</a></div></div></article>
+        <article class="project feature reveal-block" id="project-setu"><div class="project-num">P02</div><div class="project-body"><div class="project-topline"><span>2026 · RAG</span><span>AZURE FUNCTIONS · POSTGRESQL · M365</span></div><h3>Setu – AI Project Allocation Platform</h3><p>Designed a RAG-driven workforce intelligence system that retrieves employee skills, certifications, experience signals and live availability to rank best-fit teams for client engagements with explainable recommendations.</p><p>Built Azure Functions ingestion/synchronization pipelines to normalize Microsoft 365 workforce metadata into PostgreSQL and layered capacity, coverage and allocation-gap analytics over the retrieval backend.</p></div></article>
+        <article class="project feature reveal-block" id="project-resmatch"><div class="project-num">P03</div><div class="project-body"><div class="project-topline"><span>2025 · AI RECRUITING</span><span>REACT · TYPESCRIPT · COHERE</span></div><h3>ResMatch – AI Resume Matching Platform</h3><p>Built an end-to-end resume intelligence pipeline with PDF extraction, Cohere-assisted structured parsing, skill/experience normalization, summaries, similarity ranking, Top-5 retrieval and LLM-generated match rationales.</p><p>Implemented real-time multi-criteria search across skills, location and experience in a React/TypeScript recruiter dashboard with React Query caching and state management.</p><div class="project-actions"><a href="https://github.com/roronoa2003/ResMatch_Deployed" target="_blank" rel="noopener">OPEN REPOSITORY ↗</a></div></div></article>
+      </div>
+
+      <div class="project-grid" aria-label="Additional projects">
+        <article class="project compact reveal-block" id="project-kubera"><div><span>2024 · NLP / FINANCE</span><h3>Kubera — AI Finance Manager</h3><p>Voice-enabled personal finance system with NLP spend classification, spending insights, budget optimization and sentiment-linked stock-news analysis.</p></div><a href="https://github.com/roronoa2003/Kubera" target="_blank" rel="noopener">GITHUB ↗</a></article>
+        <article class="project compact reveal-block" id="project-paytm"><div><span>2025 · COMPUTER VISION</span><h3>Paytm Logo Detection in Cricket</h3><p>Object-detection and OCR-assisted pipeline for measuring Paytm branding visibility in cricket imagery.</p></div><a href="https://github.com/roronoa2003/paytm-logo-detection" target="_blank" rel="noopener">GITHUB ↗</a></article>
+        <article class="project compact reveal-block" id="project-uc-ops"><div><span>2026 · OPERATIONS SOFTWARE</span><h3>Upper Celestials Ops Dashboard</h3><p>Internal operations software for tasks, production, financial workflows, analytics, authorization and auditability.</p></div><a href="https://github.com/roronoa2003/uc-dashboard" target="_blank" rel="noopener">GITHUB ↗</a></article>
+        <article class="project compact reveal-block"><div><span>MOBILE · LOCATION</span><h3>Crave Radar</h3><p>React Native restaurant finder using live location, maps, Google Places and a “Surprise Me” discovery experience.</p></div><a href="https://github.com/roronoa2003/Crave-Radar" target="_blank" rel="noopener">GITHUB ↗</a></article>
+        <article class="project compact reveal-block"><div><span>MARKETPLACE · AI</span><h3>GreenTrade India</h3><p>Carbon-credit marketplace simulation with wallet flows, price simulation, analytics and Gemini-powered project insight.</p></div><a href="https://github.com/roronoa2003/Carbon-Credit-Marketplace" target="_blank" rel="noopener">GITHUB ↗</a></article>
+        <article class="project compact reveal-block"><div><span>2026 · FINANCE AGENT</span><h3>finance-agent</h3><p>LangChain/LangGraph finance agent for workbook tallying, period movement analysis and SharePoint filing workflows.</p></div><a href="https://github.com/roronoa2003/finance-agent" target="_blank" rel="noopener">GITHUB ↗</a></article>
+        <article class="project compact reveal-block"><div><span>2026 · ORCHESTRATION</span><h3>Practus Agent — director</h3><p>Department orchestrator routing into five practice sub-agents with tiered models, tracing, cost controls, tools and A2A delegation.</p></div><a href="https://github.com/roronoa2003/directors" target="_blank" rel="noopener">GITHUB ↗</a></article>
+        <article class="project compact reveal-block"><div><span>2026 · NEXT.JS PLATFORM</span><h3>Practus Growth Office Platform</h3><p>Connected catalog for Growth Office reports and agents, proxying real backends with authenticated session flows.</p></div><a href="https://github.com/roronoa2003/growth-office-platform" target="_blank" rel="noopener">GITHUB ↗</a></article>
+        <article class="project compact reveal-block"><div><span>2026 · EXECUTIVE AI</span><h3>Board Agent — CEO Intelligence System</h3><p>LangGraph CEO agent connected to Microsoft 365 for board reports, Teams, calendars, scheduled tasks and executive workflows.</p></div><a href="https://github.com/roronoa2003/CEO-Agent-board-review" target="_blank" rel="noopener">GITHUB ↗</a></article>
       </div>
     </section>
 
-    <section id="experience" class="content-section container reveal">
-      <div class="section-rail"><span>EXP | 003</span><h2>EXPERIENCE LOG</h2><span>03 NODES</span></div>
-      <div class="experience-grid">
-        <article class="holo-panel exp-card"><div class="panel-header"><span>NODE .001</span><span>2026</span></div><button class="speaker-btn" type="button" data-speak-target="practusSpeech" aria-label="Read Practus experience aloud">◖))</button><div class="panel-body" id="practusSpeech"><div class="log-status"><b>PRACTUS</b><span>AI AUTOMATION ANALYST</span></div><p>Architected production-oriented multi-agent AI systems in Python and FastAPI with orchestration, tool execution, model routing, observability, cost controls, and enterprise connectors.</p><div class="tag-line">PYTHON // FASTAPI // LANGCHAIN // LANGFUSE // MULTI-AGENT</div></div></article>
-        <article class="holo-panel exp-card"><div class="panel-header"><span>NODE .002</span><span>2025</span></div><button class="speaker-btn" type="button" data-speak-target="quantiphiSpeech" aria-label="Read Quantiphi experience aloud">◖))</button><div class="panel-body" id="quantiphiSpeech"><div class="log-status"><b>QUANTIPHI</b><span>ML / DATA ENGINEERING</span></div><p>Developed financial forecasting and budgeting machine-learning workflows across GCP and AWS, from data preparation and feature engineering through model evaluation.</p><div class="tag-line">ML // FORECASTING // GCP // AWS</div></div></article>
-        <article class="holo-panel exp-card"><div class="panel-header"><span>NODE .003</span><span>2025–26</span></div><button class="speaker-btn" type="button" data-speak-target="ucSpeech" aria-label="Read Upper Celestials experience aloud">◖))</button><div class="panel-body" id="ucSpeech"><div class="log-status"><b>UPPER CELESTIALS</b><span>CO-FOUNDER</span></div><p>Built internal operating software around Express and Supabase PostgreSQL with authentication, RBAC, audit logging, scheduled digests, production tracking, and analytics.</p><div class="tag-line">EXPRESS // SUPABASE // POSTGRESQL // RBAC</div></div></article>
+    <section class="content-section section-shell" id="research">
+      <div class="section-heading reveal-block"><span class="section-index">04 / RESEARCH + IMPACT</span><h2 data-type-scroll="Research, recognition, service">Research, recognition, service</h2><p>Academic work and evidence beyond project repositories.</p></div>
+      <div class="three-column-info">
+        <article class="info-card reveal-block"><span>RESEARCH / 01</span><h3>LSTM Encoder-Decoder for Text Summarization</h3><p>ICCC 2025 (IEEE). Deep-learning research on abstractive text summarization using an LSTM encoder-decoder architecture.</p></article>
+        <article class="info-card reveal-block"><span>RESEARCH / 02</span><h3>NLP-Based Financial Analysis (Kubera)</h3><p>AIDE 2024. NLP-based personal-finance analysis centered on intelligent spend classification and financial insights.</p></article>
+        <article class="info-card accent reveal-block"><span>RECOGNITION</span><h3>Winner — IMT PitchUp 10.0</h3><p>1st place out of 500+ entries · INR 30,000.</p></article>
+        <article class="info-card reveal-block"><span>CERTIFICATION</span><h3>Google Cloud Associate Cloud Engineer</h3><p>Google Cloud certification linked from the original portfolio.</p><a href="https://drive.google.com/file/d/164Hflfywh5Y3Miq3rfIG6T-hbGL6Wr9J/view" target="_blank" rel="noopener">OPEN CERTIFICATE ↗</a></article>
+        <article class="info-card reveal-block"><span>COMMUNITY</span><h3>Prayaas Charitable Trust</h3><p>Completed 60+ hours of community service in Mumbai.</p></article>
+        <article class="info-card reveal-block"><span>COMMUNITY</span><h3>Support for Underprivileged Children</h3><p>Participated in a CSR initiative providing academic and material support to underprivileged children.</p></article>
       </div>
     </section>
 
-    <section id="projects" class="content-section container reveal">
-      <div class="section-rail"><span>PRJ | 004</span><h2>PROJECT STREAM</h2><span>PORTFOLIO + GITHUB</span></div>
-      <article class="holo-panel project-source-note"><div><span>DISPLAY NAME</span><b>Uses the title shown on rohaniyer.com when available.</b></div><div><span>README IDENTITY</span><b>Uses the exact README title from GitHub.</b></div><div><span>REPO LINK</span><b>Points to the exact matching repository when verified.</b></div><div><span>PRIVATE REPOS</span><b>Links require authorized GitHub access.</b></div></article>
-      <div class="project-grid">
-        <article class="holo-panel project-card" id="project-digital-twin"><div class="panel-header"><span>PORTFOLIO PROJECT .01</span><span>2026 // AI AGENTS</span></div><button class="speaker-btn" type="button" data-speak-target="projOneSpeech" aria-label="Read agentic digital twin project aloud">◖))</button><div class="panel-body" id="projOneSpeech"><div class="repo-id">DISPLAY NAME // ROHANIYER.COM</div><h3>Organisational Agentic Digital Twin Platform</h3><p>Org-wide digital twin spanning executive and delivery functions, with hierarchical routing, cross-functional delegation, enterprise-grounded tools, observability, model controls, and large-scale agent structure.</p><div class="readme-title">RELATED GITHUB COMPONENT // Practus Agent — director</div><div class="tag-line">LANGCHAIN // LANGGRAPH // A2A // FASTAPI // LANGFUSE</div></div><div class="project-links"><a href="https://github.com/roronoa2003/directors" target="_blank" rel="noopener">[ DIRECTOR COMPONENT ↗ ]</a><a href="https://github.com/roronoa2003/CEO-Agent-board-review" target="_blank" rel="noopener">[ CEO BOARD AGENT ↗ ]</a></div><div class="source-warning">No connected repository is titled exactly “Organisational Agentic Digital Twin Platform”; the links above are verified platform/component repositories rather than an invented standalone mapping.</div></article>
-        <article class="holo-panel project-card" id="project-setu"><div class="panel-header"><span>PORTFOLIO PROJECT .02</span><span>2026 // RAG + STAFFING</span></div><button class="speaker-btn" type="button" data-speak-target="projSetuSpeech" aria-label="Read Setu project aloud">◖))</button><div class="panel-body" id="projSetuSpeech"><div class="repo-id">DISPLAY NAME // ROHANIYER.COM</div><h3>Setu — Project Allocation Tool</h3><p>RAG-driven project allocation and workforce intelligence workflow built around employee skills, experience and availability signals for staffing recommendations.</p><div class="readme-title">GITHUB REPO // NO EXACT STANDALONE MATCH FOUND</div><div class="tag-line">RAG // STAFFING // POSTGRESQL // AZURE FUNCTIONS</div></div><div class="project-links"><a href="https://www.rohaniyer.com" target="_blank" rel="noopener">[ PORTFOLIO SOURCE ↗ ]</a></div></article>
-        <article class="holo-panel project-card" id="project-resmatch"><div class="panel-header"><span>PORTFOLIO PROJECT .03</span><span>2025 // AI RECRUITING</span></div><button class="speaker-btn" type="button" data-speak-target="projResSpeech" aria-label="Read ResMatch project aloud">◖))</button><div class="panel-body" id="projResSpeech"><div class="repo-id">README VERIFIED // <span class="private">PRIVATE</span></div><h3>ResMatch - AI-Powered Resume Matching Platform</h3><p>AI resume-processing and candidate-matching platform with PDF extraction, Cohere integration, structured candidate analysis, similarity scoring, explanations, Top-5 results, dashboard analytics, and advanced filtering.</p><div class="readme-title">README TITLE // ResMatch - AI-Powered Resume Matching Platform</div><div class="tag-line">REACT // TYPESCRIPT // COHERE // PDF.JS // REACT QUERY</div></div><div class="project-links"><a href="https://github.com/roronoa2003/ResMatch_Deployed" target="_blank" rel="noopener">[ GITHUB REPO ↗ ]</a></div></article>
-        <article class="holo-panel project-card" id="project-kubera"><div class="panel-header"><span>PORTFOLIO PROJECT .04</span><span>2024 // AI FINANCE</span></div><button class="speaker-btn" type="button" data-speak-target="projKuberaSpeech" aria-label="Read Kubera project aloud">◖))</button><div class="panel-body" id="projKuberaSpeech"><div class="repo-id">DISPLAY NAME // ROHANIYER.COM</div><h3>Kubera — AI Finance Manager</h3><p>Voice-to-text transaction logging, NLP spend classification, sentiment-linked portfolio analysis and personal-finance intelligence. Winner of IMT PitchUp 10.0.</p><div class="readme-title">CONNECTED README TITLES // “Kubera” + “Kubera-Frontend”</div><div class="tag-line">NLP // FINANCE // ML // DASHBOARDS</div></div><div class="project-links"><a href="https://github.com/roronoa2003/Kubera" target="_blank" rel="noopener">[ KUBERA REPO ↗ ]</a><a href="https://github.com/roronoa2003/Kubera-AI" target="_blank" rel="noopener">[ KUBERA FRONTEND ↗ ]</a></div></article>
-        <article class="holo-panel project-card" id="project-paytm"><div class="panel-header"><span>PORTFOLIO PROJECT .05</span><span>2025 // COMPUTER VISION</span></div><button class="speaker-btn" type="button" data-speak-target="projPaytmSpeech" aria-label="Read Paytm logo project aloud">◖))</button><div class="panel-body" id="projPaytmSpeech"><div class="repo-id">DISPLAY NAME // ROHANIYER.COM // <span class="public">PUBLIC</span></div><h3>Paytm Logo Detection in Cricket</h3><p>Computer-vision pipeline for detecting Paytm logo visibility in cricket footage using object detection and OCR-assisted fallback logic.</p><div class="readme-title">README TITLE // paytm-logo-detectin</div><div class="tag-line">YOLO // OCR // OPENCV // COMPUTER VISION</div></div><div class="project-links"><a href="https://github.com/roronoa2003/paytm-logo-detection" target="_blank" rel="noopener">[ GITHUB REPO ↗ ]</a></div></article>
-        <article class="holo-panel project-card" id="project-uc-ops"><div class="panel-header"><span>PORTFOLIO PROJECT .06</span><span>2026 // OPS PLATFORM</span></div><button class="speaker-btn" type="button" data-speak-target="projUcSpeech" aria-label="Read Upper Celestials dashboard project aloud">◖))</button><div class="panel-body" id="projUcSpeech"><div class="repo-id">DISPLAY NAME // ROHANIYER.COM // <span class="private">PRIVATE</span></div><h3>Upper Celestials Ops Dashboard</h3><p>Internal operations system spanning personal task lists, shared content workflow, production timelines, financials, team overview, Supabase PostgreSQL persistence, email reminders, analytics, audit trails, server-side authorization and role checks.</p><div class="readme-title">README TITLE // Upper Celestials — Ops Dashboard</div><div class="tag-line">EXPRESS // SUPABASE // POSTGRESQL // CHART.JS // RBAC</div></div><div class="project-links"><a href="https://github.com/roronoa2003/uc-dashboard" target="_blank" rel="noopener">[ GITHUB REPO ↗ ]</a></div><div class="source-warning">The current README describes the repo as an internal task/content/production/financial operations dashboard; the portfolio source separately describes shipping/logistics integrations. This card preserves both identities without silently treating them as identical.</div></article>
-        <article class="holo-panel project-card"><div class="panel-header"><span>README PROJECT .07</span><span>LOCATION</span></div><button class="speaker-btn" type="button" data-speak-target="projCraveSpeech" aria-label="Read Crave Radar project aloud">◖))</button><div class="panel-body" id="projCraveSpeech"><div class="repo-id">README VERIFIED // <span class="public">PUBLIC</span></div><h3>Crave Radar</h3><p>Location-based restaurant finder mobile app with cuisine search, live location, interactive map markers, restaurant details, calls, websites, directions and a “Surprise Me” experience.</p><div class="readme-title">README TITLE // Crave Radar</div><div class="tag-line">REACT NATIVE // GOOGLE PLACES API // MAPS</div></div><div class="project-links"><a href="https://github.com/roronoa2003/Crave-Radar" target="_blank" rel="noopener">[ GITHUB REPO ↗ ]</a></div></article>
-        <article class="holo-panel project-card"><div class="panel-header"><span>README PROJECT .08</span><span>CARBON MARKET</span></div><button class="speaker-btn" type="button" data-speak-target="projGreenSpeech" aria-label="Read GreenTrade project aloud">◖))</button><div class="panel-body" id="projGreenSpeech"><div class="repo-id">README VERIFIED // <span class="private">PRIVATE</span></div><h3>GreenTrade India: Carbon Credit Trading Platform</h3><p>Interactive carbon-credit trading simulation with 100+ projects, real-time price simulation, wallets, buy/sell/retire flows, transaction history, Gemini-powered project insight, analytics and an educational market hub.</p><div class="readme-title">README TITLE // GreenTrade India: Carbon Credit Trading Platform</div><div class="tag-line">REACT // TYPESCRIPT // GEMINI // RECHARTS</div></div><div class="project-links"><a href="https://github.com/roronoa2003/Carbon-Credit-Marketplace" target="_blank" rel="noopener">[ GITHUB REPO ↗ ]</a></div></article>
-      </div>
-
-      <div class="substream-heading"><span>GITHUB // CURRENT SYSTEMS</span><i></i></div>
-      <div class="repo-project-grid">
-        <article class="holo-panel repo-card"><div class="panel-header"><span>GITHUB .09</span><span>PRIVATE</span></div><h3>finance-agent</h3><p>Practus LangChain/LangGraph finance agent for expense-workbook tallying, period movement analysis, SharePoint filing workflows, FastAPI backend and Next.js frontend.</p><a href="https://github.com/roronoa2003/finance-agent" target="_blank" rel="noopener">roronoa2003/finance-agent ↗</a></article>
-        <article class="holo-panel repo-card"><div class="panel-header"><span>GITHUB .10</span><span>PRIVATE</span></div><h3>Practus Agent — director</h3><p>Department agent routing into five practice sub-agents with tiered models, Langfuse tracing, cost controls, connector tools and A2A delegation.</p><a href="https://github.com/roronoa2003/directors" target="_blank" rel="noopener">roronoa2003/directors ↗</a></article>
-        <article class="holo-panel repo-card"><div class="panel-header"><span>GITHUB .11</span><span>PRIVATE</span></div><h3>Practus Growth Office Platform</h3><p>Next.js catalog for connected Growth Office reports and agents, proxying real backends with session-cookie and Basic Auth flows.</p><a href="https://github.com/roronoa2003/growth-office-platform" target="_blank" rel="noopener">roronoa2003/growth-office-platform ↗</a></article>
-        <article class="holo-panel repo-card"><div class="panel-header"><span>GITHUB .12</span><span>PRIVATE</span></div><h3>Board Agent — Practus CEO Intelligence System</h3><p>LangGraph CEO agent connected to Microsoft 365 with delegated access for board reports, Teams messaging, calendars, scheduled tasks, FastAPI and Next.js.</p><a href="https://github.com/roronoa2003/CEO-Agent-board-review" target="_blank" rel="noopener">roronoa2003/CEO-Agent-board-review ↗</a></article>
-      </div>
-
-      <div class="archive-strip holo-panel">
-        <div class="panel-header"><span>ADDITIONAL README IDENTITIES</span><span>ARCHIVE</span></div>
-        <div class="archive-links">
-          <a href="https://github.com/roronoa2003/immobilthon-4.0" target="_blank" rel="noopener"><b>immobilthon-4.0</b><span>README title only</span></a>
-          <a href="https://github.com/roronoa2003/car-crash-detection" target="_blank" rel="noopener"><b>car-crash-detection</b><span>README title only</span></a>
-          <a href="https://github.com/roronoa2003/rachel" target="_blank" rel="noopener"><b>practus-agents</b><span>repo: rachel</span></a>
-          <a href="https://github.com/roronoa2003/uppercelestials" target="_blank" rel="noopener"><b>Run and deploy your AI Studio app</b><span>repo: uppercelestials</span></a>
+    <section class="content-section section-shell" id="about">
+      <div class="section-heading reveal-block"><span class="section-index">05 / PROFILE</span><h2 data-type-scroll="Education + technical stack">Education + technical stack</h2><p>A concise recruiter-readable view of the background behind the projects.</p></div>
+      <div class="about-grid">
+        <div class="education-stack">
+          <article class="edu-row reveal-block"><span>2026 — PRESENT</span><div><h3>University of Illinois Urbana-Champaign</h3><p>Master of Computer Science · Urbana-Champaign, IL</p><p>Graduate focus: AI systems, NLP, databases and security of AI agents.</p></div></article>
+          <article class="edu-row reveal-block"><span>2021 — MAY 2025</span><div><h3>MPSTME, NMIMS University</h3><p>B.Tech, Information Technology · Mumbai, India</p><p>GPA: 3.83 / 4.00</p></div></article>
+        </div>
+        <div class="skills-panel reveal-block">
+          <div class="skill-group"><span>AI SYSTEMS</span><p>LLM application architecture · RAG · hierarchical multi-agent orchestration · A2A · tool calling · model routing · agent observability · cost controls · LangChain · LangGraph · Claude · Langfuse</p></div>
+          <div class="skill-group"><span>ML / NLP / CV</span><p>TensorFlow · scikit-learn · BERT · Sentence Transformers · NLP · deep learning · YOLOv8 · OpenCV · model evaluation</p></div>
+          <div class="skill-group"><span>SOFTWARE / CLOUD / DATA</span><p>Python · Java · C++ · JavaScript · TypeScript · SQL · FastAPI · Flask · PostgreSQL · Supabase · Azure Functions · Azure · GCP · AWS · Docker · Git · REST APIs · RBAC · Power Automate</p></div>
         </div>
       </div>
     </section>
 
-    <section id="research" class="content-section container reveal">
-      <div class="section-rail"><span>RSH | 005</span><h2>RESEARCH ARCHIVE</h2><span>02 PAPERS</span></div>
-      <div class="research-grid">
-        <article class="holo-panel research-card"><div class="panel-header"><span>PAPER .001</span><span>IEEE ICCC 2025</span></div><button class="speaker-btn" type="button" data-speak-target="paperOneSpeech" aria-label="Read first paper aloud">◖))</button><div class="panel-body" id="paperOneSpeech"><h3>LSTM Encoder-Decoder for Text Summarization</h3><p>Deep-learning research on abstractive text summarization using an LSTM encoder-decoder architecture.</p></div></article>
-        <article class="holo-panel research-card"><div class="panel-header"><span>PAPER .002</span><span>AIDE 2024</span></div><button class="speaker-btn" type="button" data-speak-target="paperTwoSpeech" aria-label="Read second paper aloud">◖))</button><div class="panel-body" id="paperTwoSpeech"><h3>Kubera: NLP-Based Financial Analysis Tool</h3><p>NLP-powered personal finance analysis centered on intelligent spend classification and financial insights.</p></div></article>
-      </div>
-    </section>
-
-    <section id="community" class="content-section container reveal">
-      <div class="section-rail"><span>CSR | 006</span><h2>COMMUNITY SERVICE</h2><span>SERVICE LOG</span></div>
-      <div class="research-grid">
-        <article class="holo-panel research-card"><div class="panel-header"><span>CSR .001</span><span>NATIONAL HIGH SCHOOL</span></div><button class="speaker-btn" type="button" data-speak-target="csrSpeech" aria-label="Read CSR service aloud">◖))</button><div class="panel-body" id="csrSpeech"><h3>Volunteer — Support for Underprivileged Children</h3><p>Participated in a company-sponsored CSR activity providing academic and material support to underprivileged children.</p></div></article>
-        <article class="holo-panel research-card"><div class="panel-header"><span>CSR .002</span><span>60+ HOURS</span></div><button class="speaker-btn" type="button" data-speak-target="prayaasSpeech" aria-label="Read Prayaas service aloud">◖))</button><div class="panel-body" id="prayaasSpeech"><h3>Prayaas Charitable Trust — Community Service Volunteer</h3><p>Completed 60+ hours of community service in Mumbai.</p></div></article>
-      </div>
-    </section>
-
-    <section id="certifications" class="content-section container reveal">
-      <div class="section-rail"><span>CER | 007</span><h2>CERTIFICATION ARCHIVE</h2><span>GOOGLE CLOUD</span></div>
-      <article class="holo-panel certificate-panel">
-        <div class="panel-header"><span>CREDENTIAL .001</span><span>GOOGLE // GCP</span></div>
-        <button class="speaker-btn" type="button" data-speak-target="gcpCertificateSpeech" aria-label="Read Google Cloud certificate aloud">◖))</button>
-        <div class="certificate-layout">
-          <div class="certificate-copy panel-body" id="gcpCertificateSpeech">
-            <div class="repo-id">RESTORED FROM ROHANIYER.COM // VERIFIED SOURCE</div>
-            <h3>GCP Certificate</h3>
-            <p>Google Cloud certificate displayed on the previous Rohan Iyer portfolio website.</p>
-            <div class="certificate-meta">
-              <span><b>PROVIDER</b> Google Cloud</span>
-              <span><b>STATUS</b> Credential linked</span>
-              <span><b>SOURCE</b> Google Drive</span>
-            </div>
-            <div class="project-links certificate-links">
-              <a href="https://drive.google.com/file/d/164Hflfywh5Y3Miq3rfIG6T-hbGL6Wr9J/view" target="_blank" rel="noopener">[ OPEN CERTIFICATE ↗ ]</a>
-            </div>
-          </div>
-          <div class="certificate-viewer">
-            <div class="certificate-scanbar" aria-hidden="true"></div>
-            <iframe src="https://drive.google.com/file/d/164Hflfywh5Y3Miq3rfIG6T-hbGL6Wr9J/preview" title="GCP Certificate" loading="lazy" allow="autoplay"></iframe>
-          </div>
-        </div>
-      </article>
-    </section>
-
-    <section id="resume" class="content-section container reveal">
-      <div class="section-rail"><span>CV | 008</span><h2>RESUME DATALINK</h2><span>QR LOCKED</span></div>
-      <div class="resume-grid">
-        <article class="holo-panel qr-panel">
-          <div class="panel-header"><span>RESUME LINK .LOCK</span><span>VERIFIED</span></div>
-          <button class="speaker-btn" type="button" data-speak-target="resumeSpeech" aria-label="Read resume instructions aloud">◖))</button>
-          <div class="panel-body" id="resumeSpeech"><div class="log-status"><b>EXACT ENDPOINT</b><span>GOOGLE DRIVE</span></div><h3>SCAN TO OPEN RESUME</h3><p>The QR code is permanently mapped to the exact Google Drive resume URL supplied for this site.</p></div>
-          <a class="qr-target" href="https://drive.google.com/file/d/1Y54fF6NSf7t-7F6C4zBrXlQfCAeIgNY-/view?usp=sharing" target="_blank" rel="noopener"><img src="resume-qr.png" alt="QR code to Rohan Iyer resume"><code>drive.google.com/file/d/1Y54fF6NSf7t-7F6C4zBrXlQfCAeIgNY-</code></a>
-          <div class="project-links"><a href="https://drive.google.com/file/d/1Y54fF6NSf7t-7F6C4zBrXlQfCAeIgNY-/view?usp=sharing" target="_blank" rel="noopener">[ OPEN DRIVE RESUME ↗ ]</a><a href="https://drive.google.com/file/d/1Y54fF6NSf7t-7F6C4zBrXlQfCAeIgNY-/view?usp=sharing" target="_blank" rel="noopener">[ OPEN PDF ↗ ]</a></div>
-        </article>
-        <article class="holo-panel pdf-panel"><div class="panel-header"><span>PDF VISUALIZER</span><span>GOOGLE DRIVE</span></div><iframe src="https://drive.google.com/file/d/1Y54fF6NSf7t-7F6C4zBrXlQfCAeIgNY-/preview" title="Rohan Iyer resume preview" loading="lazy" allow="autoplay"></iframe></article>
-      </div>
-    </section>
-
-    <section id="cli" class="content-section container reveal">
-      <div class="section-rail"><span>CLI | 009</span><h2>INTERACTIVE SHELL</h2><span>INPUT READY</span></div>
-      <article class="holo-panel cli-panel">
-        <div class="panel-header"><span>PORTFOLIO-SH</span><span>TTY 01</span></div>
-        <div class="cli-output" id="cliOutput" aria-live="polite"><p><b>[READY]</b> Portfolio shell online. Type <strong>help</strong>.</p></div>
-        <form id="cliForm" class="cli-form" autocomplete="off"><span class="prompt">visitor@ri:~$</span><input id="cliInput" type="text" spellcheck="false" placeholder="help" aria-label="Portfolio command input"><span class="cursor">_</span></form>
-      </article>
+    <section class="resume-final section-shell" id="resume">
+      <div class="resume-final-copy reveal-block"><span class="section-index">06 / RESUME</span><h2 data-type-scroll="Ready to review the full resume?">Ready to review the full resume?</h2><p>The QR and button both point to the same exact Google Drive resume. On mobile, tapping is faster; on desktop, scanning works immediately.</p><div class="hero-actions"><a class="btn primary" href="https://drive.google.com/file/d/1Y54fF6NSf7t-7F6C4zBrXlQfCAeIgNY-/view?usp=sharing" target="_blank" rel="noopener">OPEN RESUME ↗</a><a class="btn" href="mailto:rohan.iyer5603@gmail.com">EMAIL ROHAN</a></div></div>
+      <a class="final-qr reveal-block" href="https://drive.google.com/file/d/1Y54fF6NSf7t-7F6C4zBrXlQfCAeIgNY-/view?usp=sharing" target="_blank" rel="noopener"><img src="resume-qr.png" alt="QR code to Rohan Iyer resume"><span>SCAN RESUME</span></a>
     </section>
   </main>
 
-  <nav class="mobile-dock" aria-label="Mobile quick navigation">
-    <a href="#home"><b>01</b><span>HOME</span></a>
-    <a href="#projects"><b>04</b><span>WORK</span></a>
-    <a href="#socials"><b>↗</b><span>SOCIAL</span></a>
-    <a href="#resume"><b>CV</b><span>RESUME</span></a>
-  </nav>
+  <footer class="site-footer section-shell"><div><b>ROHAN IYER</b><span>AI SYSTEMS · UIUC MCS · 2026</span></div><div><a href="mailto:rohan.iyer5603@gmail.com">Email</a><a href="https://www.linkedin.com/in/rohan-iyer-461787264" target="_blank" rel="noopener">LinkedIn</a><a href="https://github.com/roronoa2003" target="_blank" rel="noopener">GitHub</a></div></footer>
 
-  <footer class="footer container">
-    <div><b>RI SYSTEMS</b><span>HOLOGRAPHIC PORTFOLIO // 2026</span></div>
-    <div><a href="mailto:rohan.iyer5603@gmail.com">EMAIL</a><a href="https://www.linkedin.com/in/rohan-iyer-461787264" target="_blank" rel="noopener">LINKEDIN</a><a href="https://github.com/roronoa2003" target="_blank" rel="noopener">GITHUB</a><a href="https://www.rohaniyer.com" target="_blank" rel="noopener">PORTFOLIO</a></div>
-  </footer>
+  <nav class="mobile-dock" aria-label="Mobile navigation"><a href="#home">HOME</a><a href="#experience">EXP</a><a href="#projects">WORK</a><a class="dock-resume" href="https://drive.google.com/file/d/1Y54fF6NSf7t-7F6C4zBrXlQfCAeIgNY-/view?usp=sharing" target="_blank" rel="noopener">RESUME</a></nav>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://unpkg.com/three@0.166.1/build/three.min.js"></script>
   <script src="transit.js"></script>
   <script src="app.js"></script>
 </body>
