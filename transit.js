@@ -2,9 +2,9 @@
   'use strict';
   const stage=document.getElementById('projectTransitStage'),canvas=document.getElementById('projectTransitCanvas');
   if(!stage||!canvas)return;
+  const status=document.getElementById('transitStatus'),labelsRoot=document.getElementById('stationLabels'),mobileCard=document.getElementById('transitMobileCard');
   const fail=(message)=>{if(status)status.textContent=message;stage.classList.add('three-error');};
   if(!window.THREE){fail('3D ENGINE UNAVAILABLE');return;}
-  const status=document.getElementById('transitStatus'),labelsRoot=document.getElementById('stationLabels'),mobileCard=document.getElementById('transitMobileCard');
   const pauseBtn=document.getElementById('transitPause'),replayBtn=document.getElementById('transitReplay'),nextBtn=document.getElementById('transitNext');
   const projects=[
     ['Kubera','2024','project-kubera','https://github.com/roronoa2003/Kubera'],
