@@ -249,6 +249,7 @@ function bootCore(){
   vehicle.userData.fallback=fallbackBus;
 
   addEnvironment();
+  loadCityAssets();
   loadRealAssets();
 
   resize();
@@ -260,7 +261,7 @@ function addEnvironment(){
   safe('environment',()=>{
     let seed=9137;
     const rand=()=>{seed=seed*16807%2147483647;return(seed-1)/2147483646};
-    const buildingCount=low?18:42;
+    const buildingCount=low?7:16;
     const mats=[
       new T.MeshStandardMaterial({color:0x171c18,roughness:.82,metalness:.10,emissive:0x061009,emissiveIntensity:.25}),
       new T.MeshStandardMaterial({color:0x1a151a,roughness:.80,metalness:.10,emissive:0x150913,emissiveIntensity:.20})
@@ -282,7 +283,7 @@ function addEnvironment(){
       }
     }
 
-    const treeCount=low?7:16;
+    const treeCount=low?3:7;
     const trunkMat=new T.MeshStandardMaterial({color:0x3b2b1d,roughness:1});
     const leafMat=new T.MeshStandardMaterial({color:0x16321d,roughness:.9});
     for(let i=0;i<treeCount;i++){
@@ -322,6 +323,127 @@ function addEnvironment(){
     const points=new T.Points(geo,new T.PointsMaterial({color:0x8fffb2,size:low?.025:.035,transparent:true,opacity:.26,depthWrite:false}));
     points.name='worldMotes';
     world.add(points);
+  });
+}
+
+
+function loadCityAssets(){
+  if(!window.RI_GLTFLoader)return;
+  safe('asset-backed city environment',()=>{
+    const Loader=window.RI_GLTFLoader;
+    const loader=new Loader();
+    const base='assets/citybits/';
+
+    const prepare=(root,height)=>{
+      root.updateMatrixWorld(true);
+      let box=new T.Box3().setFromObject(root);
+      const size=box.getSize(new T.Vector3());
+      const s=height/Math.max(.001,size.y);
+      root.scale.multiplyScalar(s);
+      root.updateMatrixWorld(true);
+      box=new T.Box3().setFromObject(root);
+      const center=box.getCenter(new T.Vector3());
+      root.position.x-=center.x;
+      root.position.z-=center.z;
+      root.position.y-=box.min.y;
+      root.updateMatrixWorld(true);
+      root.traverse(n=>{
+        if(n.isMesh){
+          n.castShadow=renderer.shadowMap.enabled;
+          n.receiveShadow=renderer.shadowMap.enabled;
+          if(n.material){
+            const materials=Array.isArray(n.material)?n.material:[n.material];
+            materials.forEach(m=>{
+              if('roughness'in m)m.roughness=Math.max(.38,m.roughness||.5);
+              if('metalness'in m)m.metalness=Math.min(.35,m.metalness||0);
+            });
+          }
+        }
+      });
+      return root;
+    };
+
+    const addClone=(template,p)=>{
+      const clone=template.clone(true);
+      clone.position.set(p[0],groundY+(p[4]||0),p[1]);
+      clone.rotation.y=p[2]||0;
+      clone.scale.multiplyScalar(p[3]||1);
+      world.add(clone);
+      return clone;
+    };
+
+    const specs=[
+      {
+        file:'building_A.gltf',height:3.5,
+        places:low?[[-7.6,-5.0,.18,1]]:[[-7.8,-5.2,.18,1],[7.7,-5.6,-.28,.94]]
+      },
+      {
+        file:'building_B.gltf',height:3.15,
+        places:low?[[7.5,4.5,.38,.95]]:[[-8.0,4.0,-.46,.96],[7.6,4.6,.40,.98]]
+      },
+      {
+        file:'building_C.gltf',height:3.85,
+        places:low?[]:[[-3.8,7.0,.24,.9],[3.9,7.1,-.26,.88]]
+      },
+      {
+        file:'streetlight.gltf',height:1.55,
+        places:low?
+          [[-5.7,2.0,.25,1],[-2.4,-1.1,-.2,1],[1.9,-1.5,.16,1],[4.8,.9,-.18,1]]:
+          [[-6.1,1.9,.2,1],[-5.1,-1.0,-.1,1],[-2.8,-1.4,.1,1],[-.2,-1.5,-.2,1],[2.0,-1.7,.18,1],[3.9,.5,-.16,1],[5.4,-.1,.12,1],[5.8,2.1,-.28,1]]
+      },
+      {
+        file:'bench.gltf',height:.42,
+        places:low?
+          [[-4.8,2.3,.35,1],[3.8,2.3,-.55,1]]:
+          [[-5.1,2.4,.35,1],[-1.7,2.7,-.18,1],[2.3,2.4,.12,1],[4.6,2.0,-.55,1]]
+      },
+      {
+        file:'bush.gltf',height:.50,
+        places:low?
+          [[-6.6,4.1,0,1],[6.1,3.5,0,1]]:
+          [[-7.0,4.2,0,1],[-5.9,4.7,0,.8],[-1.0,5.7,0,1.1],[1.2,5.5,0,.9],[5.5,4.2,0,1],[6.7,3.5,0,.85]]
+      },
+      {
+        file:'trafficlight_A.gltf',height:1.55,
+        places:[[-5.4,-2.5,.2,1],[4.7,-1.9,-.3,1]]
+      },
+      {
+        file:'firehydrant.gltf',height:.32,
+        places:low?[]:[[-5.8,.7,0,1],[2.9,.2,0,1],[5.8,2.6,0,1]]
+      },
+      {
+        file:'dumpster.gltf',height:.58,
+        places:low?[]:[[-7.0,-3.8,.35,1],[6.6,5.0,-.4,1]]
+      },
+      {
+        file:'watertower.gltf',height:2.8,
+        places:low?[]:[[8.4,-7.3,-.15,1]]
+      },
+      {
+        file:'car_taxi.gltf',height:.62,
+        places:low?[]:[[-7.0,1.5,.18,1],[6.9,-3.2,-.35,1]]
+      }
+    ];
+
+    let loaded=0,requested=0;
+    specs.forEach(spec=>{
+      if(!spec.places.length)return;
+      requested++;
+      loader.load(
+        base+spec.file,
+        gltf=>{
+          safe('city asset '+spec.file,()=>{
+            const template=prepare(gltf.scene,spec.height);
+            spec.places.forEach(p=>addClone(template,p));
+            loaded++;
+            stage.dataset.cityAssets=String(loaded);
+            if(loaded===requested)setJourneyStatus(selected,'REAL CITY ASSETS ONLINE');
+          });
+        },
+        undefined,
+        error=>console.warn('[RI 3D] City asset skipped:',spec.file,error)
+      );
+    });
   });
 }
 
