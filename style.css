@@ -109,3 +109,14 @@
   .transit-stage{overscroll-behavior:contain;-webkit-tap-highlight-color:transparent}
   #projectTransitCanvas{touch-action:pan-y;backface-visibility:hidden}
 }
+
+
+/* MOBILE_RETINA_PASS_V6 */
+@media(max-width:780px){
+  #projectTransitCanvas{
+    image-rendering:auto;
+    transform:none;
+    filter:none;
+    opacity:1;
+  }
+}
