@@ -93,3 +93,11 @@
 @media(max-width:460px){
   .transit-stage{height:540px;min-height:540px}
 }
+
+
+/* REALISM_PASS_V4 */
+.transit-stage{background:linear-gradient(180deg,#08120b 0%,#061008 44%,#030504 100%)}
+.transit-shell{box-shadow:0 28px 100px rgba(0,0,0,.38),0 0 0 1px rgba(84,245,138,.035)}
+.world-chip{background:rgba(5,9,6,.78)}
+.transit-mobile-card{box-shadow:0 14px 35px rgba(0,0,0,.38)}
+.asset-credit{opacity:.82}

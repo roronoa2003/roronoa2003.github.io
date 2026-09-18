@@ -10,14 +10,14 @@ try{
   window.THREE=THREE;
   window.RI_GLTFLoader=GLTFLoader;
   document.documentElement.dataset.three='local';
-  await import('./transit.js?v=20260918h');
+  await import('./transit.js?v=20260918i');
 }catch(error){
   setState('3D WORLD FAILED · STATIC MAP ACTIVE');
   stage?.classList.add('three-error');
   console.error('[RI 3D] Local world boot failed',error);
 }
 try{
-  await import('./app.js?v=20260918h');
+  await import('./app.js?v=20260918i');
 }catch(error){
   console.error('[RI] Portfolio interactions failed',error);
 }
