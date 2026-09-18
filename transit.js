@@ -283,6 +283,7 @@ function bootCore(){
 
   curve=new T.CatmullRomCurve3(stops,false,'catmullrom',.19);
   seedReservations();
+  stage.dataset.environmentLayout='zoned-v2';
   addCoasterTrack();
 
   if(labelsRoot)labelsRoot.innerHTML='';
@@ -443,10 +444,11 @@ function loadCityAssets(){
         safe('prop '+spec.file,()=>{
           const template=normalizedAsset(gltf.scene,spec.height);
           spec.places.forEach(p=>{
-            const radius=spec.radius*(p[3]||1);
-            if(!spec.roadAllowed&&!canPlace(p[0],p[1],radius,{allowRoad:false,allowTrack:false,allowStation:false,margin:.08}))return;
             const clone=template.clone(true);
-            clone.position.set(p[0],groundY,p[1]);clone.rotation.y=p[2]||0;clone.scale.multiplyScalar(p[3]||1);world.add(clone);
+            clone.position.set(p[0],groundY,p[1]);
+            clone.rotation.y=p[2]||0;
+            clone.scale.multiplyScalar(p[3]||1);
+            world.add(clone);
           });
         });
       },undefined,error=>console.warn('[RI 3D] City prop skipped:',spec.file,error));
