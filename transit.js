@@ -1,7 +1,9 @@
 (function(){
   'use strict';
   const stage=document.getElementById('projectTransitStage'),canvas=document.getElementById('projectTransitCanvas');
-  if(!stage||!canvas||!window.THREE)return;
+  if(!stage||!canvas)return;
+  const fail=(message)=>{if(status)status.textContent=message;stage.classList.add('three-error');};
+  if(!window.THREE){fail('3D ENGINE UNAVAILABLE');return;}
   const status=document.getElementById('transitStatus'),labelsRoot=document.getElementById('stationLabels'),mobileCard=document.getElementById('transitMobileCard');
   const pauseBtn=document.getElementById('transitPause'),replayBtn=document.getElementById('transitReplay'),nextBtn=document.getElementById('transitNext');
   const projects=[
@@ -14,8 +16,12 @@
   ];
   const T=THREE,mobile=()=>innerWidth<780;
   let renderer;
-  try{renderer=new T.WebGLRenderer({canvas,alpha:true,antialias:!mobile(),powerPreference:'high-performance'});}catch(e){return;}
-  renderer.setClearColor(0x000000,0);renderer.outputColorSpace=T.SRGBColorSpace;
+  try{
+    renderer=new T.WebGLRenderer({canvas,alpha:true,antialias:!mobile(),powerPreference:'high-performance',preserveDrawingBuffer:false});
+  }catch(e){fail('WEBGL INITIALISATION FAILED');console.error('[RI 3D] WebGL renderer failed',e);return;}
+  renderer.setClearColor(0x000000,0);
+  if('outputColorSpace' in renderer && T.SRGBColorSpace) renderer.outputColorSpace=T.SRGBColorSpace;
+  canvas.style.opacity='1';canvas.style.visibility='visible';
   const scene=new T.Scene();scene.fog=new T.FogExp2(0x030403,.037);
   const camera=new T.PerspectiveCamera(42,1,.1,120);let camTheta=.12,camPhi=.88,camRadius=mobile()?18:15,targetTheta=.12,targetPhi=.88,targetRadius=camRadius;
   scene.add(new T.HemisphereLight(0xcaffda,0x020202,1.15));const key=new T.DirectionalLight(0xffffff,1.5);key.position.set(5,9,8);scene.add(key);const pinkLight=new T.PointLight(0xff5ac8,2,15);pinkLight.position.set(-5,2,3);scene.add(pinkLight);const greenLight=new T.PointLight(0x54f58a,1.4,18);greenLight.position.set(5,4,-3);scene.add(greenLight);
@@ -49,10 +55,20 @@
   pauseBtn?.addEventListener('click',()=>{paused=!paused;pauseBtn.textContent=paused?'RESUME':'PAUSE'});replayBtn?.addEventListener('click',restart);nextBtn?.addEventListener('click',next);
   stage.addEventListener('pointerdown',e=>{drag=true;sx=e.clientX;sy=e.clientY;sTheta=targetTheta;sPhi=targetPhi;stage.setPointerCapture?.(e.pointerId)});stage.addEventListener('pointermove',e=>{if(!drag)return;targetTheta=sTheta-(e.clientX-sx)*.006;targetPhi=Math.max(.38,Math.min(1.25,sPhi+(e.clientY-sy)*.004))});stage.addEventListener('pointerup',()=>drag=false);stage.addEventListener('pointercancel',()=>drag=false);stage.addEventListener('wheel',e=>{if(innerWidth<780)return;targetRadius=Math.max(10,Math.min(22,targetRadius+Math.sign(e.deltaY)*.8));e.preventDefault()},{passive:false});
   const ray=new T.Raycaster(),mouse=new T.Vector2();stage.addEventListener('click',e=>{if(Math.abs(e.clientX-sx)>8||Math.abs(e.clientY-sy)>8)return;const r=stage.getBoundingClientRect();mouse.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);ray.setFromCamera(mouse,camera);const hit=ray.intersectObjects(stationMeshes)[0];if(hit)select(hit.object.userData.index,true)});
-  function resize(){const r=stage.getBoundingClientRect();renderer.setPixelRatio(Math.min(devicePixelRatio,mobile()?1.15:1.6));renderer.setSize(Math.max(1,r.width),Math.max(1,r.height),false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix();targetRadius=mobile()?18:Math.max(12,Math.min(targetRadius,18))}new ResizeObserver(resize).observe(stage);resize();
+  function resize(){
+    const r=stage.getBoundingClientRect(),w=Math.max(320,r.width||stage.clientWidth||900),h=Math.max(420,r.height||stage.clientHeight||560);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,mobile()?1.15:1.6));
+    renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
+    targetRadius=mobile()?18:Math.max(12,Math.min(targetRadius,18));
+  }
+  if(window.ResizeObserver)new ResizeObserver(resize).observe(stage);else addEventListener('resize',resize,{passive:true});
+  resize();
   function placeLabels(){const r=stage.getBoundingClientRect();stops.forEach((p,i)=>{const q=p.clone().project(camera),el=labelEls[i];if(!el)return;el.style.left=((q.x*.5+.5)*r.width)+'px';el.style.top=((-q.y*.5+.5)*r.height-18)+'px';el.style.opacity=q.z>1?'0':'1'})}
   function animate(now){const dt=Math.min((now-last)/1000,.05);last=now;camTheta+=(targetTheta-camTheta)*.075;camPhi+=(targetPhi-camPhi)*.075;camRadius+=(targetRadius-camRadius)*.075;camera.position.set(Math.sin(camTheta)*Math.sin(camPhi)*camRadius,Math.cos(camPhi)*camRadius,Math.cos(camTheta)*Math.sin(camPhi)*camRadius);camera.lookAt(0,0,0);
     if(!paused){if(dwell>0)dwell-=dt;else if(segment<projects.length-1){prog+=dt/2.8;const local=Math.min(1,prog),u=(segment+local)/(projects.length-1),pos=curve.getPoint(u),tan=curve.getTangent(u);bus.position.copy(pos);const look=pos.clone().add(tan);bus.lookAt(look);bus.rotateY(Math.PI/2);if(local>=1){segment++;prog=0;select(segment);dwell=segment===projects.length-1?2.8:1.15;if(segment===projects.length-1)setTimeout(()=>{if(!paused)restart()},2900)}else setStatus(segment+1,'EN ROUTE TO')}}
     rings.forEach((r,i)=>r.rotation.z+=(i%2?1:-1)*.005);beacon.intensity=2.2+Math.sin(now*.01)*.5;placeLabels();renderer.render(scene,camera);requestAnimationFrame(animate)}
-  restart();requestAnimationFrame(animate);
+  restart();
+  stage.classList.add('three-live');
+  setStatus(0,'3D ENGINE ONLINE');
+  requestAnimationFrame(animate);
 })();
