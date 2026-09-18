@@ -44,34 +44,79 @@ const stops=[
 ];
 
 const BUILDING_LOTS=[
-  {file:'building_A.gltf',height:3.55,x:-10.1,z:-1.3,rot:.10,scale:.94,radius:1.75},
-  {file:'building_A.gltf',height:3.45,x:10.0,z:-1.4,rot:-.12,scale:.90,radius:1.70},
-  {file:'building_B.gltf',height:3.30,x:-10.2,z:5.2,rot:-.34,scale:.92,radius:1.70},
-  {file:'building_B.gltf',height:3.25,x:10.1,z:5.0,rot:.30,scale:.90,radius:1.65},
-  {file:'building_C.gltf',height:3.90,x:-4.7,z:8.0,rot:.18,scale:.88,radius:1.85},
-  {file:'building_C.gltf',height:3.80,x:4.8,z:8.1,rot:-.20,scale:.86,radius:1.82}
+  {file:'building_A.gltf',height:3.45,x:-17.3,z:-12.0,rot:.08,scale:.90,radius:1.62},
+  {file:'building_B.gltf',height:3.70,x:-13.4,z:-12.0,rot:-.06,scale:.92,radius:1.68},
+  {file:'building_C.gltf',height:3.95,x:-5.8,z:-12.0,rot:.05,scale:.88,radius:1.72},
+  {file:'building_A.gltf',height:3.40,x:-1.9,z:-12.0,rot:-.04,scale:.90,radius:1.60},
+  {file:'building_B.gltf',height:3.65,x:1.9,z:-12.0,rot:.04,scale:.91,radius:1.66},
+  {file:'building_C.gltf',height:3.90,x:5.8,z:-12.0,rot:-.05,scale:.87,radius:1.72},
+  {file:'building_A.gltf',height:3.50,x:13.4,z:-12.0,rot:.06,scale:.91,radius:1.62},
+  {file:'building_B.gltf',height:3.75,x:17.3,z:-12.0,rot:-.08,scale:.92,radius:1.68},
+
+  {file:'building_B.gltf',height:3.60,x:-17.3,z:12.0,rot:-.08,scale:.91,radius:1.66},
+  {file:'building_C.gltf',height:3.92,x:-13.4,z:12.0,rot:.06,scale:.87,radius:1.72},
+  {file:'building_A.gltf',height:3.38,x:-5.8,z:12.0,rot:-.05,scale:.90,radius:1.60},
+  {file:'building_B.gltf',height:3.64,x:-1.9,z:12.0,rot:.04,scale:.91,radius:1.66},
+  {file:'building_C.gltf',height:3.88,x:1.9,z:12.0,rot:-.04,scale:.87,radius:1.72},
+  {file:'building_A.gltf',height:3.42,x:5.8,z:12.0,rot:.05,scale:.90,radius:1.60},
+  {file:'building_B.gltf',height:3.68,x:13.4,z:12.0,rot:-.06,scale:.91,radius:1.66},
+  {file:'building_C.gltf',height:3.96,x:17.3,z:12.0,rot:.08,scale:.88,radius:1.72},
+
+  {file:'building_C.gltf',height:3.90,x:-17.3,z:-7.2,rot:.05,scale:.86,radius:1.72},
+  {file:'building_A.gltf',height:3.42,x:-17.3,z:-3.2,rot:-.04,scale:.90,radius:1.60},
+  {file:'building_B.gltf',height:3.64,x:-17.3,z:.8,rot:.03,scale:.91,radius:1.66},
+  {file:'building_C.gltf',height:3.86,x:-17.3,z:4.8,rot:-.05,scale:.86,radius:1.72},
+  {file:'building_A.gltf',height:3.46,x:-17.3,z:8.0,rot:.04,scale:.90,radius:1.60},
+
+  {file:'building_A.gltf',height:3.44,x:17.3,z:-7.2,rot:-.05,scale:.90,radius:1.60},
+  {file:'building_B.gltf',height:3.66,x:17.3,z:-3.2,rot:.04,scale:.91,radius:1.66},
+  {file:'building_C.gltf',height:3.88,x:17.3,z:.8,rot:-.03,scale:.86,radius:1.72},
+  {file:'building_A.gltf',height:3.40,x:17.3,z:4.8,rot:.05,scale:.90,radius:1.60},
+  {file:'building_B.gltf',height:3.72,x:17.3,z:8.0,rot:-.04,scale:.91,radius:1.66},
+
+  {file:'building_A.gltf',height:3.28,x:-13.2,z:-6.0,rot:.12,scale:.86,radius:1.56,desktopOnly:true},
+  {file:'building_B.gltf',height:3.50,x:-13.2,z:-1.9,rot:-.10,scale:.88,radius:1.62,desktopOnly:true},
+  {file:'building_C.gltf',height:3.72,x:-13.2,z:2.2,rot:.10,scale:.84,radius:1.68,desktopOnly:true},
+  {file:'building_A.gltf',height:3.32,x:-13.2,z:6.2,rot:-.10,scale:.86,radius:1.56,desktopOnly:true},
+  {file:'building_B.gltf',height:3.48,x:13.2,z:-6.0,rot:-.12,scale:.88,radius:1.62,desktopOnly:true},
+  {file:'building_C.gltf',height:3.74,x:13.2,z:-1.9,rot:.10,scale:.84,radius:1.68,desktopOnly:true},
+  {file:'building_A.gltf',height:3.30,x:13.2,z:2.2,rot:-.10,scale:.86,radius:1.56,desktopOnly:true},
+  {file:'building_B.gltf',height:3.52,x:13.2,z:6.2,rot:.10,scale:.88,radius:1.62,desktopOnly:true}
 ];
 
 const CITY_PROPS=[
-  {file:'streetlight.gltf',height:1.55,radius:.22,places:[[-5.6,-4.65,.10,1],[-2.6,-4.65,-.10,1],[.4,-4.65,.06,1],[3.4,-4.65,-.08,1],[6.2,-4.65,.10,1]]},
-  {file:'bench.gltf',height:.42,radius:.48,places:[[-6.1,5.2,.25,1],[-2.0,5.9,-.18,1],[2.1,5.8,.14,1],[6.0,5.0,-.28,1]]},
-  {file:'bush.gltf',height:.50,radius:.40,places:[[-7.3,6.2,0,1],[-5.8,6.5,0,.85],[-1.1,7.0,0,1.05],[1.3,7.1,0,.92],[5.7,6.4,0,1],[7.2,6.0,0,.88]]},
-  {file:'trafficlight_A.gltf',height:1.55,radius:.28,places:[[-6.6,-6.9,.18,1],[6.5,-6.9,-.24,1]]},
-  {file:'firehydrant.gltf',height:.32,radius:.22,desktopOnly:true,places:[[-4.8,-4.15,0,1],[2.8,-4.12,0,1],[6.6,-4.12,0,1]]},
-  {file:'dumpster.gltf',height:.58,radius:.45,desktopOnly:true,places:[[-9.0,-3.2,.28,1],[9.0,3.5,-.30,1]]},
-  {file:'watertower.gltf',height:2.8,radius:1.0,desktopOnly:true,places:[[11.7,-7.4,-.10,1]]},
-  {file:'car_taxi.gltf',height:.62,radius:.65,desktopOnly:true,roadAllowed:true,places:[[-4.6,-6.0,Math.PI/2,1],[3.8,-6.0,Math.PI/2,1]]}
+  {file:'streetlight.gltf',height:1.55,radius:.22,places:[
+    [-15.8,-7.75,.10,1],[-12.2,-7.75,-.10,1],[-6.4,-7.75,.08,1],[-3.2,-7.75,-.08,1],[0,-7.75,.08,1],[3.2,-7.75,-.08,1],[6.4,-7.75,.08,1],[12.2,-7.75,-.10,1],[15.8,-7.75,.10,1],
+    [-15.8,7.75,-.10,1],[-12.2,7.75,.10,1],[-6.4,7.75,-.08,1],[-3.2,7.75,.08,1],[0,7.75,-.08,1],[3.2,7.75,.08,1],[6.4,7.75,-.08,1],[12.2,7.75,.10,1],[15.8,7.75,-.10,1],
+    [-7.75,-5.5,0,1],[-7.75,-1.8,0,1],[-7.75,1.8,0,1],[-7.75,5.5,0,1],
+    [7.75,-5.5,Math.PI,1],[7.75,-1.8,Math.PI,1],[7.75,1.8,Math.PI,1],[7.75,5.5,Math.PI,1]
+  ]},
+  {file:'bench.gltf',height:.42,radius:.48,places:[
+    [-6.3,6.4,.20,1],[-2.2,6.8,-.16,1],[2.2,6.8,.14,1],[6.3,6.4,-.22,1],
+    [-6.6,-5.4,-.18,1],[-2.6,-5.8,.12,1],[2.6,-5.8,-.12,1],[6.6,-5.4,.18,1]
+  ]},
+  {file:'bush.gltf',height:.50,radius:.40,places:[
+    [-7.0,6.8,0,1],[-5.7,7.1,0,.86],[-3.0,7.2,0,.95],[-.8,7.3,0,.88],[1.1,7.3,0,.92],[3.3,7.2,0,1],[5.8,7.0,0,.88],[7.0,6.7,0,.96],
+    [-7.0,-6.6,0,.94],[-5.5,-6.9,0,.84],[-3.2,-7.0,0,1],[-1.0,-7.1,0,.88],[1.2,-7.1,0,.92],[3.5,-7.0,0,.98],[5.7,-6.9,0,.86],[7.0,-6.6,0,.94]
+  ]},
+  {file:'trafficlight_A.gltf',height:1.55,radius:.28,places:[[-8.0,-8.0,.2,1],[8.0,-8.0,-.25,1],[-8.0,8.0,-.2,1],[8.0,8.0,.25,1]]},
+  {file:'firehydrant.gltf',height:.32,radius:.22,desktopOnly:true,places:[[-14.5,-7.6,0,1],[-4.7,-7.6,0,1],[4.7,-7.6,0,1],[14.5,-7.6,0,1],[-14.5,7.6,0,1],[-4.7,7.6,0,1],[4.7,7.6,0,1],[14.5,7.6,0,1]]},
+  {file:'dumpster.gltf',height:.58,radius:.45,desktopOnly:true,places:[[-18.7,-8.8,.15,1],[-18.7,8.8,-.12,1],[18.7,-8.8,-.15,1],[18.7,8.8,.12,1]]},
+  {file:'watertower.gltf',height:2.8,radius:1.0,desktopOnly:true,places:[[-19.0,12.3,.05,1],[19.0,-12.3,-.05,1]]},
+  {file:'car_taxi.gltf',height:.62,radius:.65,desktopOnly:true,roadAllowed:true,places:[[-5.2,-9.2,Math.PI/2,1],[3.9,-9.2,Math.PI/2,1],[-3.9,9.2,-Math.PI/2,1],[5.2,9.2,-Math.PI/2,1]]}
 ];
 
 const occupied=[];
 const roadReservations=[
-  {x:0,z:-6.0,hx:8.7,hz:1.35},
-  {x:-7.8,z:0,hx:1.35,hz:6.4}
+  {x:0,z:-9.2,hx:19.6,hz:1.22},
+  {x:0,z:9.2,hx:19.6,hz:1.22},
+  {x:-9.2,z:0,hx:1.22,hz:9.2},
+  {x:9.2,z:0,hx:1.22,hz:9.2}
 ];
 
 let renderer,scene,camera,world,curve,vehicle,routeRings=[],stationMeshes=[],labelEls=[],mixer=null;
 let selected=0,segment=0,progress=0,paused=reduced,dwell=1.1,endHold=0;
-let theta=.52,phi=.96,radius=low?21.2:18.8,targetTheta=theta,targetPhi=phi,targetRadius=radius;
+let theta=.52,phi=.96,radius=low?23.6:21.8,targetTheta=theta,targetPhi=phi,targetRadius=radius;
 let dragging=false,startX=0,startY=0,startTheta=0,startPhi=0,moved=0;
 let stageVisible=true,pageVisible=!document.hidden,lastFrame=performance.now(),firstFrame=false,lastInteraction=performance.now();
 
@@ -122,7 +167,7 @@ function canPlace(x,z,radius,opts={}){
 
 function seedReservations(){
   occupied.length=0;
-  BUILDING_LOTS.forEach(b=>reserve(b.x,b.z,b.radius,'building-lot'));
+  BUILDING_LOTS.filter(b=>!(low&&b.desktopOnly)).forEach(b=>reserve(b.x,b.z,b.radius,'building-lot'));
   CITY_PROPS.forEach(spec=>{
     if(spec.desktopOnly&&low)return;
     spec.places.forEach(p=>{
@@ -283,7 +328,7 @@ function bootCore(){
 
   curve=new T.CatmullRomCurve3(stops,false,'catmullrom',.19);
   seedReservations();
-  stage.dataset.environmentLayout='zoned-v2';
+  stage.dataset.environmentLayout='full-city-v3';
   addCoasterTrack();
 
   if(labelsRoot)labelsRoot.innerHTML='';
@@ -321,6 +366,7 @@ function bootCore(){
   const underglow=new T.PointLight(PINK,low?.38:.75,3.5,2);underglow.position.set(0,-.03,0);vehicle.add(underglow);
   vehicle.userData.headlight=headlight;vehicle.userData.underglow=underglow;vehicle.userData.fallback=fallbackCar;
 
+  addCityBlockPads();
   addBackgroundEnvironment();
   loadRoadAssets();
   loadCityAssets();
@@ -329,6 +375,32 @@ function bootCore(){
   addPracticalLights();
 
   resize();resetJourney();updateCamera();
+}
+
+function addCityBlockPads(){
+  safe('city block pads',()=>{
+    const lots=BUILDING_LOTS.filter(b=>!(low&&b.desktopOnly));
+    const lotMat=new T.MeshStandardMaterial({color:0x252b26,roughness:.94,metalness:.03});
+    const curbMat=new T.MeshStandardMaterial({color:0x4a514a,roughness:.82,metalness:.08});
+    const padGeo=new T.BoxGeometry(3.15,.055,3.15);
+    const curbGeo=new T.BoxGeometry(3.35,.035,3.35);
+    const pads=new T.InstancedMesh(padGeo,lotMat,lots.length);
+    const curbs=new T.InstancedMesh(curbGeo,curbMat,lots.length);
+    const dummy=new T.Object3D();
+    lots.forEach((lot,n)=>{
+      dummy.position.set(lot.x,groundY+.038,lot.z);dummy.rotation.set(0,lot.rot,0);dummy.scale.set(1,1,1);dummy.updateMatrix();pads.setMatrixAt(n,dummy.matrix);
+      dummy.position.y=groundY+.014;dummy.updateMatrix();curbs.setMatrixAt(n,dummy.matrix);
+    });
+    pads.instanceMatrix.needsUpdate=true;curbs.instanceMatrix.needsUpdate=true;
+    pads.receiveShadow=curbs.receiveShadow=renderer.shadowMap.enabled;
+    world.add(curbs,pads);
+
+    const park=new T.Mesh(
+      new T.PlaneGeometry(15.1,15.1),
+      new T.MeshStandardMaterial({color:0x17321c,roughness:1,metalness:0,emissive:0x041007,emissiveIntensity:.07})
+    );
+    park.rotation.x=-Math.PI/2;park.position.y=groundY+.006;park.receiveShadow=renderer.shadowMap.enabled;world.add(park);
+  });
 }
 
 function addBackgroundEnvironment(){
@@ -343,8 +415,17 @@ function addBackgroundEnvironment(){
 }
 
 function addPracticalLights(){
-  const lamps=[[-6.6,groundY+1.6,-4.55],[-2.5,groundY+1.6,-4.55],[1.6,groundY+1.6,-4.55],[5.8,groundY+1.6,-4.55]];
-  lamps.slice(0,low?2:4).forEach((p,i)=>{const light=new T.PointLight(i%2?WARM:YELLOW,low?.48:.95,5.0,2);light.position.set(p[0],p[1],p[2]);scene.add(light)});
+  const lamps=[
+    [-15.8,groundY+1.65,-7.75],[-10.8,groundY+1.65,-7.75],[-5.6,groundY+1.65,-7.75],[0,groundY+1.65,-7.75],[5.6,groundY+1.65,-7.75],[10.8,groundY+1.65,-7.75],[15.8,groundY+1.65,-7.75],
+    [-15.8,groundY+1.65,7.75],[-10.8,groundY+1.65,7.75],[-5.6,groundY+1.65,7.75],[0,groundY+1.65,7.75],[5.6,groundY+1.65,7.75],[10.8,groundY+1.65,7.75],[15.8,groundY+1.65,7.75],
+    [-7.75,groundY+1.65,-5.2],[-7.75,groundY+1.65,0],[-7.75,groundY+1.65,5.2],
+    [7.75,groundY+1.65,-5.2],[7.75,groundY+1.65,0],[7.75,groundY+1.65,5.2]
+  ];
+  const visible=low?lamps.filter((_,i)=>i%2===0):lamps;
+  visible.forEach((p,i)=>{
+    const light=new T.PointLight(i%3===0?WARM:YELLOW,low?.32:.68,4.4,2.1);
+    light.position.set(p[0],p[1],p[2]);scene.add(light);
+  });
 }
 
 function normalizedAsset(root,targetHeight){
@@ -393,17 +474,28 @@ function loadRoadAssets(){
     const loader=new window.RI_GLTFLoader(),base='assets/citybits/';
     const prep=root=>normalizedAsset(root,.13);
     const addTile=(template,x,z,rot=0,scale=1.30)=>{
-      const c=template.clone(true);c.position.set(x,groundY+.008,z);c.rotation.y=rot;c.scale.multiplyScalar(scale);world.add(c)
+      const clone=template.clone(true);
+      clone.position.set(x,groundY+.008,z);clone.rotation.y=rot;clone.scale.multiplyScalar(scale);world.add(clone);
     };
-    const horizontal=[-5.2,-2.6,0,2.6,5.2];
+    const horizontal=[];for(let x=-18.2;x<=18.21;x+=2.6)horizontal.push(Number(x.toFixed(2)));
+    const vertical=[];for(let z=-7.8;z<=7.81;z+=2.6)vertical.push(Number(z.toFixed(2)));
+
     loader.load(base+'road_straight.gltf',gltf=>{
       const t=prep(gltf.scene);
-      horizontal.forEach(x=>addTile(t,x,-6.0,Math.PI/2,1.30));
-      [-3.2,-.6,2.0,4.6].slice(0,low?2:4).forEach(z=>addTile(t,-7.8,z,0,1.30));
+      [-9.2,9.2].forEach(z=>horizontal.forEach(x=>addTile(t,x,z,Math.PI/2,1.30)));
+      [-9.2,9.2].forEach(x=>vertical.forEach(z=>addTile(t,x,z,0,1.30)));
+      stage.dataset.roadTiles=String(horizontal.length*2+vertical.length*2);
     },undefined,e=>console.warn('[RI 3D] road_straight skipped',e));
-    loader.load(base+'road_junction.gltf',gltf=>addTile(prep(gltf.scene),-7.8,-6.0,0,1.30),undefined,e=>console.warn('[RI 3D] road_junction skipped',e));
+
+    loader.load(base+'road_junction.gltf',gltf=>{
+      const t=prep(gltf.scene);
+      [[-9.2,-9.2],[-9.2,9.2],[9.2,-9.2],[9.2,9.2]].forEach(p=>addTile(t,p[0],p[1],0,1.30));
+    },undefined,e=>console.warn('[RI 3D] road_junction skipped',e));
+
     loader.load(base+'road_corner_curved.gltf',gltf=>{
-      const t=prep(gltf.scene);addTile(t,7.8,-6.0,Math.PI/2,1.30);if(!low)addTile(t,-7.8,6.2,Math.PI,1.30);
+      if(low)return;
+      const t=prep(gltf.scene);
+      [[-18.2,-9.2,0],[18.2,-9.2,Math.PI/2],[-18.2,9.2,-Math.PI/2],[18.2,9.2,Math.PI]].forEach(p=>addTile(t,p[0],p[1],p[2],1.30));
     },undefined,e=>console.warn('[RI 3D] road_corner skipped',e));
   });
 }
@@ -413,7 +505,7 @@ function loadCityAssets(){
   safe('asset-backed city environment',()=>{
     const loader=new window.RI_GLTFLoader(),base='assets/citybits/';
     const groups={};
-    BUILDING_LOTS.forEach((lot,i)=>{
+    BUILDING_LOTS.filter(lot=>!(low&&lot.desktopOnly)).forEach((lot,i)=>{
       (groups[lot.file]??=[]).push({lot,index:i});
     });
 
@@ -498,11 +590,11 @@ function loadNatureAssets(){
           });
         };
 
-        scatter(['Grass_2_D_Color1'],low?22:58,.28,{width:25,depth:17,scaleMin:.75,scaleMax:1.35,radius:.08,reserve:false,allowRoad:false,margin:.02});
-        scatter(['Tree_1_A_Color1','Tree_1_C_Color1','Tree_3_A_Color1','Tree_3_C_Color1','Tree_4_A_Color1','Tree_4_C_Color1'],low?8:20,2.25,{width:25,depth:17,scaleMin:.78,scaleMax:1.18,radius:.44,edgeOnly:true,shadows:!low,tag:'tree',margin:.22});
-        scatter(['Bush_1_E_Color1','Bush_3_B_Color1'],low?5:12,.72,{width:24,depth:16,scaleMin:.8,scaleMax:1.22,radius:.32,edgeOnly:true,shadows:!low,tag:'bush',margin:.14});
-        scatter(['Rock_1_D_Color1','Rock_1_J_Color1','Rock_2_C_Color1','Rock_2_G_Color1','Rock_3_E_Color1','Rock_3_L_Color1','Rock_3_Q_Color1'],low?4:10,.62,{width:24,depth:16,scaleMin:.68,scaleMax:1.15,radius:.30,edgeOnly:true,shadows:!low,tag:'rock',margin:.10});
-        stage.dataset.natureAssets='ready';setJourneyStatus(selected,'COLLISION-SAFE ENVIRONMENT ONLINE');
+        scatter(['Grass_2_D_Color1'],low?70:180,.28,{width:39,depth:27,scaleMin:.72,scaleMax:1.38,radius:.07,reserve:false,allowRoad:false,margin:.01});
+        scatter(['Tree_1_A_Color1','Tree_1_C_Color1','Tree_3_A_Color1','Tree_3_C_Color1','Tree_4_A_Color1','Tree_4_C_Color1'],low?18:46,2.30,{width:39,depth:27,scaleMin:.75,scaleMax:1.22,radius:.44,shadows:!low,tag:'tree',margin:.22});
+        scatter(['Bush_1_E_Color1','Bush_3_B_Color1'],low?14:34,.74,{width:39,depth:27,scaleMin:.78,scaleMax:1.25,radius:.31,shadows:!low,tag:'bush',margin:.13});
+        scatter(['Rock_1_D_Color1','Rock_1_J_Color1','Rock_2_C_Color1','Rock_2_G_Color1','Rock_3_E_Color1','Rock_3_L_Color1','Rock_3_Q_Color1'],low?8:22,.64,{width:39,depth:27,scaleMin:.66,scaleMax:1.18,radius:.29,shadows:!low,tag:'rock',margin:.10});
+        stage.dataset.natureAssets='ready';setJourneyStatus(selected,'FULL CITY + PARK ASSETS ONLINE');
       });
     },undefined,e=>console.warn('[RI 3D] forest asset skipped',e));
   });
@@ -573,7 +665,7 @@ function updateCamera(){
 function resize(){
   const r=stage.getBoundingClientRect(),width=Math.max(320,r.width||stage.clientWidth||900),height=Math.max(mobile()?480:560,r.height||stage.clientHeight||650);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,low?1:1.35));renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();
-  targetRadius=low?21.2:Math.max(13.8,Math.min(targetRadius,22));
+  targetRadius=low?23.6:Math.max(15.5,Math.min(targetRadius,24.5));
 }
 
 function placeLabels(){
@@ -597,7 +689,7 @@ function wireInteraction(){
   stage.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-startX,dy=e.clientY-startY;moved=Math.max(moved,Math.abs(dx)+Math.abs(dy));targetTheta=startTheta-dx*(low?.0044:.0057);targetPhi=Math.max(.43,Math.min(1.30,startPhi+dy*(low?.0033:.0045)))});
   const release=e=>{dragging=false;try{stage.releasePointerCapture?.(e.pointerId)}catch(_){}};
   stage.addEventListener('pointerup',release);stage.addEventListener('pointercancel',release);
-  stage.addEventListener('wheel',e=>{if(mobile())return;targetRadius=Math.max(13.5,Math.min(24,targetRadius+Math.sign(e.deltaY)*.75));lastInteraction=performance.now();e.preventDefault()},{passive:false});
+  stage.addEventListener('wheel',e=>{if(mobile())return;targetRadius=Math.max(15.0,Math.min(26,targetRadius+Math.sign(e.deltaY)*.75));lastInteraction=performance.now();e.preventDefault()},{passive:false});
 
   const raycaster=new T.Raycaster(),pointer=new T.Vector2();
   stage.addEventListener('click',e=>{
