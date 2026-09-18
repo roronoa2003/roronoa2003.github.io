@@ -1,0 +1,13 @@
+Cesium Milk Truck asset
+
+Source: KhronosGroup/glTF-Sample-Assets
+Model: Models/CesiumMilkTruck/glTF-Binary/CesiumMilkTruck.glb
+Copyright: © 2017 Cesium
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+
+Cesium trademark/logo notice:
+© 2015 Cesium. The Cesium logo is a legal mark included in the source model.
+
+Source repository:
+https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CesiumMilkTruck
