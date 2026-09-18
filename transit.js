@@ -22,10 +22,11 @@ const low=mobile()||saveData||weak;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const mobileTargetFPS=60;
 const desktopTargetFPS=60;
-let renderScale=mobile()?0.86:1;
+let renderScale=1;
 let frameEMA=16.7,lastQualityCheck=performance.now();
 let viewportWidth=1,viewportHeight=1;
-const MOBILE_MIN_SCALE=.62,MOBILE_MAX_SCALE=1.0;
+const MOBILE_MIN_SCALE=.94,MOBILE_MAX_SCALE=1.0;
+const mobileDprCap=weak?1.65:2.0;
 
 const projects=[
   {name:'Kubera',full:'Kubera — AI Finance Manager',year:'2024',target:'project-kubera',repo:'https://github.com/roronoa2003/Kubera'},
@@ -285,8 +286,9 @@ function addStationLighting(point,accent,index){
 }
 
 function bootCore(){
-  renderer=new T.WebGLRenderer({canvas,alpha:false,antialias:!low,powerPreference:'high-performance',preserveDrawingBuffer:false});
+  renderer=new T.WebGLRenderer({canvas,alpha:false,antialias:mobile()?!weak:!low,powerPreference:'high-performance',preserveDrawingBuffer:false});
   renderer.setClearColor(0x07100a,1);
+  renderer.capabilities.getMaxAnisotropy&&stage.setAttribute('data-anisotropy',String(Math.min(8,renderer.capabilities.getMaxAnisotropy())));
   if('outputColorSpace'in renderer&&T.SRGBColorSpace)renderer.outputColorSpace=T.SRGBColorSpace;
   if(T.ACESFilmicToneMapping!==undefined){renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08}
   renderer.shadowMap.enabled=!low;
@@ -463,6 +465,10 @@ function normalizedAsset(root,targetHeight){
       mats.filter(Boolean).forEach(m=>{
         if('roughness'in m)m.roughness=Math.max(.34,m.roughness??.5);
         if('metalness'in m)m.metalness=Math.min(.38,m.metalness??0);
+        ['map','normalMap','roughnessMap','metalnessMap','emissiveMap','aoMap'].forEach(key=>{
+          const tex=m[key];
+          if(tex&&renderer.capabilities.getMaxAnisotropy)tex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+        });
       });
     }
   });
@@ -707,9 +713,10 @@ function updateCamera(){
 function applyRenderScale(){
   if(!renderer)return;
   const deviceDpr=window.devicePixelRatio||1;
-  const maxDpr=mobile()?Math.min(deviceDpr,1.15):Math.min(deviceDpr,1.35);
+  const maxDpr=mobile()?Math.min(deviceDpr,mobileDprCap):Math.min(deviceDpr,1.35);
   renderer.setPixelRatio(maxDpr*renderScale);
   renderer.setSize(viewportWidth,viewportHeight,false);
+  if(mobile())stage.dataset.mobileDpr=(maxDpr*renderScale).toFixed(2);
 }
 
 function resize(){
@@ -741,7 +748,7 @@ function wireInteraction(){
 
   stage.addEventListener('pointerdown',e=>{
     dragging=true;moved=0;startX=e.clientX;startY=e.clientY;startTheta=targetTheta;startPhi=targetPhi;lastInteraction=performance.now();
-    if(mobile()&&renderScale>.72){renderScale=.72;applyRenderScale()}
+    if(mobile()&&renderScale<MOBILE_MAX_SCALE){renderScale=MOBILE_MAX_SCALE;applyRenderScale()}
     try{stage.setPointerCapture?.(e.pointerId)}catch(_){}
   });
   stage.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-startX,dy=e.clientY-startY;moved=Math.max(moved,Math.abs(dx)+Math.abs(dy));targetTheta=startTheta-dx*(low?.0044:.0057);targetPhi=Math.max(.43,Math.min(1.30,startPhi+dy*(low?.0033:.0045)))});
@@ -772,10 +779,10 @@ function animate(now){
 
   if(mobile()){
     frameEMA=frameEMA*.90+frameGap*.10;
-    if(now-lastQualityCheck>1400&&!dragging){
+    if(now-lastQualityCheck>1800&&!dragging){
       const before=renderScale;
-      if(frameEMA>19.5)renderScale=Math.max(MOBILE_MIN_SCALE,renderScale-.08);
-      else if(frameEMA<17.2)renderScale=Math.min(MOBILE_MAX_SCALE,renderScale+.05);
+      if(frameEMA>24)renderScale=Math.max(MOBILE_MIN_SCALE,renderScale-.03);
+      else if(frameEMA<18.2)renderScale=Math.min(MOBILE_MAX_SCALE,renderScale+.02);
       if(Math.abs(before-renderScale)>.001)applyRenderScale();
       lastQualityCheck=now;
     }
