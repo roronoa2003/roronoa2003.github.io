@@ -90,6 +90,14 @@
       <div class="transit-shell reveal-block">
         <div class="transit-top"><span>PROJECT WORLD // THREE.JS + GLB</span><span id="transitStatus">LOADING REALTIME 3D WORLD</span></div>
         <div class="transit-stage" id="projectTransitStage">
+          <div class="transit-static-fallback" aria-hidden="true">
+            <div class="fallback-world-title"><span>PROJECT WORLD</span><b>INITIALISING LOCAL 3D ENGINE</b></div>
+            <div class="fallback-road">
+              <i></i><i></i><i></i><i></i><i></i><i></i>
+              <span class="fallback-vehicle">▰</span>
+            </div>
+            <small>LOCAL THREE.JS · LOCAL GLB · NO CDN REQUIRED</small>
+          </div>
           <canvas id="projectTransitCanvas" aria-label="Interactive 3D project journey"></canvas>
           <div class="station-labels" id="stationLabels"></div>
           <div class="transit-mobile-card" id="transitMobileCard"></div>
@@ -156,6 +164,6 @@
 
   <nav class="mobile-dock" aria-label="Mobile navigation"><a href="#home">HOME</a><a href="#experience">EXP</a><a href="#projects">WORK</a><a class="dock-resume" href="https://drive.google.com/file/d/1Y54fF6NSf7t-7F6C4zBrXlQfCAeIgNY-/view?usp=sharing" target="_blank" rel="noopener">RESUME</a></nav>
 
-  <script type="module" src="three-bootstrap.js?v=20260918d"></script>
+  <script type="module" src="three-bootstrap.js?v=20260918e"></script>
 </body>
 </html>

@@ -64,3 +64,17 @@
 }
 @media(pointer:coarse){.transit-stage canvas{touch-action:pan-y}.transit-controls button{min-height:48px}}
 @media(prefers-reduced-motion:reduce){#projectTransitCanvas{transition:none}.world-loader i{transition:none}}
+
+
+/* LOCAL_3D_FAILSAFE */
+.transit-static-fallback{position:absolute;inset:0;z-index:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:28px;background:radial-gradient(circle at 50% 42%,rgba(84,245,138,.11),transparent 34%),linear-gradient(180deg,#09100b,#050705 62%,#030403);transition:opacity .55s ease,visibility .55s ease}
+.transit-stage.three-live .transit-static-fallback{opacity:0;visibility:hidden}
+.fallback-world-title{text-align:center}.fallback-world-title span{display:block;color:var(--pink);font-size:8px;letter-spacing:.16em}.fallback-world-title b{display:block;margin-top:6px;font-family:var(--display);font-size:clamp(18px,3vw,32px);letter-spacing:-.02em;color:var(--text)}
+.fallback-road{position:relative;width:min(82%,760px);height:126px;border-bottom:2px solid rgba(84,245,138,.55);transform:perspective(500px) rotateX(58deg);transform-origin:center bottom}
+.fallback-road:before,.fallback-road:after{content:"";position:absolute;left:4%;right:4%;height:2px;background:linear-gradient(90deg,transparent,var(--green),var(--pink),var(--yellow),transparent);box-shadow:0 0 16px rgba(84,245,138,.34)}.fallback-road:before{top:36%}.fallback-road:after{top:68%}
+.fallback-road i{position:absolute;bottom:-8px;width:14px;height:14px;border:2px solid var(--yellow);border-radius:50%;background:#050705;box-shadow:0 0 12px rgba(255,227,110,.35)}.fallback-road i:nth-child(1){left:2%}.fallback-road i:nth-child(2){left:20%;bottom:42px}.fallback-road i:nth-child(3){left:38%;bottom:13px}.fallback-road i:nth-child(4){left:56%;bottom:68px}.fallback-road i:nth-child(5){left:75%;bottom:28px}.fallback-road i:nth-child(6){right:2%;bottom:62px}
+.fallback-vehicle{position:absolute;left:1%;bottom:13px;color:var(--pink);font-size:29px;text-shadow:0 0 18px rgba(255,90,200,.8);animation:fallbackDrive 3.8s ease-in-out infinite alternate}
+.transit-static-fallback small{color:#697169;font-size:7px;letter-spacing:.11em}
+@keyframes fallbackDrive{to{left:88%;transform:translateY(-52px)}}
+@media(max-width:780px){.transit-static-fallback{gap:16px;padding:16px}.fallback-road{width:92%;height:105px}.fallback-world-title b{font-size:19px}.fallback-vehicle{font-size:24px}}
+@media(prefers-reduced-motion:reduce){.fallback-vehicle{animation:none}}
