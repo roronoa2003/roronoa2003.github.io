@@ -20,6 +20,12 @@ const saveData=!!(navigator.connection&&navigator.connection.saveData);
 const weak=(navigator.deviceMemory&&navigator.deviceMemory<=4)||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4);
 const low=mobile()||saveData||weak;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const mobileTargetFPS=60;
+const desktopTargetFPS=60;
+let renderScale=mobile()?0.86:1;
+let frameEMA=16.7,lastQualityCheck=performance.now();
+let viewportWidth=1,viewportHeight=1;
+const MOBILE_MIN_SCALE=.62,MOBILE_MAX_SCALE=1.0;
 
 const projects=[
   {name:'Kubera',full:'Kubera — AI Finance Manager',year:'2024',target:'project-kubera',repo:'https://github.com/roronoa2003/Kubera'},
@@ -167,9 +173,9 @@ function canPlace(x,z,radius,opts={}){
 
 function seedReservations(){
   occupied.length=0;
-  BUILDING_LOTS.filter(b=>!(low&&b.desktopOnly)).forEach(b=>reserve(b.x,b.z,b.radius,'building-lot'));
+  BUILDING_LOTS.forEach(b=>reserve(b.x,b.z,b.radius,'building-lot'));
   CITY_PROPS.forEach(spec=>{
-    if(spec.desktopOnly&&low)return;
+    
     spec.places.forEach(p=>{
       if(spec.roadAllowed)return;
       reserve(p[0],p[1],spec.radius,'prop-lot');
@@ -202,7 +208,7 @@ function orientObjectToTrack(object,u){
 }
 
 function addCoasterTrack(){
-  const segments=low?100:180;
+  const segments=mobile()?120:(low?110:180);
   const left=[],right=[];
   for(let i=0;i<=segments;i++){
     const u=i/segments,f=trackFrame(u);
@@ -229,7 +235,7 @@ function addCoasterTrack(){
   world.add(new T.Mesh(new T.TubeGeometry(curve,segments,.012,5,false),railGlow));
 
   const sleeperGeo=new T.BoxGeometry(1.34,.075,.13);
-  const sleeperCount=low?31:47;
+  const sleeperCount=mobile()?36:(low?33:47);
   for(let i=0;i<sleeperCount;i++){
     const u=.01+(i/(sleeperCount-1))*.98,f=trackFrame(u);
     const sleeper=new T.Mesh(sleeperGeo,sleeperMat);
@@ -240,7 +246,7 @@ function addCoasterTrack(){
     world.add(sleeper);
   }
 
-  const supportCount=low?11:17;
+  const supportCount=mobile()?13:(low?12:17);
   const columnGeo=new T.CylinderGeometry(.055,.075,1,8);
   const beamGeo=new T.BoxGeometry(1.18,.09,.11);
   for(let i=0;i<supportCount;i++){
@@ -265,6 +271,7 @@ function addCoasterTrack(){
 }
 
 function addStationLighting(point,accent,index){
+  if(mobile())return;
   if(low&&index%2===1)return;
   const spot=new T.SpotLight(accent,low?1.0:1.85,9.5,.70,.56,1.5);
   spot.position.copy(point).add(new T.Vector3(index%2?1.5:-1.5,3.2,1.0));
@@ -278,7 +285,7 @@ function addStationLighting(point,accent,index){
 }
 
 function bootCore(){
-  renderer=new T.WebGLRenderer({canvas,alpha:false,antialias:!low,powerPreference:low?'default':'high-performance',preserveDrawingBuffer:false});
+  renderer=new T.WebGLRenderer({canvas,alpha:false,antialias:!low,powerPreference:'high-performance',preserveDrawingBuffer:false});
   renderer.setClearColor(0x07100a,1);
   if('outputColorSpace'in renderer&&T.SRGBColorSpace)renderer.outputColorSpace=T.SRGBColorSpace;
   if(T.ACESFilmicToneMapping!==undefined){renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08}
@@ -309,8 +316,10 @@ function bootCore(){
   coolFill.position.set(8,7,-10);
   scene.add(coolFill);
 
-  const pink=new T.PointLight(PINK,low?.42:.85,22,2);pink.position.set(-7,4,5);scene.add(pink);
-  const green=new T.PointLight(GREEN,low?.40:.82,23,2);green.position.set(7,5,-5);scene.add(green);
+  if(!mobile()){
+    const pink=new T.PointLight(PINK,low?.42:.85,22,2);pink.position.set(-7,4,5);scene.add(pink);
+    const green=new T.PointLight(GREEN,low?.40:.82,23,2);green.position.set(7,5,-5);scene.add(green);
+  }
 
   const sky=new T.Mesh(
     new T.SphereGeometry(70,low?16:28,low?9:16),
@@ -362,9 +371,12 @@ function bootCore(){
   [[-.36,.08,.34],[.36,.08,.34],[-.36,.08,-.34],[.36,.08,-.34]].forEach(v=>{const wheel=new T.Mesh(new T.CylinderGeometry(.12,.12,.08,16),wheelMat);wheel.rotation.x=Math.PI/2;wheel.position.set(v[0],v[1],v[2]);fallbackCar.add(wheel)});
   vehicle.add(fallbackCar);
 
-  const headlight=new T.PointLight(YELLOW,low?.75:1.45,4,2);headlight.position.set(.70,.34,.16);vehicle.add(headlight);
-  const underglow=new T.PointLight(PINK,low?.38:.75,3.5,2);underglow.position.set(0,-.03,0);vehicle.add(underglow);
-  vehicle.userData.headlight=headlight;vehicle.userData.underglow=underglow;vehicle.userData.fallback=fallbackCar;
+  if(!mobile()){
+    const headlight=new T.PointLight(YELLOW,low?.75:1.45,4,2);headlight.position.set(.70,.34,.16);vehicle.add(headlight);
+    const underglow=new T.PointLight(PINK,low?.38:.75,3.5,2);underglow.position.set(0,-.03,0);vehicle.add(underglow);
+    vehicle.userData.headlight=headlight;vehicle.userData.underglow=underglow;
+  }
+  vehicle.userData.fallback=fallbackCar;
 
   addCityBlockPads();
   addBackgroundEnvironment();
@@ -379,7 +391,7 @@ function bootCore(){
 
 function addCityBlockPads(){
   safe('city block pads',()=>{
-    const lots=BUILDING_LOTS.filter(b=>!(low&&b.desktopOnly));
+    const lots=BUILDING_LOTS;
     const lotMat=new T.MeshStandardMaterial({color:0x252b26,roughness:.94,metalness:.03});
     const curbMat=new T.MeshStandardMaterial({color:0x4a514a,roughness:.82,metalness:.08});
     const padGeo=new T.BoxGeometry(3.15,.055,3.15);
@@ -415,15 +427,15 @@ function addBackgroundEnvironment(){
 }
 
 function addPracticalLights(){
+  if(mobile())return;
   const lamps=[
     [-15.8,groundY+1.65,-7.75],[-10.8,groundY+1.65,-7.75],[-5.6,groundY+1.65,-7.75],[0,groundY+1.65,-7.75],[5.6,groundY+1.65,-7.75],[10.8,groundY+1.65,-7.75],[15.8,groundY+1.65,-7.75],
     [-15.8,groundY+1.65,7.75],[-10.8,groundY+1.65,7.75],[-5.6,groundY+1.65,7.75],[0,groundY+1.65,7.75],[5.6,groundY+1.65,7.75],[10.8,groundY+1.65,7.75],[15.8,groundY+1.65,7.75],
     [-7.75,groundY+1.65,-5.2],[-7.75,groundY+1.65,0],[-7.75,groundY+1.65,5.2],
     [7.75,groundY+1.65,-5.2],[7.75,groundY+1.65,0],[7.75,groundY+1.65,5.2]
   ];
-  const visible=low?lamps.filter((_,i)=>i%2===0):lamps;
-  visible.forEach((p,i)=>{
-    const light=new T.PointLight(i%3===0?WARM:YELLOW,low?.32:.68,4.4,2.1);
+  lamps.forEach((p,i)=>{
+    const light=new T.PointLight(i%3===0?WARM:YELLOW,.68,4.4,2.1);
     light.position.set(p[0],p[1],p[2]);scene.add(light);
   });
 }
@@ -457,6 +469,34 @@ function normalizedAsset(root,targetHeight){
   return wrapper;
 }
 
+function addInstancedTemplate(template,placements,label){
+  if(!placements.length)return;
+  template.updateMatrixWorld(true);
+  const meshes=[];
+  template.traverse(n=>{if(n.isMesh&&!n.isSkinnedMesh)meshes.push(n)});
+  const pMatrix=new T.Matrix4(),finalMatrix=new T.Matrix4();
+  const pos=new T.Vector3(),quat=new T.Quaternion(),scale=new T.Vector3(),axis=new T.Vector3(0,1,0);
+  meshes.forEach((mesh,meshIndex)=>{
+    const inst=new T.InstancedMesh(mesh.geometry,mesh.material,placements.length);
+    inst.name=(label||'instanced')+'-'+meshIndex;
+    placements.forEach((p,n)=>{
+      pos.set(p.x,p.y??groundY,p.z);
+      quat.setFromAxisAngle(axis,p.rot||0);
+      const s=p.scale??1;scale.set(s,s,s);
+      pMatrix.compose(pos,quat,scale);
+      finalMatrix.multiplyMatrices(pMatrix,mesh.matrixWorld);
+      inst.setMatrixAt(n,finalMatrix);
+    });
+    inst.instanceMatrix.setUsage(T.StaticDrawUsage);
+    inst.instanceMatrix.needsUpdate=true;
+    inst.castShadow=renderer.shadowMap.enabled&&!!mesh.castShadow;
+    inst.receiveShadow=renderer.shadowMap.enabled;
+    if(inst.computeBoundingSphere)inst.computeBoundingSphere();
+    if(inst.computeBoundingBox)inst.computeBoundingBox();
+    world.add(inst);
+  });
+}
+
 function fallbackBuilding(lot,index){
   const colors=[0x27322b,0x2d2a31,0x242e27];
   const body=new T.Mesh(
@@ -473,29 +513,31 @@ function loadRoadAssets(){
   safe('real road assets',()=>{
     const loader=new window.RI_GLTFLoader(),base='assets/citybits/';
     const prep=root=>normalizedAsset(root,.13);
-    const addTile=(template,x,z,rot=0,scale=1.30)=>{
-      const clone=template.clone(true);
-      clone.position.set(x,groundY+.008,z);clone.rotation.y=rot;clone.scale.multiplyScalar(scale);world.add(clone);
-    };
     const horizontal=[];for(let x=-18.2;x<=18.21;x+=2.6)horizontal.push(Number(x.toFixed(2)));
     const vertical=[];for(let z=-7.8;z<=7.81;z+=2.6)vertical.push(Number(z.toFixed(2)));
 
     loader.load(base+'road_straight.gltf',gltf=>{
-      const t=prep(gltf.scene);
-      [-9.2,9.2].forEach(z=>horizontal.forEach(x=>addTile(t,x,z,Math.PI/2,1.30)));
-      [-9.2,9.2].forEach(x=>vertical.forEach(z=>addTile(t,x,z,0,1.30)));
-      stage.dataset.roadTiles=String(horizontal.length*2+vertical.length*2);
+      const t=prep(gltf.scene),placements=[];
+      [-9.2,9.2].forEach(z=>horizontal.forEach(x=>placements.push({x,y:groundY+.008,z,rot:Math.PI/2,scale:1.30})));
+      [-9.2,9.2].forEach(x=>vertical.forEach(z=>placements.push({x,y:groundY+.008,z,rot:0,scale:1.30})));
+      addInstancedTemplate(t,placements,'road-straight');
+      stage.dataset.roadTiles=String(placements.length);
     },undefined,e=>console.warn('[RI 3D] road_straight skipped',e));
 
     loader.load(base+'road_junction.gltf',gltf=>{
       const t=prep(gltf.scene);
-      [[-9.2,-9.2],[-9.2,9.2],[9.2,-9.2],[9.2,9.2]].forEach(p=>addTile(t,p[0],p[1],0,1.30));
+      addInstancedTemplate(t,[[-9.2,-9.2],[-9.2,9.2],[9.2,-9.2],[9.2,9.2]].map(p=>({x:p[0],y:groundY+.008,z:p[1],rot:0,scale:1.30})),'road-junction');
     },undefined,e=>console.warn('[RI 3D] road_junction skipped',e));
 
     loader.load(base+'road_corner_curved.gltf',gltf=>{
-      if(low)return;
       const t=prep(gltf.scene);
-      [[-18.2,-9.2,0],[18.2,-9.2,Math.PI/2],[-18.2,9.2,-Math.PI/2],[18.2,9.2,Math.PI]].forEach(p=>addTile(t,p[0],p[1],p[2],1.30));
+      const corners=[
+        {x:-18.2,y:groundY+.008,z:-9.2,rot:0,scale:1.30},
+        {x:18.2,y:groundY+.008,z:-9.2,rot:Math.PI/2,scale:1.30},
+        {x:-18.2,y:groundY+.008,z:9.2,rot:-Math.PI/2,scale:1.30},
+        {x:18.2,y:groundY+.008,z:9.2,rot:Math.PI,scale:1.30}
+      ];
+      addInstancedTemplate(t,corners,'road-corner');
     },undefined,e=>console.warn('[RI 3D] road_corner skipped',e));
   });
 }
@@ -505,23 +547,17 @@ function loadCityAssets(){
   safe('asset-backed city environment',()=>{
     const loader=new window.RI_GLTFLoader(),base='assets/citybits/';
     const groups={};
-    BUILDING_LOTS.filter(lot=>!(low&&lot.desktopOnly)).forEach((lot,i)=>{
-      (groups[lot.file]??=[]).push({lot,index:i});
-    });
+    BUILDING_LOTS.forEach((lot,i)=>{(groups[lot.file]??=[]).push({lot,index:i})});
 
     Object.entries(groups).forEach(([file,items])=>{
       loader.load(base+file,gltf=>{
         safe('building '+file,()=>{
           const sourceHeight=Math.max(...items.map(x=>x.lot.height));
           const template=normalizedAsset(gltf.scene,sourceHeight);
-          items.forEach(({lot})=>{
-            const clone=template.clone(true);
-            const ratio=lot.height/sourceHeight;
-            clone.position.set(lot.x,groundY,lot.z);
-            clone.rotation.y=lot.rot;
-            clone.scale.multiplyScalar(ratio*lot.scale);
-            world.add(clone);
-          });
+          const placements=items.map(({lot})=>({
+            x:lot.x,y:groundY,z:lot.z,rot:lot.rot,scale:(lot.height/sourceHeight)*lot.scale
+          }));
+          addInstancedTemplate(template,placements,'building-'+file);
           stage.dataset.buildingsLoaded=String((Number(stage.dataset.buildingsLoaded)||0)+items.length);
         });
       },undefined,error=>{
@@ -531,17 +567,23 @@ function loadCityAssets(){
     });
 
     CITY_PROPS.forEach(spec=>{
-      if(spec.desktopOnly&&low)return;
       loader.load(base+spec.file,gltf=>{
         safe('prop '+spec.file,()=>{
           const template=normalizedAsset(gltf.scene,spec.height);
-          spec.places.forEach(p=>{
-            const clone=template.clone(true);
-            clone.position.set(p[0],groundY,p[1]);
-            clone.rotation.y=p[2]||0;
-            clone.scale.multiplyScalar(p[3]||1);
-            world.add(clone);
-          });
+          if(spec.file==='streetlight.gltf'||spec.file==='trafficlight_A.gltf'){
+            template.traverse(n=>{
+              if(!n.isMesh)return;
+              const mats=Array.isArray(n.material)?n.material:[n.material];
+              mats.filter(Boolean).forEach(m=>{
+                if(m.emissive){
+                  m.emissive.set(spec.file==='streetlight.gltf'?0xffd58a:0x54f58a);
+                  m.emissiveIntensity=mobile()?.22:.12;
+                }
+              });
+            });
+          }
+          const placements=spec.places.map(p=>({x:p[0],y:groundY,z:p[1],rot:p[2]||0,scale:p[3]||1}));
+          addInstancedTemplate(template,placements,'prop-'+spec.file);
         });
       },undefined,error=>console.warn('[RI 3D] City prop skipped:',spec.file,error));
     });
@@ -590,10 +632,10 @@ function loadNatureAssets(){
           });
         };
 
-        scatter(['Grass_2_D_Color1'],low?70:180,.28,{width:39,depth:27,scaleMin:.72,scaleMax:1.38,radius:.07,reserve:false,allowRoad:false,margin:.01});
-        scatter(['Tree_1_A_Color1','Tree_1_C_Color1','Tree_3_A_Color1','Tree_3_C_Color1','Tree_4_A_Color1','Tree_4_C_Color1'],low?18:46,2.30,{width:39,depth:27,scaleMin:.75,scaleMax:1.22,radius:.44,shadows:!low,tag:'tree',margin:.22});
-        scatter(['Bush_1_E_Color1','Bush_3_B_Color1'],low?14:34,.74,{width:39,depth:27,scaleMin:.78,scaleMax:1.25,radius:.31,shadows:!low,tag:'bush',margin:.13});
-        scatter(['Rock_1_D_Color1','Rock_1_J_Color1','Rock_2_C_Color1','Rock_2_G_Color1','Rock_3_E_Color1','Rock_3_L_Color1','Rock_3_Q_Color1'],low?8:22,.64,{width:39,depth:27,scaleMin:.66,scaleMax:1.18,radius:.29,shadows:!low,tag:'rock',margin:.10});
+        scatter(['Grass_2_D_Color1'],mobile()?125:(low?90:180),.28,{width:39,depth:27,scaleMin:.72,scaleMax:1.38,radius:.07,reserve:false,allowRoad:false,margin:.01});
+        scatter(['Tree_1_A_Color1','Tree_1_C_Color1','Tree_3_A_Color1','Tree_3_C_Color1','Tree_4_A_Color1','Tree_4_C_Color1'],mobile()?32:(low?24:46),2.30,{width:39,depth:27,scaleMin:.75,scaleMax:1.22,radius:.44,shadows:!low,tag:'tree',margin:.22});
+        scatter(['Bush_1_E_Color1','Bush_3_B_Color1'],mobile()?24:(low?18:34),.74,{width:39,depth:27,scaleMin:.78,scaleMax:1.25,radius:.31,shadows:!low,tag:'bush',margin:.13});
+        scatter(['Rock_1_D_Color1','Rock_1_J_Color1','Rock_2_C_Color1','Rock_2_G_Color1','Rock_3_E_Color1','Rock_3_L_Color1','Rock_3_Q_Color1'],mobile()?14:(low?10:22),.64,{width:39,depth:27,scaleMin:.66,scaleMax:1.18,radius:.29,shadows:!low,tag:'rock',margin:.10});
         stage.dataset.natureAssets='ready';setJourneyStatus(selected,'FULL CITY + PARK ASSETS ONLINE');
       });
     },undefined,e=>console.warn('[RI 3D] forest asset skipped',e));
@@ -662,10 +704,22 @@ function updateCamera(){
   camera.lookAt(0,.45,0);
 }
 
+function applyRenderScale(){
+  if(!renderer)return;
+  const deviceDpr=window.devicePixelRatio||1;
+  const maxDpr=mobile()?Math.min(deviceDpr,1.15):Math.min(deviceDpr,1.35);
+  renderer.setPixelRatio(maxDpr*renderScale);
+  renderer.setSize(viewportWidth,viewportHeight,false);
+}
+
 function resize(){
-  const r=stage.getBoundingClientRect(),width=Math.max(320,r.width||stage.clientWidth||900),height=Math.max(mobile()?480:560,r.height||stage.clientHeight||650);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,low?1:1.35));renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();
-  targetRadius=low?23.6:Math.max(15.5,Math.min(targetRadius,24.5));
+  const r=stage.getBoundingClientRect();
+  viewportWidth=Math.max(320,r.width||stage.clientWidth||900);
+  viewportHeight=Math.max(mobile()?480:560,r.height||stage.clientHeight||650);
+  applyRenderScale();
+  camera.aspect=viewportWidth/viewportHeight;
+  camera.updateProjectionMatrix();
+  targetRadius=mobile()?23.6:Math.max(15.5,Math.min(targetRadius,24.5));
 }
 
 function placeLabels(){
@@ -685,9 +739,16 @@ function wireInteraction(){
   replayBtn?.addEventListener('click',resetJourney);
   nextBtn?.addEventListener('click',()=>{const next=Math.min(projects.length-1,selected+1);if(next===selected)resetJourney();else selectStop(next,true)});
 
-  stage.addEventListener('pointerdown',e=>{dragging=true;moved=0;startX=e.clientX;startY=e.clientY;startTheta=targetTheta;startPhi=targetPhi;lastInteraction=performance.now();try{stage.setPointerCapture?.(e.pointerId)}catch(_){}});
+  stage.addEventListener('pointerdown',e=>{
+    dragging=true;moved=0;startX=e.clientX;startY=e.clientY;startTheta=targetTheta;startPhi=targetPhi;lastInteraction=performance.now();
+    if(mobile()&&renderScale>.72){renderScale=.72;applyRenderScale()}
+    try{stage.setPointerCapture?.(e.pointerId)}catch(_){}
+  });
   stage.addEventListener('pointermove',e=>{if(!dragging)return;const dx=e.clientX-startX,dy=e.clientY-startY;moved=Math.max(moved,Math.abs(dx)+Math.abs(dy));targetTheta=startTheta-dx*(low?.0044:.0057);targetPhi=Math.max(.43,Math.min(1.30,startPhi+dy*(low?.0033:.0045)))});
-  const release=e=>{dragging=false;try{stage.releasePointerCapture?.(e.pointerId)}catch(_){}};
+  const release=e=>{
+    dragging=false;lastQualityCheck=performance.now()-1200;
+    try{stage.releasePointerCapture?.(e.pointerId)}catch(_){}
+  };
   stage.addEventListener('pointerup',release);stage.addEventListener('pointercancel',release);
   stage.addEventListener('wheel',e=>{if(mobile())return;targetRadius=Math.max(15.0,Math.min(26,targetRadius+Math.sign(e.deltaY)*.75));lastInteraction=performance.now();e.preventDefault()},{passive:false});
 
@@ -702,8 +763,23 @@ function wireInteraction(){
 function animate(now){
   requestAnimationFrame(animate);
   if(!stageVisible||!pageVisible){lastFrame=now;return}
-  const minFrame=1000/(low?38:60);if(now-lastFrame<minFrame)return;
-  const dt=Math.min((now-lastFrame)/1000,.05);lastFrame=now;
+  const targetFPS=mobile()?mobileTargetFPS:(low?45:desktopTargetFPS);
+  const frameGap=now-lastFrame;
+  const minFrame=1000/targetFPS;
+  if(frameGap<minFrame)return;
+  const dt=Math.min(frameGap/1000,.05);
+  lastFrame=now;
+
+  if(mobile()){
+    frameEMA=frameEMA*.90+frameGap*.10;
+    if(now-lastQualityCheck>1400&&!dragging){
+      const before=renderScale;
+      if(frameEMA>19.5)renderScale=Math.max(MOBILE_MIN_SCALE,renderScale-.08);
+      else if(frameEMA<17.2)renderScale=Math.min(MOBILE_MAX_SCALE,renderScale+.05);
+      if(Math.abs(before-renderScale)>.001)applyRenderScale();
+      lastQualityCheck=now;
+    }
+  }
 
   try{
     if(!dragging&&!mobile()&&now-lastInteraction>6000)targetTheta+=.00042;
