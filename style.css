@@ -78,3 +78,18 @@
 @keyframes fallbackDrive{to{left:88%;transform:translateY(-52px)}}
 @media(max-width:780px){.transit-static-fallback{gap:16px;padding:16px}.fallback-road{width:92%;height:105px}.fallback-world-title b{font-size:19px}.fallback-vehicle{font-size:24px}}
 @media(prefers-reduced-motion:reduce){.fallback-vehicle{animation:none}}
+
+
+/* COASTER_WORLD_V3 */
+.transit-stage{height:clamp(620px,62vw,820px);background:linear-gradient(180deg,#07100a,#040705 62%,#030403)}
+.transit-stage:before{background:radial-gradient(circle at 50% 38%,transparent 34%,rgba(0,0,0,.18) 70%,rgba(0,0,0,.55) 100%),linear-gradient(180deg,rgba(255,227,110,.022),transparent 28%,rgba(84,245,138,.025))}
+.world-chip:first-child{border-color:rgba(255,227,110,.30);color:#d7dacd}.world-chip:first-child i{background:var(--yellow);box-shadow:0 0 12px var(--yellow)}
+.transit-top span:first-child{color:#dce0d9}.transit-top span:last-child{color:var(--yellow)}
+.station-label{box-shadow:0 12px 30px rgba(0,0,0,.38),0 0 18px rgba(84,245,138,.05)}
+.station-label.active{box-shadow:0 12px 30px rgba(0,0,0,.42),0 0 24px rgba(255,90,200,.16)}
+@media(max-width:780px){
+  .transit-stage{height:min(76svh,640px);min-height:520px}
+}
+@media(max-width:460px){
+  .transit-stage{height:540px;min-height:540px}
+}
