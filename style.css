@@ -101,3 +101,11 @@
 .world-chip{background:rgba(5,9,6,.78)}
 .transit-mobile-card{box-shadow:0 14px 35px rgba(0,0,0,.38)}
 .asset-credit{opacity:.82}
+
+
+/* MOBILE_GPU_PASS_V5 */
+.transit-stage{contain:layout paint style}
+@media(max-width:780px){
+  .transit-stage{overscroll-behavior:contain;-webkit-tap-highlight-color:transparent}
+  #projectTransitCanvas{touch-action:pan-y;backface-visibility:hidden}
+}
